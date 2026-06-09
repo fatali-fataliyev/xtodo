@@ -1,9 +1,10 @@
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useEffect, useRef, useState } from "react";
 import {
   Animated,
-  Button,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -12,11 +13,6 @@ import {
 } from "react-native";
 import Modal from "react-native-modal";
 import { Colors } from "../assets/js/colors";
-
-// TODO
-// 2. Add glows to Selects with its color, also color themself
-// 3. Make Add button and Add & New
-// 4. Complete and tie to redux
 
 type Props = {
   isModalVisible?: boolean;
@@ -28,12 +24,38 @@ export default function ModalTester({
   setIsModalVisible,
 }: Props) {
   const hideModal = () => {
-    setTodoName("");
     setIsModalVisible(false);
+    resetInputs();
   };
 
   const handleBackdrop = () => {
     console.log("backdrop pressed");
+  };
+
+  const resetInputs = () => {
+    setTodoName("");
+    setPriorityLevel("high");
+    setToggleDropdown(false);
+  };
+
+  const addAndClose = () => {
+    saveTodo();
+    hideModal();
+  };
+
+  const addAndAnother = () => {
+    saveTodo();
+    resetInputs();
+  };
+
+  const saveTodo = () => {
+    if (todoName === "") {
+      alert("Todo name cannot be empty.");
+    }
+
+    // save to redux.
+
+    resetInputs();
   };
 
   const [todoName, setTodoName] = useState("");
@@ -47,13 +69,8 @@ export default function ModalTester({
     { level: "low", info: "Later (Bottom)" },
   ];
 
-  const logVals = () => {
-    console.log("name::", todoName);
-    console.log("level::", priorityLevel);
-  };
-
+  // Animations
   const dropdownAnim = useRef(new Animated.Value(0)).current;
-
   useEffect(() => {
     Animated.timing(dropdownAnim, {
       toValue: toggleDropdown ? 1 : 0,
@@ -61,12 +78,10 @@ export default function ModalTester({
       useNativeDriver: false,
     }).start();
   }, [toggleDropdown]);
-
   const menuHeight = dropdownAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 150],
+    outputRange: [0, 160],
   });
-
   const menuOpacity = dropdownAnim.interpolate({
     inputRange: [0, 0.5, 1],
     outputRange: [0, 0, 1],
@@ -89,7 +104,6 @@ export default function ModalTester({
         style={styles.modal}
       >
         <View style={styles.modalContent}>
-          {/*Header part*/}
           <View style={styles.swipeAreaContainer}>
             <View style={styles.swipeHandle} />
             <Pressable onPress={hideModal} style={styles.closeButton}>
@@ -97,83 +111,126 @@ export default function ModalTester({
             </Pressable>
           </View>
 
-          {/*Input part*/}
-          <TextInput
-            autoFocus={true}
-            placeholderTextColor={"#c2c2c2"}
-            placeholder="Todo name"
-            onChangeText={(value) => setTodoName(value)}
-            multiline={true}
-            onSubmitEditing={() => alert("adding todo.")}
-            onContentSizeChange={(e) => {
-              setInputHeight(e.nativeEvent.contentSize.height);
-            }}
-            style={[styles.input, { height: Math.max(60, inputHeight) }]}
-            spellCheck={false}
-            autoCorrect={false}
-          />
+          <ScrollView
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps={"handled"}
+          >
+            {/* Input part */}
+            <TextInput
+              value={todoName}
+              autoFocus={true}
+              placeholderTextColor={"#c2c2c2"}
+              placeholder="Todo name"
+              onChangeText={(value) => setTodoName(value)}
+              multiline={true}
+              onSubmitEditing={() => alert("adding todo.")}
+              onContentSizeChange={(e) => {
+                setInputHeight(e.nativeEvent.contentSize.height);
+              }}
+              style={[styles.input, { height: Math.max(60, inputHeight) }]}
+              spellCheck={false}
+              autoCorrect={false}
+            />
 
-          {/*Select part*/}
-          <View style={styles.selectMenuWrapper}>
-            <TouchableOpacity
-              style={styles.selectMenuToggler}
-              onPress={() => setToggleDropdown(!toggleDropdown)}
-            >
-              <View style={styles.prioritySelectContainer}>
-                <Text style={styles.priorityText}>Priority: </Text>
-                <Text
-                  style={{
-                    color: getColorByLevel(priorityLevel),
-                    fontWeight: "600",
-                    paddingTop: 1,
-                  }}
-                >
-                  {priorityLevel.toUpperCase()}
-                </Text>
-              </View>
-              <FontAwesome5
-                name={toggleDropdown ? "chevron-up" : "chevron-down"}
-                size={14}
-                color="#fff"
-              />
-            </TouchableOpacity>
-
-            <Animated.View
-              style={[
-                styles.dropdownContainer,
-                { height: menuHeight, opacity: menuOpacity },
-              ]}
-            >
-              {priorityLevels.map((item, idx) => {
-                const isSelected = item.level === priorityLevel;
-
-                return (
-                  <TouchableOpacity
-                    key={idx}
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      setPriorityLevel(item.level);
-                      setToggleDropdown(!toggleDropdown);
+            {/* Select part */}
+            <View style={styles.selectMenuWrapper}>
+              <TouchableOpacity
+                style={styles.selectMenuToggler}
+                onPress={() => setToggleDropdown(!toggleDropdown)}
+              >
+                <View style={styles.prioritySelectContainer}>
+                  <Text style={styles.priorityText}>Priority: </Text>
+                  <Text
+                    style={{
+                      color: getColorByLevel(priorityLevel),
+                      fontWeight: "600",
+                      paddingTop: 3,
                     }}
                   >
-                    <View style={styles.textContainer}>
-                      <Text
-                        style={[
-                          styles.itemText,
-                          isSelected && styles.selectedText,
-                        ]}
-                      >
-                        {item.info}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
-            </Animated.View>
-          </View>
+                    {priorityLevel.toUpperCase()}
+                  </Text>
+                </View>
+                <FontAwesome5
+                  name={toggleDropdown ? "chevron-up" : "chevron-down"}
+                  size={14}
+                  color="#fff"
+                />
+              </TouchableOpacity>
 
-          {/*Save Part*/}
-          <Button title="Save & Log" onPress={logVals} />
+              <Animated.View
+                style={[
+                  styles.dropdownContainer,
+                  { height: menuHeight, opacity: menuOpacity },
+                ]}
+              >
+                {priorityLevels.map((item, idx) => {
+                  const isSelected = item.level === priorityLevel;
+
+                  return (
+                    <TouchableOpacity
+                      key={idx}
+                      style={styles.dropdownItem}
+                      onPress={() => {
+                        setPriorityLevel(item.level);
+                        setToggleDropdown(false);
+                      }}
+                    >
+                      <View style={styles.textContainer}>
+                        <View style={styles.rowContent}>
+                          <Text
+                            style={[
+                              styles.levelColumn,
+                              isSelected && styles.selectedText,
+                              { color: getColorByLevel(item.level) },
+                            ]}
+                          >
+                            {capitalizeFirstLetter(item.level)}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.infoColumn,
+                              { color: getColorByLevel(item.level) },
+                            ]}
+                          >
+                            {item.info}
+                          </Text>
+                        </View>
+
+                        {isSelected && (
+                          <FontAwesome
+                            name="check-circle"
+                            size={20}
+                            color="#0088CC"
+                          />
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </Animated.View>
+            </View>
+
+            {/* Save Part */}
+            <View style={styles.buttonContainer}>
+              {/*Add & another*/}
+              <TouchableOpacity
+                onPress={saveTodo}
+                style={[styles.saveBtn, { marginBottom: 15 }]}
+              >
+                <Text style={styles.saveBtnText}>Add & Another</Text>
+              </TouchableOpacity>
+
+              {/*add & close*/}
+              <TouchableOpacity
+                onPress={saveTodo}
+                style={[styles.saveBtn, { backgroundColor: "#34C759" }]}
+              >
+                <Text style={styles.saveBtnText}>Add & Close</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
         </View>
       </Modal>
     </View>
@@ -192,14 +249,18 @@ function getColorByLevel(level: string): string {
   return "";
 }
 
+function capitalizeFirstLetter(str: string): string {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
   prioritySelectContainer: {
-    flex: 1,
     flexDirection: "row",
-    alignItems: "baseline",
+    alignItems: "center",
   },
   priorityText: {
     color: "#FFF",
@@ -225,27 +286,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#222222",
   },
   dropdownItem: {
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 15,
-    justifyContent: "center",
     borderTopWidth: 1,
-    borderTopColor: "#2a2a2a",
+    borderTopColor: "#333",
   },
   textContainer: {
-    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   itemText: {
     color: "#aaa",
     fontSize: 15,
   },
   selectedText: {
-    color: "#3b82f6",
     fontWeight: "600",
-  },
-  animatedUnderline: {
-    height: 2,
-    backgroundColor: "#3b82f6",
-    marginTop: 2,
   },
   modal: {
     justifyContent: "flex-end",
@@ -256,8 +312,19 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingHorizontal: 20,
-    paddingBottom: 40,
     paddingTop: 10,
+    maxHeight: "80%",
+  },
+  scrollContent: {
+    paddingBottom: 40,
+  },
+  buttonContainer: {
+    flex: 1,
+    width: "100%",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 10,
   },
   swipeAreaContainer: {
     width: "100%",
@@ -265,7 +332,7 @@ const styles = StyleSheet.create({
     position: "relative",
     justifyContent: "center",
     paddingVertical: 10,
-    marginBottom: 15,
+    marginBottom: 5,
   },
   swipeHandle: {
     width: 40,
@@ -288,5 +355,33 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 15,
     fontSize: 16,
+  },
+  rowContent: {
+    flexDirection: "row",
+    flex: 1,
+    alignItems: "center",
+  },
+  levelColumn: {
+    width: 90,
+    fontSize: 15,
+  },
+  infoColumn: {
+    color: "#888",
+    fontSize: 14,
+    flex: 1,
+  },
+  saveBtn: {
+    backgroundColor: "#2C2C2E",
+    width: "100%",
+    height: 45,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#303030",
+  },
+  saveBtnText: {
+    fontFamily: "Inter-SemiBold",
+    color: "#FFF",
   },
 });
