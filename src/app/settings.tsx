@@ -1,9 +1,9 @@
 import { Text, View } from "react-native";
 
-export default function TestComp() {
+export default function SettingsScreen() {
   return (
     <View>
-      <Text>Hello from Test Component</Text>
+      <Text>Settings Screen Page</Text>
     </View>
   );
 }
