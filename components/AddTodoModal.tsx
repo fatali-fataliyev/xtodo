@@ -12,10 +12,8 @@ import {
 } from "react-native";
 import Modal from "react-native-modal";
 import { Colors } from "../assets/js/colors";
-import GlowCircle from "./GlowCircle";
 
 // TODO
-// 1. Fix priortety with flexbox for good look
 // 2. Add glows to Selects with its color, also color themself
 // 3. Make Add button and Add & New
 // 4. Complete and tie to redux
@@ -95,7 +93,6 @@ export default function ModalTester({
           <View style={styles.swipeAreaContainer}>
             <View style={styles.swipeHandle} />
             <Pressable onPress={hideModal} style={styles.closeButton}>
-              <GlowCircle color="red" />
               <FontAwesome5 name="window-close" size={24} color="#ccc" />
             </Pressable>
           </View>
@@ -122,12 +119,18 @@ export default function ModalTester({
               style={styles.selectMenuToggler}
               onPress={() => setToggleDropdown(!toggleDropdown)}
             >
-              <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                Priority:{" "}
-                <Text style={{ color: getColorByLevel(priorityLevel) }}>
+              <View style={styles.prioritySelectContainer}>
+                <Text style={styles.priorityText}>Priority: </Text>
+                <Text
+                  style={{
+                    color: getColorByLevel(priorityLevel),
+                    fontWeight: "600",
+                    paddingTop: 1,
+                  }}
+                >
                   {priorityLevel.toUpperCase()}
                 </Text>
-              </Text>
+              </View>
               <FontAwesome5
                 name={toggleDropdown ? "chevron-up" : "chevron-down"}
                 size={14}
@@ -135,7 +138,6 @@ export default function ModalTester({
               />
             </TouchableOpacity>
 
-            {/* Smooth Dropdown Container */}
             <Animated.View
               style={[
                 styles.dropdownContainer,
@@ -187,7 +189,6 @@ function getColorByLevel(level: string): string {
     case "low":
       return Colors.low;
   }
-
   return "";
 }
 
@@ -195,10 +196,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  prioritySelectContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "baseline",
+  },
+  priorityText: {
+    color: "#FFF",
+    fontSize: 16,
+  },
   selectMenuWrapper: {
     width: "100%",
     marginBottom: 20,
-    backgroundColor: "#333",
+    backgroundColor: "#2a2a2a",
     borderRadius: 8,
     overflow: "hidden",
   },
@@ -212,12 +222,14 @@ const styles = StyleSheet.create({
   },
   dropdownContainer: {
     width: "100%",
-    backgroundColor: "#2a2a2a",
+    backgroundColor: "#222222",
   },
   dropdownItem: {
     paddingVertical: 12,
     paddingHorizontal: 15,
     justifyContent: "center",
+    borderTopWidth: 1,
+    borderTopColor: "#2a2a2a",
   },
   textContainer: {
     alignSelf: "flex-start",
@@ -246,7 +258,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 40,
     paddingTop: 10,
-    alignItems: "center",
   },
   swipeAreaContainer: {
     width: "100%",
@@ -259,23 +270,23 @@ const styles = StyleSheet.create({
   swipeHandle: {
     width: 40,
     height: 5,
-    backgroundColor: "#ccc",
+    backgroundColor: "#444",
     borderRadius: 3,
   },
   closeButton: {
     position: "absolute",
     right: 0,
     top: 0,
+    justifyContent: "center",
+    alignItems: "center",
   },
   input: {
     width: "100%",
-    backgroundColor: "#202020",
+    backgroundColor: "#1a1a1a",
     color: "#fff",
-    padding: 22,
+    padding: 20,
     borderRadius: 8,
-    marginBottom: 10,
-    height: 60,
-    maxHeight: 160,
+    marginBottom: 15,
     fontSize: 16,
   },
 });
