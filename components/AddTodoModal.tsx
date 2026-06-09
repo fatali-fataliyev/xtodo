@@ -186,7 +186,7 @@ export default function ModalTester({
                               { color: getColorByLevel(item.level) },
                             ]}
                           >
-                            {capitalizeFirstLetter(item.level)}
+                            {capitalizeFirstLetter(item.level)}{" "}
                           </Text>
                           <Text
                             style={[
