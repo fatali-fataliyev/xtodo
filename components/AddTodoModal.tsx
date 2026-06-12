@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import Modal from "react-native-modal";
 import { Colors } from "../assets/js/colors";
+import { GlowCircle } from "./GlowCircle";
 
 type Props = {
   isModalVisible?: boolean;
@@ -29,6 +30,7 @@ export default function ModalTester({
   };
 
   const handleBackdrop = () => {
+    // XTODO: define behavior based on settings.
     console.log("backdrop pressed");
   };
 
@@ -39,29 +41,46 @@ export default function ModalTester({
   };
 
   const addAndClose = () => {
+    console.log("ADD AND CLOSE[X]");
     saveTodo();
     hideModal();
   };
 
   const addAndAnother = () => {
+    console.log("ADD AND ANOTHER[+]");
     saveTodo();
     resetInputs();
   };
 
+  const triggerSnackbar = () => {
+    snackbarAnim.setValue(0);
+
+    Animated.timing(snackbarAnim, {
+      toValue: 1,
+      duration: 350,
+      useNativeDriver: true,
+    }).start(() => {
+      setTimeout(() => {
+        Animated.timing(snackbarAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      }, 2000);
+    });
+  };
+
   const saveTodo = () => {
-    if (todoName === "") {
-      alert("Todo name cannot be empty.");
-    }
+    // Save data to REDUX
 
-    // save to redux.
-
-    resetInputs();
+    triggerSnackbar();
   };
 
   const [todoName, setTodoName] = useState("");
   const [inputHeight, setInputHeight] = useState<number>(60);
   const [toggleDropdown, setToggleDropdown] = useState<boolean>(false);
   const [priorityLevel, setPriorityLevel] = useState<string>("high");
+  const isSaveBtnDisabled = todoName.trim() === "";
 
   const priorityLevels = [
     { level: "high", info: "Urgent (Top & Default)" },
@@ -87,6 +106,13 @@ export default function ModalTester({
     outputRange: [0, 0, 1],
   });
 
+  const snackbarAnim = useRef(new Animated.Value(0)).current;
+
+  const snackbarY = snackbarAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-20, 15],
+  });
+
   return (
     <View style={styles.container}>
       <Modal
@@ -104,6 +130,24 @@ export default function ModalTester({
         style={styles.modal}
       >
         <View style={styles.modalContent}>
+          <Animated.View
+            style={[
+              styles.todoAddedSnackbar,
+              {
+                opacity: snackbarAnim,
+                transform: [{ translateY: snackbarY }],
+              },
+            ]}
+          >
+            <FontAwesome
+              name="check-circle"
+              size={16}
+              color="#34C759"
+              style={{ marginRight: 8 }}
+            />
+            <Text style={styles.snackbarText}>Todo added successfully!</Text>
+          </Animated.View>
+
           <View style={styles.swipeAreaContainer}>
             <View style={styles.swipeHandle} />
             <Pressable onPress={hideModal} style={styles.closeButton}>
@@ -123,9 +167,8 @@ export default function ModalTester({
               autoFocus={true}
               placeholderTextColor={"#c2c2c2"}
               placeholder="Todo name"
-              onChangeText={(value) => setTodoName(value)}
+              onChangeText={setTodoName}
               multiline={true}
-              onSubmitEditing={() => alert("adding todo.")}
               onContentSizeChange={(e) => {
                 setInputHeight(e.nativeEvent.contentSize.height);
               }}
@@ -142,21 +185,33 @@ export default function ModalTester({
               >
                 <View style={styles.prioritySelectContainer}>
                   <Text style={styles.priorityText}>Priority: </Text>
-                  <Text
-                    style={{
-                      color: getColorByLevel(priorityLevel),
-                      fontWeight: "600",
-                      paddingTop: 3,
-                    }}
-                  >
-                    {priorityLevel.toUpperCase()}
-                  </Text>
+                  <View style={styles.glowAndLevelTextContainer}>
+                    <View>
+                      <Text
+                        style={{
+                          color: getColorByLevel(priorityLevel),
+                          fontWeight: "600",
+                          paddingTop: 3,
+                        }}
+                      >
+                        {priorityLevel.toUpperCase()}
+                      </Text>
+                    </View>
+                    <View style={{ paddingTop: 3.5, paddingLeft: 5 }}>
+                      <GlowCircle
+                        color={getColorByLevel(priorityLevel)}
+                        size="small"
+                      />
+                    </View>
+                  </View>
                 </View>
-                <FontAwesome5
-                  name={toggleDropdown ? "chevron-up" : "chevron-down"}
-                  size={14}
-                  color="#fff"
-                />
+                <View>
+                  <FontAwesome
+                    name={toggleDropdown ? "chevron-up" : "chevron-down"}
+                    size={14}
+                    color="#fff"
+                  />
+                </View>
               </TouchableOpacity>
 
               <Animated.View
@@ -216,18 +271,42 @@ export default function ModalTester({
             <View style={styles.buttonContainer}>
               {/*Add & another*/}
               <TouchableOpacity
-                onPress={saveTodo}
-                style={[styles.saveBtn, { marginBottom: 15 }]}
+                onPress={addAndAnother}
+                disabled={isSaveBtnDisabled}
+                style={[
+                  styles.saveBtn,
+                  { marginBottom: 15 },
+                  isSaveBtnDisabled && styles.saveBtnDisabled,
+                ]}
               >
-                <Text style={styles.saveBtnText}>Add & Another</Text>
+                <Text
+                  style={[
+                    styles.saveBtnText,
+                    isSaveBtnDisabled && styles.saveBtnTextDisabled,
+                  ]}
+                >
+                  Add & Another
+                </Text>
               </TouchableOpacity>
 
               {/*add & close*/}
               <TouchableOpacity
-                onPress={saveTodo}
-                style={[styles.saveBtn, { backgroundColor: "#34C759" }]}
+                onPress={addAndClose}
+                style={[
+                  styles.saveBtn,
+                  { backgroundColor: "#34C759" },
+                  isSaveBtnDisabled && styles.saveBtnDisabled,
+                ]}
+                disabled={isSaveBtnDisabled}
               >
-                <Text style={styles.saveBtnText}>Add & Close</Text>
+                <Text
+                  style={[
+                    styles.saveBtnText,
+                    isSaveBtnDisabled && styles.saveBtnTextDisabled,
+                  ]}
+                >
+                  Add & Close
+                </Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -380,8 +459,46 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#303030",
   },
+  saveBtnDisabled: {
+    backgroundColor: "#101010",
+    pointerEvents: "none",
+  },
+  saveBtnTextDisabled: {
+    fontFamily: "Inter-Regular",
+    color: "#a0a0a0",
+  },
   saveBtnText: {
     fontFamily: "Inter-SemiBold",
     color: "#FFF",
+  },
+  glowAndLevelTextContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  todoAddedSnackbar: {
+    position: "absolute",
+    top: 0,
+    left: 20,
+    right: 20,
+    zIndex: 999,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 25,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: "#1c1c1e",
+    borderWidth: 1,
+    borderColor: "#2c2c2e",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
+  },
+  snackbarText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
   },
 });
