@@ -1,24 +1,27 @@
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AddTodo from "../../components/AddTodoBtn";
-// import AddTodoModal from "../../components/AddTodoModal";
-import WrapperComponent from "../../components/AddTodoModal";
+
 import Footer from "../../components/Footer";
 import Header from "../../components/Header";
+import TaskContainer from "../../components/TodoContainer";
 
 export default function TasksScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
+        {/*Header*/}
         <View style={styles.header}>
           <Header label="Tasks" />
         </View>
 
+        {/*Section*/}
         <View style={styles.section}>
-          {/*<WrapperComponent />*/}
+          <TaskContainer />
           <AddTodo />
         </View>
 
+        {/*Footer*/}
         <View style={styles.footer}>
           <Footer label="Notes" href={"/notes"} iconName="notes" />
         </View>

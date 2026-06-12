@@ -12,7 +12,8 @@ import {
   View,
 } from "react-native";
 import Modal from "react-native-modal";
-import { Colors } from "../assets/js/colors";
+import { GetColorByLevel } from "../assets/js/colors";
+import { PriorityLevels } from "../assets/js/priorityLevels";
 import { GlowCircle } from "./GlowCircle";
 
 type Props = {
@@ -81,12 +82,6 @@ export default function ModalTester({
   const [toggleDropdown, setToggleDropdown] = useState<boolean>(false);
   const [priorityLevel, setPriorityLevel] = useState<string>("high");
   const isSaveBtnDisabled = todoName.trim() === "";
-
-  const priorityLevels = [
-    { level: "high", info: "Urgent (Top & Default)" },
-    { level: "medium", info: "Schedule (Middle)" },
-    { level: "low", info: "Later (Bottom)" },
-  ];
 
   // Animations
   const dropdownAnim = useRef(new Animated.Value(0)).current;
@@ -189,7 +184,7 @@ export default function ModalTester({
                     <View>
                       <Text
                         style={{
-                          color: getColorByLevel(priorityLevel),
+                          color: GetColorByLevel(priorityLevel),
                           fontWeight: "600",
                           paddingTop: 3,
                         }}
@@ -199,7 +194,7 @@ export default function ModalTester({
                     </View>
                     <View style={{ paddingTop: 3.5, paddingLeft: 5 }}>
                       <GlowCircle
-                        color={getColorByLevel(priorityLevel)}
+                        color={GetColorByLevel(priorityLevel)}
                         size="small"
                       />
                     </View>
@@ -220,7 +215,7 @@ export default function ModalTester({
                   { height: menuHeight, opacity: menuOpacity },
                 ]}
               >
-                {priorityLevels.map((item, idx) => {
+                {PriorityLevels.map((item, idx) => {
                   const isSelected = item.level === priorityLevel;
 
                   return (
@@ -238,7 +233,7 @@ export default function ModalTester({
                             style={[
                               styles.levelColumn,
                               isSelected && styles.selectedText,
-                              { color: getColorByLevel(item.level) },
+                              { color: GetColorByLevel(item.level) },
                             ]}
                           >
                             {capitalizeFirstLetter(item.level)}{" "}
@@ -246,7 +241,7 @@ export default function ModalTester({
                           <Text
                             style={[
                               styles.infoColumn,
-                              { color: getColorByLevel(item.level) },
+                              { color: GetColorByLevel(item.level) },
                             ]}
                           >
                             {item.info}
@@ -314,18 +309,6 @@ export default function ModalTester({
       </Modal>
     </View>
   );
-}
-
-function getColorByLevel(level: string): string {
-  switch (level) {
-    case "high":
-      return Colors.high;
-    case "medium":
-      return Colors.medium;
-    case "low":
-      return Colors.low;
-  }
-  return "";
 }
 
 function capitalizeFirstLetter(str: string): string {
