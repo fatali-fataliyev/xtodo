@@ -1,7 +1,7 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Href, Link } from "expo-router";
 import { ComponentProps } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity } from "react-native";
 
 type Props = {
   label: string;
@@ -11,18 +11,23 @@ type Props = {
 
 export default function Footer({ label, href, iconName }: Props) {
   return (
-    <Link href={href} replace asChild>
-      <View style={styles.container}>
-        <MaterialIcons name={iconName} size={24} color="#D9D9D9" />
+    <Link href={href} asChild>
+      <TouchableOpacity style={styles.container}>
+        <MaterialIcons
+          name={iconName}
+          size={24}
+          color="#D9D9D9"
+          onPress={() => console.log("href")}
+        />
         <Text style={styles.label}>{label}</Text>
-      </View>
+      </TouchableOpacity>
     </Link>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#000",
+    backgroundColor: "red",
     width: "100%",
     height: "100%",
     justifyContent: "center",

@@ -109,205 +109,203 @@ export default function AddTodoModal({
   });
 
   return (
-    <View style={styles.container}>
-      <Modal
-        isVisible={isModalVisible}
-        onBackButtonPress={hideModal}
-        onBackdropPress={handleBackdrop}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        swipeDirection={["down"]}
-        onSwipeComplete={hideModal}
-        avoidKeyboard={true}
-        hasBackdrop={true}
-        backdropTransitionOutTiming={0}
-        backdropTransitionInTiming={0}
-        style={styles.modal}
-      >
-        <View style={styles.modalContent}>
-          <Animated.View
-            style={[
-              styles.todoAddedSnackbar,
-              {
-                opacity: snackbarAnim,
-                transform: [{ translateY: snackbarY }],
-              },
-            ]}
-          >
-            <FontAwesome
-              name="check-circle"
-              size={16}
-              color="#34C759"
-              style={{ marginRight: 8 }}
-            />
-            <Text style={styles.snackbarText}>Todo added successfully!</Text>
-          </Animated.View>
+    <Modal
+      isVisible={isModalVisible}
+      onBackButtonPress={hideModal}
+      onBackdropPress={handleBackdrop}
+      animationIn="slideInUp"
+      animationOut="slideOutDown"
+      swipeDirection={["down"]}
+      onSwipeComplete={hideModal}
+      avoidKeyboard={true}
+      hasBackdrop={true}
+      backdropTransitionOutTiming={0}
+      backdropTransitionInTiming={0}
+      style={styles.modal}
+    >
+      <View style={styles.modalContent}>
+        <Animated.View
+          style={[
+            styles.todoAddedSnackbar,
+            {
+              opacity: snackbarAnim,
+              transform: [{ translateY: snackbarY }],
+            },
+          ]}
+        >
+          <FontAwesome
+            name="check-circle"
+            size={16}
+            color="#34C759"
+            style={{ marginRight: 8 }}
+          />
+          <Text style={styles.snackbarText}>Todo added successfully!</Text>
+        </Animated.View>
 
-          <View style={styles.swipeAreaContainer}>
-            <View style={styles.swipeHandle} />
-            <Pressable onPress={hideModal} style={styles.closeButton}>
-              <FontAwesome5 name="window-close" size={24} color="#ccc" />
-            </Pressable>
-          </View>
+        <View style={styles.swipeAreaContainer}>
+          <View style={styles.swipeHandle} />
+          <Pressable onPress={hideModal} style={styles.closeButton}>
+            <FontAwesome5 name="window-close" size={24} color="#ccc" />
+          </Pressable>
+        </View>
 
-          <ScrollView
-            bounces={false}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps={"handled"}
-          >
-            {/* Input part */}
-            <TextInput
-              value={todoName}
-              autoFocus={true}
-              placeholderTextColor={"#c2c2c2"}
-              placeholder="Todo name"
-              onChangeText={setTodoName}
-              multiline={true}
-              onContentSizeChange={(e) => {
-                setInputHeight(e.nativeEvent.contentSize.height);
-              }}
-              style={[styles.input, { height: Math.max(60, inputHeight) }]}
-              spellCheck={false}
-              autoCorrect={false}
-            />
+        <ScrollView
+          bounces={false}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps={"handled"}
+        >
+          {/* Input part */}
+          <TextInput
+            value={todoName}
+            autoFocus={true}
+            placeholderTextColor={"#c2c2c2"}
+            placeholder="Todo name"
+            onChangeText={setTodoName}
+            multiline={true}
+            onContentSizeChange={(e) => {
+              setInputHeight(e.nativeEvent.contentSize.height);
+            }}
+            style={[styles.input, { height: Math.max(60, inputHeight) }]}
+            spellCheck={false}
+            autoCorrect={false}
+          />
 
-            {/* Select part */}
-            <View style={styles.selectMenuWrapper}>
-              <TouchableOpacity
-                style={styles.selectMenuToggler}
-                onPress={() => setToggleDropdown(!toggleDropdown)}
-              >
-                <View style={styles.prioritySelectContainer}>
-                  <Text style={styles.priorityText}>Priority: </Text>
-                  <View style={styles.glowAndLevelTextContainer}>
-                    <View>
-                      <Text
-                        style={{
-                          color: GetColorByLevel(priorityLevel),
-                          fontWeight: "600",
-                          paddingTop: 3,
-                        }}
-                      >
-                        {priorityLevel.toUpperCase()}
-                      </Text>
-                    </View>
-                    <View style={{ paddingTop: 3.5, paddingLeft: 5 }}>
-                      <GlowCircle
-                        color={GetColorByLevel(priorityLevel)}
-                        size="small"
-                      />
-                    </View>
-                  </View>
-                </View>
-                <View>
-                  <FontAwesome
-                    name={toggleDropdown ? "chevron-up" : "chevron-down"}
-                    size={14}
-                    color="#fff"
-                  />
-                </View>
-              </TouchableOpacity>
-
-              <Animated.View
-                style={[
-                  styles.dropdownContainer,
-                  { height: menuHeight, opacity: menuOpacity },
-                ]}
-              >
-                {PriorityLevels.map((item, idx) => {
-                  const isSelected = item.level === priorityLevel;
-
-                  return (
-                    <TouchableOpacity
-                      key={idx}
-                      style={styles.dropdownItem}
-                      onPress={() => {
-                        setPriorityLevel(item.level);
-                        setToggleDropdown(false);
+          {/* Select part */}
+          <View style={styles.selectMenuWrapper}>
+            <TouchableOpacity
+              style={styles.selectMenuToggler}
+              onPress={() => setToggleDropdown(!toggleDropdown)}
+            >
+              <View style={styles.prioritySelectContainer}>
+                <Text style={styles.priorityText}>Priority: </Text>
+                <View style={styles.glowAndLevelTextContainer}>
+                  <View>
+                    <Text
+                      style={{
+                        color: GetColorByLevel(priorityLevel),
+                        fontWeight: "600",
+                        paddingTop: 3,
                       }}
                     >
-                      <View style={styles.textContainer}>
-                        <View style={styles.rowContent}>
-                          <Text
-                            style={[
-                              styles.levelColumn,
-                              isSelected && styles.selectedText,
-                              { color: GetColorByLevel(item.level) },
-                            ]}
-                          >
-                            {capitalizeFirstLetter(item.level)}{" "}
-                          </Text>
-                          <Text
-                            style={[
-                              styles.infoColumn,
-                              { color: GetColorByLevel(item.level) },
-                            ]}
-                          >
-                            {item.info}
-                          </Text>
-                        </View>
+                      {priorityLevel.toUpperCase()}
+                    </Text>
+                  </View>
+                  <View style={{ paddingTop: 3.5, paddingLeft: 5 }}>
+                    <GlowCircle
+                      color={GetColorByLevel(priorityLevel)}
+                      size="small"
+                    />
+                  </View>
+                </View>
+              </View>
+              <View>
+                <FontAwesome
+                  name={toggleDropdown ? "chevron-up" : "chevron-down"}
+                  size={14}
+                  color="#fff"
+                />
+              </View>
+            </TouchableOpacity>
 
-                        {isSelected && (
-                          <FontAwesome
-                            name="check-circle"
-                            size={20}
-                            color="#0088CC"
-                          />
-                        )}
+            <Animated.View
+              style={[
+                styles.dropdownContainer,
+                { height: menuHeight, opacity: menuOpacity },
+              ]}
+            >
+              {PriorityLevels.map((item, idx) => {
+                const isSelected = item.level === priorityLevel;
+
+                return (
+                  <TouchableOpacity
+                    key={idx}
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setPriorityLevel(item.level);
+                      setToggleDropdown(false);
+                    }}
+                  >
+                    <View style={styles.textContainer}>
+                      <View style={styles.rowContent}>
+                        <Text
+                          style={[
+                            styles.levelColumn,
+                            isSelected && styles.selectedText,
+                            { color: GetColorByLevel(item.level) },
+                          ]}
+                        >
+                          {capitalizeFirstLetter(item.level)}{" "}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.infoColumn,
+                            { color: GetColorByLevel(item.level) },
+                          ]}
+                        >
+                          {item.info}
+                        </Text>
                       </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </Animated.View>
-            </View>
 
-            {/* Save Part */}
-            <View style={styles.buttonContainer}>
-              {/*Add & another*/}
-              <TouchableOpacity
-                onPress={addAndAnother}
-                disabled={isSaveBtnDisabled}
+                      {isSelected && (
+                        <FontAwesome
+                          name="check-circle"
+                          size={20}
+                          color="#0088CC"
+                        />
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </Animated.View>
+          </View>
+
+          {/* Save Part */}
+          <View style={styles.buttonContainer}>
+            {/*Add & another*/}
+            <TouchableOpacity
+              onPress={addAndAnother}
+              disabled={isSaveBtnDisabled}
+              style={[
+                styles.saveBtn,
+                { marginBottom: 15 },
+                isSaveBtnDisabled && styles.saveBtnDisabled,
+              ]}
+            >
+              <Text
                 style={[
-                  styles.saveBtn,
-                  { marginBottom: 15 },
-                  isSaveBtnDisabled && styles.saveBtnDisabled,
+                  styles.saveBtnText,
+                  isSaveBtnDisabled && styles.saveBtnTextDisabled,
                 ]}
               >
-                <Text
-                  style={[
-                    styles.saveBtnText,
-                    isSaveBtnDisabled && styles.saveBtnTextDisabled,
-                  ]}
-                >
-                  Add & Another
-                </Text>
-              </TouchableOpacity>
+                Add & Another
+              </Text>
+            </TouchableOpacity>
 
-              {/*add & close*/}
-              <TouchableOpacity
-                onPress={addAndClose}
+            {/*add & close*/}
+            <TouchableOpacity
+              onPress={addAndClose}
+              style={[
+                styles.saveBtn,
+                { backgroundColor: "#34C759" },
+                isSaveBtnDisabled && styles.saveBtnDisabled,
+              ]}
+              disabled={isSaveBtnDisabled}
+            >
+              <Text
                 style={[
-                  styles.saveBtn,
-                  { backgroundColor: "#34C759" },
-                  isSaveBtnDisabled && styles.saveBtnDisabled,
+                  styles.saveBtnText,
+                  isSaveBtnDisabled && styles.saveBtnTextDisabled,
                 ]}
-                disabled={isSaveBtnDisabled}
               >
-                <Text
-                  style={[
-                    styles.saveBtnText,
-                    isSaveBtnDisabled && styles.saveBtnTextDisabled,
-                  ]}
-                >
-                  Add & Close
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </View>
-      </Modal>
-    </View>
+                Add & Close
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </View>
+    </Modal>
   );
 }
 
@@ -317,9 +315,6 @@ function capitalizeFirstLetter(str: string): string {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   prioritySelectContainer: {
     flexDirection: "row",
     alignItems: "center",

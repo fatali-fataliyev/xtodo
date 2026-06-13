@@ -5,7 +5,7 @@ import {
   Inter_900Black,
   useFonts,
 } from "@expo-google-fonts/inter";
-import { Slot } from "expo-router";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -31,8 +31,25 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <Slot />
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#000000" }}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: "#000000" },
+        }}
+      >
+        {/* Index (Tasks) will change based on settings */}
+        <Stack.Screen name="index" options={{ animation: "none" }} />
+
+        <Stack.Screen
+          name="notes"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="settings"
+          options={{ animation: "slide_from_right" }}
+        />
+      </Stack>
     </GestureHandlerRootView>
   );
 }

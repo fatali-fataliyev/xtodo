@@ -1,7 +1,6 @@
 import { GetColorByLevel } from "@/assets/js/colors";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Fontisto from "@expo/vector-icons/Fontisto";
-import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import Animated, {
@@ -10,7 +9,6 @@ import Animated, {
   SharedValue,
   useAnimatedStyle,
 } from "react-native-reanimated";
-import EditTodoModal from "./EditTodoModal";
 import { GlowCircle } from "./GlowCircle";
 
 type Props = {
@@ -18,6 +16,7 @@ type Props = {
   priorityLevel: string;
   isDone: boolean;
   onDelete?: () => void;
+  onEdit?: () => void;
 };
 
 export default function TodoItem({
@@ -25,17 +24,11 @@ export default function TodoItem({
   priorityLevel,
   isDone,
   onDelete,
+  onEdit,
 }: Props) {
-  const editTodo = () => {
-    setIsEditModalOpen(true);
-    console.log("editing todo..");
-  };
-
   const markTodoDone = () => {
     console.log("this todo is done.");
   };
-
-  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
 
   const renderRightActions = (
     _progress: SharedValue<number>,
@@ -104,15 +97,10 @@ export default function TodoItem({
             <GlowCircle color={GetColorByLevel(priorityLevel)} size="small" />
           </View>
         </View>
-        <TouchableOpacity style={styles.editButton} onPress={editTodo}>
+        <TouchableOpacity style={styles.editButton} onPress={onEdit}>
           <FontAwesome6 name="edit" size={20} color="#B3B3B3" />
         </TouchableOpacity>
       </TouchableOpacity>
-      <EditTodoModal
-        setIsModalVisible={setIsEditModalOpen}
-        isModalVisible={isEditModalOpen}
-        todoIdx={1}
-      />
     </ReanimatedSwipeable>
   );
 }

@@ -10,11 +10,12 @@ export default function Header({ label }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      <Pressable style={styles.settingsBtn}>
-        <Link href="/settings" replace>
+
+      <Link href="/settings" asChild>
+        <Pressable style={styles.settingsBtn}>
           <MaterialIcons name="settings" size={24} color="#D9D9D9" />
-        </Link>
-      </Pressable>
+        </Pressable>
+      </Link>
     </View>
   );
 }

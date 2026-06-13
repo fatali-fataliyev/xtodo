@@ -1,41 +1,30 @@
-import { useState } from "react";
 import { Image, Pressable, StyleSheet } from "react-native";
-import AddTodoModal from "./AddTodoModal";
 
 const addTodoImg = require("../assets/images/add.png");
 
-export default function AddTodo() {
-  const [isModalVisible, setModalVisible] = useState<boolean>(false);
+type Props = {
+  onPress: () => void;
+};
 
-  const handleOnPress = () => {
-    setModalVisible(true);
-    console.log("implement menu.");
-  };
-
+export default function AddTodo({ onPress }: Props) {
   return (
-    <>
-      <Pressable onPress={handleOnPress} style={styles.buttonWrapper}>
-        {({ pressed }) => (
-          <Image
-            source={addTodoImg}
-            style={pressed ? styles.imageSizePressed : styles.imageSizeNormal}
-          />
-        )}
-      </Pressable>
-
-      <AddTodoModal
-        setIsModalVisible={setModalVisible}
-        isModalVisible={isModalVisible}
-      />
-    </>
+    <Pressable onPress={onPress} style={styles.buttonWrapper}>
+      {({ pressed }) => (
+        <Image
+          source={addTodoImg}
+          style={pressed ? styles.imageSizePressed : styles.imageSizeNormal}
+        />
+      )}
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   buttonWrapper: {
     position: "absolute",
-    bottom: 60,
+    bottom: 20,
     right: 30,
+    zIndex: 99,
   },
   imageSizeNormal: {
     width: 60,

@@ -1,16 +1,53 @@
-// app/notes.tsx
-import { Link } from "expo-router";
-import { Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import Footer from "../../components/Footer";
+import Header from "../../components/Header";
 
 export default function NotesScreen() {
   return (
-    <View>
-      <Text>Notes Screen</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        {/*Header*/}
+        <View style={styles.header}>
+          <Header label="Notes" />
+        </View>
 
-      {/* Clicking this replaces 'notes' with 'tasks' in the navigation history */}
-      <Link href="/tasks" replace>
-        Go to Tasks
-      </Link>
-    </View>
+        {/*Section*/}
+        <View style={styles.section}></View>
+
+        {/*Footer*/}
+        <View style={styles.footer}>
+          <Footer label="Tasks" href={"/tasks"} iconName="task-alt" />
+        </View>
+      </View>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#000000",
+  },
+  container: {
+    flex: 1,
+  },
+  header: {
+    height: 60,
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#d9d9d9",
+    backgroundColor: "#000000",
+  },
+  section: {
+    flex: 1,
+    backgroundColor: "#000000",
+    alignItems: "stretch",
+  },
+  footer: {
+    height: 60,
+    borderTopWidth: 0.3,
+    borderTopColor: "#d9d9d9",
+    backgroundColor: "#000000",
+  },
+});

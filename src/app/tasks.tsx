@@ -1,12 +1,16 @@
+import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AddTodo from "../../components/AddTodoBtn";
+import AddTodoModal from "../../components/AddTodoModal";
 
 import Footer from "../../components/Footer";
 import Header from "../../components/Header";
 import TaskContainer from "../../components/TodoContainer";
 
 export default function TasksScreen() {
+  const [isAddModalVisible, setAddModalVisible] = useState<boolean>(false);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -18,7 +22,7 @@ export default function TasksScreen() {
         {/*Section*/}
         <View style={styles.section}>
           <TaskContainer />
-          <AddTodo />
+          <AddTodo onPress={() => setAddModalVisible(true)} />
         </View>
 
         {/*Footer*/}
@@ -26,6 +30,11 @@ export default function TasksScreen() {
           <Footer label="Notes" href={"/notes"} iconName="notes" />
         </View>
       </View>
+
+      <AddTodoModal
+        setIsModalVisible={setAddModalVisible}
+        isModalVisible={isAddModalVisible}
+      />
     </SafeAreaView>
   );
 }
@@ -39,21 +48,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flex: 0.06,
+    height: 60,
     borderBottomWidth: 0.5,
     borderBottomColor: "#d9d9d9",
+    backgroundColor: "#000000",
   },
   section: {
-    flex: 0.88,
+    flex: 1,
     backgroundColor: "#000000",
-    justifyContent: "center",
-    alignItems: "center",
+    alignItems: "stretch",
   },
   footer: {
-    flex: 0.06,
-    justifyContent: "center",
-    alignItems: "center",
+    height: 60,
     borderTopWidth: 0.3,
     borderTopColor: "#d9d9d9",
+    backgroundColor: "#000000",
   },
 });
