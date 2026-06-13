@@ -2,11 +2,28 @@ import { ScrollView, StyleSheet } from "react-native";
 import TodoItem from "./TodoItem";
 
 export default function TaskContainer() {
+  const arr = new Array(10).fill(null);
+
   return (
     <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
-      <TodoItem task="ok" isDone={false} priorityLevel="high" />
+      {arr.map((_, idx) => {
+        let color = getRandomColor();
+        return (
+          <TodoItem
+            key={idx}
+            task={`Task number ${idx + 1}`}
+            isDone={true}
+            priorityLevel={color}
+          />
+        );
+      })}
     </ScrollView>
   );
+}
+
+function getRandomColor(): string {
+  const colors = ["high", "medium", "low"];
+  return colors[Math.floor(Math.random() * colors.length)];
 }
 
 const styles = StyleSheet.create({

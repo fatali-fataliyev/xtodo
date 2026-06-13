@@ -19,20 +19,17 @@ import { GlowCircle } from "./GlowCircle";
 type Props = {
   isModalVisible?: boolean;
   setIsModalVisible: (val: boolean) => void;
+  todoIdx: number;
 };
 
-export default function AddTodoModal({
+export default function EditTodoModal({
   isModalVisible,
   setIsModalVisible,
+  todoIdx,
 }: Props) {
   const hideModal = () => {
     setIsModalVisible(false);
     resetInputs();
-  };
-
-  const handleBackdrop = () => {
-    // XTODO: define behavior based on settings.
-    console.log("backdrop pressed");
   };
 
   const resetInputs = () => {
@@ -41,40 +38,10 @@ export default function AddTodoModal({
     setToggleDropdown(false);
   };
 
-  const addAndClose = () => {
-    console.log("ADD AND CLOSE[X]");
+  const saveTodo = () => {
+    console.log("Saving edited todo");
     saveTodo();
     hideModal();
-  };
-
-  const addAndAnother = () => {
-    console.log("ADD AND ANOTHER[+]");
-    saveTodo();
-    resetInputs();
-  };
-
-  const triggerSnackbar = () => {
-    snackbarAnim.setValue(0);
-
-    Animated.timing(snackbarAnim, {
-      toValue: 1,
-      duration: 350,
-      useNativeDriver: true,
-    }).start(() => {
-      setTimeout(() => {
-        Animated.timing(snackbarAnim, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }).start();
-      }, 2000);
-    });
-  };
-
-  const saveTodo = () => {
-    // Save data to REDUX
-
-    triggerSnackbar();
   };
 
   const [todoName, setTodoName] = useState("");
@@ -101,19 +68,11 @@ export default function AddTodoModal({
     outputRange: [0, 0, 1],
   });
 
-  const snackbarAnim = useRef(new Animated.Value(0)).current;
-
-  const snackbarY = snackbarAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-20, 15],
-  });
-
   return (
     <View style={styles.container}>
       <Modal
         isVisible={isModalVisible}
         onBackButtonPress={hideModal}
-        onBackdropPress={handleBackdrop}
         animationIn="slideInUp"
         animationOut="slideOutDown"
         swipeDirection={["down"]}
@@ -125,24 +84,6 @@ export default function AddTodoModal({
         style={styles.modal}
       >
         <View style={styles.modalContent}>
-          <Animated.View
-            style={[
-              styles.todoAddedSnackbar,
-              {
-                opacity: snackbarAnim,
-                transform: [{ translateY: snackbarY }],
-              },
-            ]}
-          >
-            <FontAwesome
-              name="check-circle"
-              size={16}
-              color="#34C759"
-              style={{ marginRight: 8 }}
-            />
-            <Text style={styles.snackbarText}>Todo added successfully!</Text>
-          </Animated.View>
-
           <View style={styles.swipeAreaContainer}>
             <View style={styles.swipeHandle} />
             <Pressable onPress={hideModal} style={styles.closeButton}>
@@ -264,32 +205,11 @@ export default function AddTodoModal({
 
             {/* Save Part */}
             <View style={styles.buttonContainer}>
-              {/*Add & another*/}
-              <TouchableOpacity
-                onPress={addAndAnother}
-                disabled={isSaveBtnDisabled}
-                style={[
-                  styles.saveBtn,
-                  { marginBottom: 15 },
-                  isSaveBtnDisabled && styles.saveBtnDisabled,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.saveBtnText,
-                    isSaveBtnDisabled && styles.saveBtnTextDisabled,
-                  ]}
-                >
-                  Add & Another
-                </Text>
-              </TouchableOpacity>
-
               {/*add & close*/}
               <TouchableOpacity
-                onPress={addAndClose}
+                onPress={saveTodo}
                 style={[
                   styles.saveBtn,
-                  { backgroundColor: "#34C759" },
                   isSaveBtnDisabled && styles.saveBtnDisabled,
                 ]}
                 disabled={isSaveBtnDisabled}
@@ -300,7 +220,7 @@ export default function AddTodoModal({
                     isSaveBtnDisabled && styles.saveBtnTextDisabled,
                   ]}
                 >
-                  Add & Close
+                  Save
                 </Text>
               </TouchableOpacity>
             </View>
@@ -433,7 +353,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   saveBtn: {
-    backgroundColor: "#2C2C2E",
+    backgroundColor: "#4F46E5",
     width: "100%",
     height: 45,
     justifyContent: "center",
@@ -457,31 +377,5 @@ const styles = StyleSheet.create({
   glowAndLevelTextContainer: {
     flexDirection: "row",
     alignItems: "center",
-  },
-  todoAddedSnackbar: {
-    position: "absolute",
-    top: 0,
-    left: 20,
-    right: 20,
-    zIndex: 999,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 25,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    backgroundColor: "#1c1c1e",
-    borderWidth: 1,
-    borderColor: "#2c2c2e",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
-  },
-  snackbarText: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    fontWeight: "600",
   },
 });

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Image, Pressable, StyleSheet } from "react-native";
-import ModalTester from "./AddTodoModal";
+import AddTodoModal from "./AddTodoModal";
 
 const addTodoImg = require("../assets/images/add.png");
 
@@ -23,7 +23,7 @@ export default function AddTodo() {
         )}
       </Pressable>
 
-      <ModalTester
+      <AddTodoModal
         setIsModalVisible={setModalVisible}
         isModalVisible={isModalVisible}
       />
