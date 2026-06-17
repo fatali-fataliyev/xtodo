@@ -1,6 +1,7 @@
-import { GetColorByLevel } from "@/assets/js/colors";
+import { Colors, GetColorByLevel } from "@/assets/js/colors";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Fontisto from "@expo/vector-icons/Fontisto";
+import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import Animated, {
@@ -17,17 +18,14 @@ type Props = {
   priorityLevel: string;
   isDone: boolean;
   onDelete?: () => void;
-  onEdit?: () => void;
-  onLongPress: (id: string) => void;
-  onSelect: () => void;
+  onEdit?: (id: number) => void;
+  onLongPress: (id: number) => void;
+  onSelect: (id: number) => void;
   isSelected: boolean;
   isSelectionMode: boolean;
 };
 
-const task = {
-  id: "1",
-};
-export default function TodoItem({
+function TodoItem({
   id,
   task,
   priorityLevel,
@@ -67,7 +65,6 @@ export default function TodoItem({
         opacity,
       };
     });
-    // 
     return (
       <View style={styles.deleteButtonContainer}>
         <TouchableOpacity
@@ -95,11 +92,11 @@ export default function TodoItem({
     >
       <TouchableOpacity
         style={[styles.container, isSelected && styles.selectedContainer]}
-        onPress={isSelectionMode ? onSelect : markTodoDone}
+        onPress={isSelectionMode ? () => onSelect(id) : markTodoDone}
         onLongPress={() => {
-          onSelect();
+          onSelect(id);
           console.log("long pressed on this id todo: ", id, "name: ", task);
-          onLongPress(task);
+          onLongPress(id);
         }}
         activeOpacity={0.5}
       >
@@ -108,14 +105,14 @@ export default function TodoItem({
             <Fontisto
               name={isSelected ? "checkbox-active" : "checkbox-passive"}
               size={20}
-              color="red"
+              color={Colors.medium}
               style={{ borderRadius: 4 }}
             />
           ) : (
             <Fontisto
               name={isDone ? "checkbox-active" : "checkbox-passive"}
               size={20}
-              color="#636363"
+              color="#8E8E93"
               style={{ borderRadius: 4 }}
             />
           )}
@@ -124,13 +121,18 @@ export default function TodoItem({
             <GlowCircle color={GetColorByLevel(priorityLevel)} size="small" />
           </View>
         </View>
-        <TouchableOpacity style={styles.editButton} onPress={onEdit}>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => onEdit?.(id)}
+        >
           <FontAwesome6 name="edit" size={20} color="#B3B3B3" />
         </TouchableOpacity>
       </TouchableOpacity>
     </ReanimatedSwipeable>
   );
 }
+
+export default React.memo(TodoItem);
 
 const styles = StyleSheet.create({
   swipeableContainer: {
