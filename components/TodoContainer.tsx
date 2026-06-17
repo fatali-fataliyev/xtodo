@@ -1,52 +1,110 @@
-import { useState } from "react";
-import { FlatList, StyleSheet, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { BackHandler, FlatList, StyleSheet, Text, View } from "react-native";
 import EditTodoModal from "./EditTodoModal";
 import TodoItem from "./TodoItem";
 
-export default function TaskContainer() {
-  const [todos, setTodos] = useState([
-    { task: "task 1", priorityLevel: "high", isDone: false },
-    { task: "task 2", priorityLevel: "high", isDone: false },
-    { task: "task 3", priorityLevel: "medium", isDone: false },
-    { task: "task 4", priorityLevel: "medium", isDone: false },
-    { task: "task 5 ", priorityLevel: "medium", isDone: false },
-    { task: "task 6 ", priorityLevel: "low", isDone: false },
-    { task: "task 7", priorityLevel: "low", isDone: false },
-  ]);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedTodoIdx, setSelectedTodoIdx] = useState<number | null>(null);
+type Todo = {
+  id: number;
+  task: string;
+  priorityLevel: string;
+  isDone: boolean;
+};
 
-  const handleEditPress = (index: number) => {
-    setSelectedTodoIdx(index);
+export default function TaskContainer() {
+  const [todos, setTodos] = useState<Todo[]>([
+    { id: 1, task: "task 1", priorityLevel: "high", isDone: false },
+    { id: 2, task: "task 1", priorityLevel: "high", isDone: false },
+    { id: 3, task: "task 1", priorityLevel: "high", isDone: false },
+    { id: 4, task: "task 1", priorityLevel: "high", isDone: false },
+    { id: 5, task: "task 1", priorityLevel: "high", isDone: false },
+    { id: 6, task: "task 1", priorityLevel: "high", isDone: false },
+    { id: 7, task: "task 1", priorityLevel: "high", isDone: false },
+    { id: 55, task: "task 1", priorityLevel: "high", isDone: false },
+  ]);
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedTodoId, setSelectedTodoId] = useState<number | null>(null);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+
+  const toggleSelection = (id: number) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const cancelSelection = () => {
+    setSelectedIds(new Set());
+    setIsSelectionMode(false);
+  };
+
+  const handleEditPress = (id: number) => {
+    setSelectedTodoId(id);
     setIsEditModalOpen(true);
   };
-  const handleSaveTodo = (name: string, priority: string) => {
-    if (selectedTodoIdx !== null) {
-      console.log("Updating item at index:", selectedTodoIdx, name, priority);
-    }
-  };
+
+  useEffect(() => {
+    const backAction = () => {
+      if (isSelectionMode) {
+        cancelSelection();
+        return true;
+      }
+      return false;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction,
+    );
+
+    return () => backHandler.remove();
+  }, [isSelectionMode]);
+
+  const renderTodoItem = useCallback(
+    ({ item }: { item: Todo }) => {
+      return (
+        <TodoItem
+          id={item.id}
+          isSelectionMode={isSelectionMode}
+          isSelected={selectedIds.has(item.id)}
+          onLongPress={() => setIsSelectionMode(true)}
+          onSelect={() => toggleSelection(item.id)}
+          task={item.task}
+          priorityLevel={item.priorityLevel}
+          isDone={item.isDone}
+          onEdit={() => handleEditPress(item.id)}
+        />
+      );
+    },
+    [isSelectionMode, selectedIds],
+  );
 
   return (
     <View style={styles.container}>
+      <View>
+        {isSelectionMode && <Text style={{ color: "blue" }}>TOGGLE MENU</Text>}
+      </View>
+
       <FlatList
         data={todos}
         style={styles.listStyle}
-        renderItem={({ item, index }) => (
-          <TodoItem
-            task={item.task}
-            priorityLevel={item.priorityLevel}
-            isDone={item.isDone}
-            onEdit={() => handleEditPress(index)}
-          />
-        )}
+        renderItem={renderTodoItem}
+        keyExtractor={(item) => item.id.toString()}
+        removeClippedSubviews={true}
       />
 
-      <EditTodoModal
-        isModalVisible={isEditModalOpen}
-        setIsModalVisible={setIsEditModalOpen}
-        todoIdx={selectedTodoIdx ?? 0}
-        onSaveTodo={handleSaveTodo}
-      />
+      {isEditModalOpen && (
+        <EditTodoModal
+          isModalVisible={isEditModalOpen}
+          setIsModalVisible={setIsEditModalOpen}
+          todoIdx={selectedTodoId ?? 0}
+          onSaveTodo={() => null}
+        />
+      )}
     </View>
   );
 }

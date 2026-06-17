@@ -12,19 +12,32 @@ import Animated, {
 import { GlowCircle } from "./GlowCircle";
 
 type Props = {
+  id: number;
   task: string;
   priorityLevel: string;
   isDone: boolean;
   onDelete?: () => void;
   onEdit?: () => void;
+  onLongPress: (id: string) => void;
+  onSelect: () => void;
+  isSelected: boolean;
+  isSelectionMode: boolean;
 };
 
+const task = {
+  id: "1",
+};
 export default function TodoItem({
+  id,
   task,
   priorityLevel,
   isDone,
   onDelete,
   onEdit,
+  onLongPress,
+  onSelect,
+  isSelected,
+  isSelectionMode,
 }: Props) {
   const markTodoDone = () => {
     console.log("this todo is done.");
@@ -54,7 +67,7 @@ export default function TodoItem({
         opacity,
       };
     });
-
+    // 
     return (
       <View style={styles.deleteButtonContainer}>
         <TouchableOpacity
@@ -81,17 +94,31 @@ export default function TodoItem({
       dragOffsetFromLeftEdge={30}
     >
       <TouchableOpacity
-        style={styles.container}
-        onPress={markTodoDone}
-        activeOpacity={0.9}
+        style={[styles.container, isSelected && styles.selectedContainer]}
+        onPress={isSelectionMode ? onSelect : markTodoDone}
+        onLongPress={() => {
+          onSelect();
+          console.log("long pressed on this id todo: ", id, "name: ", task);
+          onLongPress(task);
+        }}
+        activeOpacity={0.5}
       >
         <View style={styles.mainAreaContainer}>
-          <Fontisto
-            name={isDone ? "checkbox-active" : "checkbox-passive"}
-            size={20}
-            color="#636363"
-            style={{ borderRadius: 4 }}
-          />
+          {isSelectionMode ? (
+            <Fontisto
+              name={isSelected ? "checkbox-active" : "checkbox-passive"}
+              size={20}
+              color="red"
+              style={{ borderRadius: 4 }}
+            />
+          ) : (
+            <Fontisto
+              name={isDone ? "checkbox-active" : "checkbox-passive"}
+              size={20}
+              color="#636363"
+              style={{ borderRadius: 4 }}
+            />
+          )}
           <Text style={styles.taskText}>{task}</Text>
           <View style={styles.glowCircleContainer}>
             <GlowCircle color={GetColorByLevel(priorityLevel)} size="small" />
@@ -121,6 +148,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingLeft: 18,
+  },
+  selectedContainer: {
+    backgroundColor: "#111",
   },
   mainAreaContainer: {
     flexDirection: "row",

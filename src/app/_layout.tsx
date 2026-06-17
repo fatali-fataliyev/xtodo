@@ -38,7 +38,6 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: "#000000" },
         }}
       >
-        {/* Index (Tasks) will change based on settings */}
         <Stack.Screen name="index" options={{ animation: "none" }} />
 
         <Stack.Screen
