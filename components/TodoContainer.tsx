@@ -4,13 +4,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Animated,
   BackHandler,
-  FlatList,
+  Keyboard,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import EditTodoModal from "./EditTodoModal";
+import TodoFilterer from "./TodoFilterer";
 import TodoItem from "./TodoItem";
 
 type Todo = {
@@ -24,7 +25,7 @@ export default function TaskContainer() {
   const [todos, setTodos] = useState<Todo[]>([
     { id: 1, task: "task 1", priorityLevel: "high", isDone: false },
     { id: 2, task: "task 2", priorityLevel: "high", isDone: false },
-    { id: 3, task: "task 3", priorityLevel: "medium", isDone: false },
+    { id: 3, task: "task 3", priorityLevel: "medium", isDone: true },
     { id: 4, task: "task 4", priorityLevel: "medium", isDone: false },
     { id: 5, task: "task 5", priorityLevel: "medium", isDone: false },
     { id: 6, task: "task 6", priorityLevel: "medium", isDone: false },
@@ -32,14 +33,12 @@ export default function TaskContainer() {
     { id: 8, task: "task 8", priorityLevel: "low", isDone: false },
   ]);
 
-  // states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTodoId, setSelectedTodoId] = useState<number | null>(null);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const isSelectAll = todos.length > 0 && selectedIds.size === todos.length;
 
-  // state changers
   const toggleSelection = useCallback((id: number) => {
     setSelectedIds((prevSelected) => {
       const newSelected = new Set(prevSelected);
@@ -74,13 +73,6 @@ export default function TaskContainer() {
     return () => backHandler.remove();
   }, [isSelectionMode]);
 
-  const handleSelect = useCallback(
-    (id: number) => {
-      toggleSelection(id);
-    },
-    [selectedIds],
-  );
-
   const handleLongPress = useCallback(() => {
     setIsSelectionMode(true);
   }, []);
@@ -106,13 +98,10 @@ export default function TaskContainer() {
   };
 
   const deleteAllTodos = () => {
-    let totalTodos = selectedIds.size;
-    console.log("deleting: ", totalTodos, "selected todos.");
+    console.log("deleting: ", selectedIds.size, "selected todos.");
     closeToggleMenu();
-    // panic implement.
   };
 
-  // animations
   const animatedValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -139,6 +128,14 @@ export default function TaskContainer() {
     }),
   };
 
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  const searchBarOpacity = scrollY.interpolate({
+    inputRange: [0, 35],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+
   const renderTodoItem = useCallback(
     ({ item }: { item: Todo }) => {
       return (
@@ -164,8 +161,18 @@ export default function TaskContainer() {
     ],
   );
 
+  const renderListHeader = useCallback(() => {
+    if (isSelectionMode) return null;
+
+    return (
+      <Animated.View style={{ opacity: searchBarOpacity }}>
+        <TodoFilterer />
+      </Animated.View>
+    );
+  }, [isSelectionMode, searchBarOpacity]);
+
   return (
-    <View style={styles.container}>
+    <View style={styles.container} onTouchStart={() => Keyboard.dismiss()}>
       {isSelectionMode && (
         <TouchableOpacity
           style={styles.deleteBtn}
@@ -197,14 +204,26 @@ export default function TaskContainer() {
           <Fontisto name="close-a" size={24} color="#FFF" />
         </TouchableOpacity>
       </Animated.View>
-      <FlatList
+
+      <Animated.FlatList
         data={todos}
         style={styles.listStyle}
         renderItem={renderTodoItem}
         keyExtractor={(item) => item.id.toString()}
         removeClippedSubviews={true}
         extraData={selectedIds}
+        ListHeaderComponent={renderListHeader}
+        contentContainerStyle={{
+          paddingBottom: 40,
+          paddingTop: 5,
+        }}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true },
+        )}
+        scrollEventThrottle={16}
       />
+
       {isEditModalOpen && (
         <EditTodoModal
           isModalVisible={isEditModalOpen}
@@ -254,7 +273,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     width: 60,
     height: 60,
-    borderRadius: "50%",
+    borderRadius: 30,
     justifyContent: "center",
     alignItems: "center",
     position: "absolute",
