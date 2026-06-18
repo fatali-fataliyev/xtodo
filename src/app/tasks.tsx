@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AddTodo from "../../components/AddTodoBtn";
 import AddTodoModal from "../../components/AddTodoModal";
 
 import Footer from "../../components/Footer";
@@ -21,8 +20,7 @@ export default function TasksScreen() {
 
         {/*Section*/}
         <View style={styles.section}>
-          <TaskContainer />
-          <AddTodo onPress={() => setAddModalVisible(true)} />
+          <TaskContainer showAddTodoModalCb={setAddModalVisible} />
         </View>
 
         {/*Footer*/}

@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import AddTodo from "./AddTodoBtn";
 import EditTodoModal from "./EditTodoModal";
 import TodoFilterer from "./TodoFilterer";
 import TodoItem from "./TodoItem";
@@ -21,7 +22,11 @@ type Todo = {
   isDone: boolean;
 };
 
-export default function TaskContainer() {
+type Props = {
+  showAddTodoModalCb: (val: boolean) => void;
+};
+
+export default function TodoContainer({ showAddTodoModalCb }: Props) {
   const [todos, setTodos] = useState<Todo[]>([
     { id: 1, task: "task 1", priorityLevel: "high", isDone: false },
     { id: 2, task: "task 2", priorityLevel: "high", isDone: false },
@@ -173,6 +178,8 @@ export default function TaskContainer() {
 
   return (
     <View style={styles.container} onTouchStart={() => Keyboard.dismiss()}>
+      <AddTodo onPress={() => showAddTodoModalCb(true)} />
+
       {isSelectionMode && (
         <TouchableOpacity
           style={styles.deleteBtn}
