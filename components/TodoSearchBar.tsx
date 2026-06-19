@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 
-export default function TodoFilterer() {
+export default function TodoSearchBar() {
   const [searchText, setSearchText] = useState<string>("");
   const inputRef = useRef<TextInput>(null);
 

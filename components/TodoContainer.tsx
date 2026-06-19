@@ -12,8 +12,8 @@ import {
 } from "react-native";
 import AddTodo from "./AddTodoBtn";
 import EditTodoModal from "./EditTodoModal";
-import TodoFilterer from "./TodoFilterer";
 import TodoItem from "./TodoItem";
+import TodoSearchBar from "./TodoSearchBar";
 
 type Todo = {
   id: number;
@@ -171,7 +171,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
 
     return (
       <Animated.View style={{ opacity: searchBarOpacity }}>
-        <TodoFilterer />
+        <TodoSearchBar />
       </Animated.View>
     );
   }, [isSelectionMode, searchBarOpacity]);
