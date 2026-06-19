@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import AddTodo from "./AddTodoBtn";
+import AddTodo from "./AddTodoButton";
 import EditTodoModal from "./EditTodoModal";
 import TodoItem from "./TodoItem";
 import TodoSearchBar from "./TodoSearchBar";
