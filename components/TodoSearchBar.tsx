@@ -8,10 +8,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import TodoFilterModal from "./TodoFilterModal";
 
 export default function TodoSearchBar() {
+  // STATES
   const [searchText, setSearchText] = useState<string>("");
   const inputRef = useRef<TextInput>(null);
+  const [filters, setFilters] = useState<Set<string>>(new Set());
+  const [isFilterModalVisible, setIsFilterModalVisible] =
+    useState<boolean>(false);
 
   useEffect(() => {
     const keyboardDidHideListener = Keyboard.addListener(
@@ -33,6 +38,10 @@ export default function TodoSearchBar() {
 
   return (
     <View style={styles.searchAndFilterBar}>
+      <TodoFilterModal
+        isVisible={isFilterModalVisible}
+        onClose={() => setIsFilterModalVisible(false)}
+      />
       <View style={styles.searchBox}>
         <Fontisto name="search" size={15} color="#5D5D5D" />
         <TextInput
@@ -51,7 +60,7 @@ export default function TodoSearchBar() {
       <TouchableOpacity
         style={styles.filterBtn}
         activeOpacity={0.8}
-        onPress={() => alert("modal")}
+        onPress={() => setIsFilterModalVisible(true)}
       >
         <Ionicons name="filter" size={24} color="white" />
       </TouchableOpacity>
