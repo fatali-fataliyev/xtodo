@@ -1,3 +1,4 @@
+import CapitalizeFirstLetter from "@/assets/js/firstLetterCapitalizer";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useEffect, useRef, useState } from "react";
@@ -235,7 +236,7 @@ export default function AddTodoModal({
                             { color: GetColorByLevel(item.level) },
                           ]}
                         >
-                          {capitalizeFirstLetter(item.level)}{" "}
+                          {CapitalizeFirstLetter(item.level)}{" "}
                         </Text>
                         <Text
                           style={[
@@ -307,11 +308,6 @@ export default function AddTodoModal({
       </View>
     </Modal>
   );
-}
-
-function capitalizeFirstLetter(str: string): string {
-  if (!str) return "";
-  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 const styles = StyleSheet.create({
