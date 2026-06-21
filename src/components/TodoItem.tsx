@@ -14,7 +14,7 @@ import { GlowCircle } from "./GlowCircle";
 
 type Props = {
   id: number;
-  task: string;
+  todo: string;
   priorityLevel: string;
   isDone: boolean;
   onDelete?: () => void;
@@ -27,7 +27,7 @@ type Props = {
 
 function TodoItem({
   id,
-  task,
+  todo,
   priorityLevel,
   isDone,
   onDelete,
@@ -95,7 +95,7 @@ function TodoItem({
         onPress={isSelectionMode ? () => onSelect(id) : markTodoDone}
         onLongPress={() => {
           onSelect(id);
-          console.log("long pressed on this id todo: ", id, "name: ", task);
+          console.log("long pressed on this id todo: ", id, "name: ", todo);
           onLongPress(id);
         }}
         activeOpacity={0.5}
@@ -116,7 +116,7 @@ function TodoItem({
               style={{ borderRadius: 4 }}
             />
           )}
-          <Text style={styles.taskText}>{task}</Text>
+          <Text style={styles.taskText}>{todo}</Text>
           <View style={styles.glowCircleContainer}>
             <GlowCircle color={GetColorByLevel(priorityLevel)} size="small" />
           </View>
