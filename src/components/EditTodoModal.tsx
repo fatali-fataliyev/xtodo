@@ -12,8 +12,8 @@ import {
   View,
 } from "react-native";
 import Modal from "react-native-modal";
-import { GetColorByLevel } from "../assets/js/colors";
-import { PriorityLevels } from "../assets/js/priorityLevels";
+import { GetColorByLevel } from "../constants/colors";
+import { PriorityLevels } from "../constants/priorityLevels";
 import { GlowCircle } from "./GlowCircle";
 
 type Props = {

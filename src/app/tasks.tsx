@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AddTodoModal from "../../components/AddTodoModal";
+import AddTodoModal from "../components/AddTodoModal";
 
-import Footer from "../../components/Footer";
-import Header from "../../components/Header";
-import TaskContainer from "../../components/TodoContainer";
+import Footer from "../components/Footer";
+import Header from "../components/Header";
+import TaskContainer from "../components/TodoContainer";
 
 export default function TasksScreen() {
   const [isAddModalVisible, setAddModalVisible] = useState<boolean>(false);

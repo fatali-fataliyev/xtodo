@@ -1,6 +1,6 @@
 import { Image, Pressable, StyleSheet } from "react-native";
 
-const addTodoImg = require("../assets/images/add.png");
+const addTodoImg = require("../../assets/images/add.png");
 
 type Props = {
   onPress: () => void;

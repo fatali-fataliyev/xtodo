@@ -17,7 +17,7 @@ import TodoSearchBar from "./TodoSearchBar";
 
 type Todo = {
   id: number;
-  task: string;
+  name: string;
   priorityLevel: string;
   isDone: boolean;
 };
@@ -28,14 +28,14 @@ type Props = {
 
 export default function TodoContainer({ showAddTodoModalCb }: Props) {
   const [todos, setTodos] = useState<Todo[]>([
-    { id: 1, task: "task 1", priorityLevel: "high", isDone: false },
-    { id: 2, task: "task 2", priorityLevel: "high", isDone: false },
-    { id: 3, task: "task 3", priorityLevel: "medium", isDone: true },
-    { id: 4, task: "task 4", priorityLevel: "medium", isDone: false },
-    { id: 5, task: "task 5", priorityLevel: "medium", isDone: false },
-    { id: 6, task: "task 6", priorityLevel: "medium", isDone: false },
-    { id: 7, task: "task 7", priorityLevel: "low", isDone: false },
-    { id: 8, task: "task 8", priorityLevel: "low", isDone: false },
+    { id: 1, name: "task 1", priorityLevel: "high", isDone: false },
+    { id: 2, name: "task 2", priorityLevel: "high", isDone: false },
+    { id: 3, name: "task 3", priorityLevel: "medium", isDone: true },
+    { id: 4, name: "task 4", priorityLevel: "medium", isDone: false },
+    { id: 5, name: "task 5", priorityLevel: "medium", isDone: false },
+    { id: 6, name: "task 6", priorityLevel: "medium", isDone: false },
+    { id: 7, name: "task 7", priorityLevel: "low", isDone: false },
+    { id: 8, name: "task 8", priorityLevel: "low", isDone: false },
   ]);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -170,7 +170,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
           isSelected={selectedIds.has(item.id)}
           onLongPress={handleLongPress}
           onSelect={toggleSelection}
-          task={item.task}
+          todo={item.name}
           priorityLevel={item.priorityLevel}
           isDone={item.isDone}
           onEdit={handleEditPressCall}

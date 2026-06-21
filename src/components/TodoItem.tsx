@@ -1,4 +1,3 @@
-import { Colors, GetColorByLevel } from "@/assets/js/colors";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Fontisto from "@expo/vector-icons/Fontisto";
 import React from "react";
@@ -10,6 +9,7 @@ import Animated, {
   SharedValue,
   useAnimatedStyle,
 } from "react-native-reanimated";
+import { Colors, GetColorByLevel } from "../constants/colors";
 import { GlowCircle } from "./GlowCircle";
 
 type Props = {

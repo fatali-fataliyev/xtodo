@@ -1,10 +1,10 @@
-import { GetColorByLevel } from "@/assets/js/colors";
-import CapitalizeFirstLetter from "@/assets/js/firstLetterCapitalizer";
-import { PriorityLevels } from "@/assets/js/priorityLevels";
+import CapitalizeFirstLetter from "@/constants/firstLetterCapitalizer";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Modal from "react-native-modal";
+import { GetColorByLevel } from "../constants/colors";
+import { PriorityLevels } from "../constants/priorityLevels";
 
 type Props = {
   isVisible: boolean;
