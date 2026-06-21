@@ -1,5 +1,5 @@
-import { Colors } from "@/assets/js/colors";
 import Fontisto from "@expo/vector-icons/Fontisto";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Animated,
@@ -44,6 +44,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const isSelectAll = todos.length > 0 && selectedIds.size === todos.length;
 
+  // STATE HOOKS
   const toggleSelection = useCallback((id: number) => {
     setSelectedIds((prevSelected) => {
       const newSelected = new Set(prevSelected);
@@ -107,6 +108,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
     closeToggleMenu();
   };
 
+  // ANIMATIONS
   const animatedValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -131,6 +133,40 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
       inputRange: [0, 1],
       outputRange: [0, 10],
     }),
+  };
+
+  const selectionAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(selectionAnim, {
+      toValue: isSelectionMode ? 1 : 0,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  }, [isSelectionMode, selectionAnim]);
+
+  const actionMenuStyles = {
+    opacity: selectionAnim,
+    transform: [
+      {
+        translateY: selectionAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [-15, 0],
+        }),
+      },
+    ],
+  };
+
+  const floatingButtonsStyles = {
+    opacity: selectionAnim,
+    transform: [
+      {
+        scale: selectionAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0.85, 1],
+        }),
+      },
+    ],
   };
 
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -167,49 +203,70 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
   );
 
   const renderListHeader = useCallback(() => {
-    if (isSelectionMode) return null;
+    const headerOpacity = animatedValue.interpolate({
+      inputRange: [0, 1],
+      outputRange: [1, 0],
+    });
 
     return (
       <Animated.View style={{ opacity: searchBarOpacity }}>
-        <TodoSearchBar />
+        <Animated.View
+          style={{ opacity: headerOpacity }}
+          pointerEvents={isSelectionMode ? "none" : "auto"}
+        >
+          <TodoSearchBar />
+        </Animated.View>
       </Animated.View>
     );
-  }, [isSelectionMode, searchBarOpacity]);
+  }, [searchBarOpacity, animatedValue, isSelectionMode]);
 
   return (
     <View style={styles.container} onTouchStart={() => Keyboard.dismiss()}>
-      <AddTodo onPress={() => showAddTodoModalCb(true)} />
-
-      {isSelectionMode && (
-        <TouchableOpacity
-          style={styles.deleteBtn}
-          activeOpacity={0.95}
-          onPress={deleteAllTodos}
-        >
-          <Fontisto name="trash" size={24} color={Colors.high} />
-        </TouchableOpacity>
+      {isSelectionMode ? (
+        ""
+      ) : (
+        <AddTodo onPress={() => showAddTodoModalCb(true)} />
       )}
 
-      <Animated.View style={[styles.toggleMenu, animatedStyle]}>
-        <TouchableOpacity style={styles.selectAllBtn} onPress={handleSelectAll}>
-          <Fontisto
-            name={isSelectAll ? "checkbox-active" : "checkbox-passive"}
-            size={24}
+      <Animated.View
+        style={[styles.floatingActionContainer, floatingButtonsStyles]}
+        pointerEvents={isSelectionMode ? "auto" : "none"}
+      >
+        <TouchableOpacity
+          style={styles.selectionCancelBtn}
+          activeOpacity={0.8}
+          onPress={closeToggleMenu}
+        >
+          <Fontisto name="close-a" size={18} color="#E0E0E0" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.selectionCheckAllBtn}
+          activeOpacity={0.8}
+          onPress={handleSelectAll}
+        >
+          <MaterialIcons
+            name={isSelectAll ? "blur-off" : "done-all"}
+            size={22}
             color="#FFF"
-            style={{ borderRadius: 4 }}
           />
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.selectionDelBtn}
+          activeOpacity={0.8}
+          onPress={deleteAllTodos}
+        >
+          <Fontisto name="trash" size={20} color="#FF4D4D" />
+        </TouchableOpacity>
+      </Animated.View>
+
+      <Animated.View style={[styles.toggleMenu, animatedStyle]}>
         <Text style={styles.counterText}>
           {selectedIds.size > 0
             ? `${selectedIds.size} ${selectedIds.size === 1 ? "todo" : "todos"} selected`
-            : ""}{" "}
+            : ""}
         </Text>
-        <TouchableOpacity
-          style={styles.cancelToggleMenuBtn}
-          onPress={closeToggleMenu}
-        >
-          <Fontisto name="close-a" size={24} color="#FFF" />
-        </TouchableOpacity>
       </Animated.View>
 
       <Animated.FlatList
@@ -253,44 +310,65 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   toggleMenu: {
-    backgroundColor: "#000",
+    position: "absolute",
+    top: -5,
+    zIndex: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    width: "95%",
+    justifyContent: "center",
+    width: "80%",
+    height: 50,
     alignSelf: "center",
-    borderRadius: 10,
+    borderRadius: 30,
+  },
+  floatingActionContainer: {
+    position: "absolute",
+    bottom: 30,
+    right: 25,
+    zIndex: 99999,
+    alignItems: "center",
+    gap: 15,
+  },
+  selectionDelBtn: {
+    backgroundColor: "#2C1A1A",
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#5A2020",
+    elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
-    overflow: "hidden",
-    paddingHorizontal: 15,
-    borderBottomWidth: 0.4,
-    borderBottomColor: "#ccc",
+    shadowRadius: 4,
   },
-  selectAllBtn: {
-    width: "20%",
-  },
-  cancelToggleMenuBtn: {
-    paddingLeft: 30,
-  },
-  deleteBtn: {
-    backgroundColor: "#FFF",
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+  selectionCheckAllBtn: {
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
-    position: "absolute",
-    zIndex: 99999,
-    bottom: 20,
-    right: 30,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  selectionCancelBtn: {
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
   },
   counterText: {
     color: "white",
     fontFamily: "Inter-Bold",
     fontSize: 16,
+    textAlign: "center",
   },
 });
