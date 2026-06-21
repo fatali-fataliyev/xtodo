@@ -125,13 +125,9 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
       inputRange: [0, 1],
       outputRange: [0, 55],
     }),
-    paddingVertical: animatedValue.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, 15],
-    }),
     marginTop: animatedValue.interpolate({
       inputRange: [0, 1],
-      outputRange: [0, 10],
+      outputRange: [0, 6],
     }),
   };
 
@@ -144,18 +140,6 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
       useNativeDriver: true,
     }).start();
   }, [isSelectionMode, selectionAnim]);
-
-  const actionMenuStyles = {
-    opacity: selectionAnim,
-    transform: [
-      {
-        translateY: selectionAnim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [-15, 0],
-        }),
-      },
-    ],
-  };
 
   const floatingButtonsStyles = {
     opacity: selectionAnim,
