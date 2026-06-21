@@ -68,7 +68,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 10,
     backgroundColor: "#1A1818",
-    marginVertical: 5,
   },
   searchBox: {
     backgroundColor: "#242424",
@@ -82,7 +81,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#242424",
     borderRadius: 20,
-    width: "100%",
+    width: "101%",
     paddingHorizontal: 8,
     paddingVertical: 0,
     color: "#FFF",
