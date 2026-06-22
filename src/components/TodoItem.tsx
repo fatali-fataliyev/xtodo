@@ -13,22 +13,22 @@ import { Colors, GetColorByLevel } from "../constants/colors";
 import { GlowCircle } from "./GlowCircle";
 
 type Props = {
-  id: number;
-  todo: string;
-  priorityLevel: string;
+  id: string;
+  task: string;
+  priority: string;
   isDone: boolean;
   onDelete?: () => void;
-  onEdit?: (id: number) => void;
-  onLongPress: (id: number) => void;
-  onSelect: (id: number) => void;
+  onEdit?: (id: string) => void;
+  onLongPress: (id: string) => void;
+  onSelect: (id: string) => void;
   isSelected: boolean;
   isSelectionMode: boolean;
 };
 
 function TodoItem({
   id,
-  todo,
-  priorityLevel,
+  task,
+  priority,
   isDone,
   onDelete,
   onEdit,
@@ -95,7 +95,7 @@ function TodoItem({
         onPress={isSelectionMode ? () => onSelect(id) : markTodoDone}
         onLongPress={() => {
           onSelect(id);
-          console.log("long pressed on this id todo: ", id, "name: ", todo);
+          console.log("long pressed on this id todo: ", id, "name: ", task);
           onLongPress(id);
         }}
         activeOpacity={0.5}
@@ -116,9 +116,9 @@ function TodoItem({
               style={{ borderRadius: 4 }}
             />
           )}
-          <Text style={styles.taskText}>{todo}</Text>
+          <Text style={styles.taskText}>{task}</Text>
           <View style={styles.glowCircleContainer}>
-            <GlowCircle color={GetColorByLevel(priorityLevel)} size="small" />
+            <GlowCircle color={GetColorByLevel(priority)} size="small" />
           </View>
         </View>
         <TouchableOpacity

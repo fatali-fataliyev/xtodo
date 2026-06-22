@@ -1,4 +1,5 @@
 import CapitalizeFirstLetter from "@/constants/firstLetterCapitalizer";
+import { useTodoStore } from "@/store/useTodoStore";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useEffect, useRef, useState } from "react";
@@ -44,13 +45,13 @@ export default function AddTodoModal({
 
   const addAndClose = () => {
     console.log("ADD AND CLOSE[X]");
-    saveTodo();
+    addTodo();
     hideModal();
   };
 
   const addAndAnother = () => {
     console.log("ADD AND ANOTHER[+]");
-    saveTodo();
+    addTodo();
     resetInputs();
   };
 
@@ -72,9 +73,15 @@ export default function AddTodoModal({
     });
   };
 
-  const saveTodo = () => {
-    // Save data to REDUX
-
+  // Todo saving
+  const saveTodo = useTodoStore((state) => state.addTodo);
+  const addTodo = () => {
+    saveTodo({
+      id: self.crypto.randomUUID(),
+      task: todoName,
+      isDone: false,
+      priority: priorityLevel,
+    });
     triggerSnackbar();
   };
 

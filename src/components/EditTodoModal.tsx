@@ -19,7 +19,7 @@ import { GlowCircle } from "./GlowCircle";
 type Props = {
   isModalVisible?: boolean;
   setIsModalVisible: (val: boolean) => void;
-  todoIdx: number;
+  todoIdx: string;
   onSaveTodo: (name: string, priority: string) => void;
 };
 

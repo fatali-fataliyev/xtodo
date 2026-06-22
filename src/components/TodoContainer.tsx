@@ -1,3 +1,4 @@
+import { useTodoStore } from "@/store/useTodoStore";
 import Fontisto from "@expo/vector-icons/Fontisto";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -15,37 +16,28 @@ import EditTodoModal from "./EditTodoModal";
 import TodoItem from "./TodoItem";
 import TodoSearchBar from "./TodoSearchBar";
 
-type Todo = {
-  id: number;
-  name: string;
-  priorityLevel: string;
+interface Todo {
+  id: string;
+  task: string;
+  priority: string;
   isDone: boolean;
-};
+}
 
 type Props = {
   showAddTodoModalCb: (val: boolean) => void;
 };
 
 export default function TodoContainer({ showAddTodoModalCb }: Props) {
-  const [todos, setTodos] = useState<Todo[]>([
-    { id: 1, name: "task 1", priorityLevel: "high", isDone: false },
-    { id: 2, name: "task 2", priorityLevel: "high", isDone: false },
-    { id: 3, name: "task 3", priorityLevel: "medium", isDone: true },
-    { id: 4, name: "task 4", priorityLevel: "medium", isDone: false },
-    { id: 5, name: "task 5", priorityLevel: "medium", isDone: false },
-    { id: 6, name: "task 6", priorityLevel: "medium", isDone: false },
-    { id: 7, name: "task 7", priorityLevel: "low", isDone: false },
-    { id: 8, name: "task 8", priorityLevel: "low", isDone: false },
-  ]);
+  const todos = useTodoStore((state) => state.todos);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedTodoId, setSelectedTodoId] = useState<number | null>(null);
+  const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const isSelectAll = todos.length > 0 && selectedIds.size === todos.length;
 
   // STATE HOOKS
-  const toggleSelection = useCallback((id: number) => {
+  const toggleSelection = useCallback((id: string) => {
     setSelectedIds((prevSelected) => {
       const newSelected = new Set(prevSelected);
       if (newSelected.has(id)) {
@@ -83,7 +75,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
     setIsSelectionMode(true);
   }, []);
 
-  const handleEditPressCall = useCallback((id: number) => {
+  const handleEditPressCall = useCallback((id: string) => {
     setSelectedTodoId(id);
     setIsEditModalOpen(true);
   }, []);
@@ -99,7 +91,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
       setSelectedIds(new Set());
     } else {
       const allIds = todos.map((todo) => todo.id);
-      setSelectedIds(new Set(allIds));
+      // setSelectedIds(new Set(allIds));
     }
   };
 
@@ -170,8 +162,8 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
           isSelected={selectedIds.has(item.id)}
           onLongPress={handleLongPress}
           onSelect={toggleSelection}
-          todo={item.name}
-          priorityLevel={item.priorityLevel}
+          task={item.task}
+          priority={item.priority}
           isDone={item.isDone}
           onEdit={handleEditPressCall}
         />
@@ -261,6 +253,13 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
         removeClippedSubviews={true}
         extraData={selectedIds}
         ListHeaderComponent={renderListHeader}
+        ListEmptyComponent={
+          <Text
+            style={{ color: "#c1c1c1", alignSelf: "center", marginTop: 50 }}
+          >
+            Nothing here yet. Add a todo
+          </Text>
+        }
         contentContainerStyle={{
           paddingBottom: 40,
           paddingTop: 5,
@@ -276,7 +275,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
         <EditTodoModal
           isModalVisible={isEditModalOpen}
           setIsModalVisible={setIsEditModalOpen}
-          todoIdx={selectedTodoId ?? 0}
+          todoIdx={selectedTodoId ?? ""}
           onSaveTodo={() => null}
         />
       )}
