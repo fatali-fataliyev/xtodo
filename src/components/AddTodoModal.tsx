@@ -2,6 +2,7 @@ import CapitalizeFirstLetter from "@/constants/firstLetterCapitalizer";
 import { useTodoStore } from "@/store/useTodoStore";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import * as Crypto from "expo-crypto";
 import { useEffect, useRef, useState } from "react";
 import {
   Animated,
@@ -77,7 +78,7 @@ export default function AddTodoModal({
   const saveTodo = useTodoStore((state) => state.addTodo);
   const addTodo = () => {
     saveTodo({
-      id: self.crypto.randomUUID(),
+      id: Crypto.randomUUID(),
       task: todoName,
       isDone: false,
       priority: priorityLevel,
