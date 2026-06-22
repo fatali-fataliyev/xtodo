@@ -29,6 +29,8 @@ export const getAESKey = async (): Promise<string | null> => {
             style: "destructive",
             onPress: async () => {
               await AsyncStorage.clear();
+              await SecureStore.deleteItemAsync("aes_key");
+              await SecureStore.deleteItemAsync("is_first_launch");
               const newKey = await saveAESKey();
               resolve(newKey);
             },
