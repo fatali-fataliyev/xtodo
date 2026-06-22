@@ -287,7 +287,6 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
           isModalVisible={isEditModalOpen}
           setIsModalVisible={setIsEditModalOpen}
           todoIdx={selectedTodoId ?? ""}
-          onSaveTodo={() => null}
         />
       )}
     </View>

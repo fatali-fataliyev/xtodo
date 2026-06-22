@@ -1,3 +1,5 @@
+import CapitalizeFirstLetter from "@/constants/firstLetterCapitalizer";
+import { useTodoStore } from "@/store/useTodoStore";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useEffect, useRef, useState } from "react";
@@ -20,37 +22,57 @@ type Props = {
   isModalVisible?: boolean;
   setIsModalVisible: (val: boolean) => void;
   todoIdx: string;
-  onSaveTodo: (name: string, priority: string) => void;
 };
 
 export default function EditTodoModal({
   isModalVisible,
   setIsModalVisible,
   todoIdx,
-  onSaveTodo,
 }: Props) {
+  // TODO FROM STORE
+  const todo = useTodoStore((state) =>
+    state.todos.find((i) => i.id === todoIdx),
+  );
+  const updateTodo = useTodoStore((state) => state.updateTodo);
+
+  // STATES
+  const [newTodoName, setNewTodoName] = useState("");
+  const [inputHeight, setInputHeight] = useState<number>(60);
+  const [toggleDropdown, setToggleDropdown] = useState<boolean>(false);
+  const [newPriorityLevel, setNewPriorityLevel] = useState<string>("high");
+
+  useEffect(() => {
+    if (todo) {
+      setNewTodoName(todo.task || "");
+      setNewPriorityLevel(todo.priority || "high");
+    }
+  }, [todo, isModalVisible]);
+
+  const isSaveBtnDisabled =
+    newTodoName.trim() === "" ||
+    (newTodoName.trim() === todo?.task?.trim() &&
+      newPriorityLevel === todo?.priority);
+
+  // FUNCTIONS
   const hideModal = () => {
     setIsModalVisible(false);
     resetInputs();
   };
 
   const resetInputs = () => {
-    setTodoName("");
-    setPriorityLevel("high");
+    setNewTodoName(todo?.task || "");
+    setNewPriorityLevel(todo?.priority || "high");
     setToggleDropdown(false);
   };
 
   const saveTodo = () => {
-    console.log("Saving edited todo");
-    onSaveTodo(todoName, priorityLevel);
+    console.log("Saving edited todo", { newTodoName, newPriorityLevel });
+    updateTodo(todoIdx, {
+      newTask: newTodoName,
+      newPriority: newPriorityLevel,
+    });
     hideModal();
   };
-
-  const [todoName, setTodoName] = useState("");
-  const [inputHeight, setInputHeight] = useState<number>(60);
-  const [toggleDropdown, setToggleDropdown] = useState<boolean>(false);
-  const [priorityLevel, setPriorityLevel] = useState<string>("high");
-  const isSaveBtnDisabled = todoName.trim() === "";
 
   // Animations
   const dropdownAnim = useRef(new Animated.Value(0)).current;
@@ -61,6 +83,7 @@ export default function EditTodoModal({
       useNativeDriver: false,
     }).start();
   }, [toggleDropdown]);
+
   const menuHeight = dropdownAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [0, 160],
@@ -83,6 +106,7 @@ export default function EditTodoModal({
       backdropTransitionOutTiming={0}
       backdropTransitionInTiming={0}
       style={styles.modal}
+      onBackdropPress={hideModal}
     >
       <View style={styles.modalContent}>
         <View style={styles.swipeAreaContainer}>
@@ -100,11 +124,11 @@ export default function EditTodoModal({
         >
           {/* Input part */}
           <TextInput
-            value={todoName}
+            value={newTodoName}
             autoFocus={true}
             placeholderTextColor={"#c2c2c2"}
             placeholder="Todo name"
-            onChangeText={setTodoName}
+            onChangeText={setNewTodoName}
             multiline={true}
             onContentSizeChange={(e) => {
               setInputHeight(e.nativeEvent.contentSize.height);
@@ -126,17 +150,17 @@ export default function EditTodoModal({
                   <View>
                     <Text
                       style={{
-                        color: GetColorByLevel(priorityLevel),
+                        color: GetColorByLevel(newPriorityLevel),
                         fontWeight: "600",
                         paddingTop: 3,
                       }}
                     >
-                      {priorityLevel.toUpperCase()}
+                      {newPriorityLevel.toUpperCase()}
                     </Text>
                   </View>
                   <View style={{ paddingTop: 3.5, paddingLeft: 5 }}>
                     <GlowCircle
-                      color={GetColorByLevel(priorityLevel)}
+                      color={GetColorByLevel(newPriorityLevel)}
                       size="small"
                     />
                   </View>
@@ -159,14 +183,14 @@ export default function EditTodoModal({
               ]}
             >
               {PriorityLevels.map((item, idx) => {
-                const isSelected = item.level === priorityLevel;
+                const isSelected = item.level === newPriorityLevel;
 
                 return (
                   <TouchableOpacity
                     key={idx}
                     style={styles.dropdownItem}
                     onPress={() => {
-                      setPriorityLevel(item.level);
+                      setNewPriorityLevel(item.level);
                       setToggleDropdown(false);
                     }}
                   >
@@ -179,7 +203,7 @@ export default function EditTodoModal({
                             { color: GetColorByLevel(item.level) },
                           ]}
                         >
-                          {capitalizeFirstLetter(item.level)}{" "}
+                          {CapitalizeFirstLetter(item.level)}{" "}
                         </Text>
                         <Text
                           style={[
@@ -229,11 +253,6 @@ export default function EditTodoModal({
       </View>
     </Modal>
   );
-}
-
-function capitalizeFirstLetter(str: string): string {
-  if (!str) return "";
-  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 const styles = StyleSheet.create({
