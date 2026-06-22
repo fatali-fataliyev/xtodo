@@ -28,7 +28,10 @@ type Props = {
 };
 
 export default function TodoContainer({ showAddTodoModalCb }: Props) {
+  // Zustand stores
   const todos = useTodoStore((state) => state.todos);
+  const deleteTodoByID = useTodoStore((state) => state.deleteByID);
+  const deleteAllTodo = useTodoStore((state) => state.deleteAll);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
@@ -91,12 +94,20 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
       setSelectedIds(new Set());
     } else {
       const allIds = todos.map((todo) => todo.id);
-      // setSelectedIds(new Set(allIds));
+      setSelectedIds(new Set(allIds));
     }
   };
 
-  const deleteAllTodos = () => {
-    console.log("deleting: ", selectedIds.size, "selected todos.");
+  const deleteSelectedTodos = () => {
+    if (selectedIds.size === todos.length) {
+      deleteAllTodo();
+      closeToggleMenu();
+      return;
+    }
+
+    for (let id of selectedIds) {
+      deleteTodoByID(id);
+    }
     closeToggleMenu();
   };
 
@@ -231,7 +242,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
         <TouchableOpacity
           style={styles.selectionDelBtn}
           activeOpacity={0.8}
-          onPress={deleteAllTodos}
+          onPress={deleteSelectedTodos}
         >
           <Fontisto name="trash" size={20} color="#FF4D4D" />
         </TouchableOpacity>

@@ -12,7 +12,8 @@ interface Todo {
 interface TodoState {
   todos: Todo[];
   addTodo: (todo: Todo) => void;
-  clearTodos: () => void;
+  deleteByID: (id: string) => void;
+  deleteAll: () => void;
 }
 
 export const useTodoStore = create<TodoState>()(
@@ -23,7 +24,11 @@ export const useTodoStore = create<TodoState>()(
         set((state) => ({
           todos: [...state.todos, newTodo],
         })),
-      clearTodos: () => set({ todos: [] }),
+      deleteAll: () => set({ todos: [] }),
+      deleteByID: (id) =>
+        set((state) => ({
+          todos: state.todos.filter((todo) => todo.id !== id),
+        })),
     }),
     {
       name: "todos",

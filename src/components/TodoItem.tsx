@@ -1,3 +1,4 @@
+import { useTodoStore } from "@/store/useTodoStore";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Fontisto from "@expo/vector-icons/Fontisto";
 import React from "react";
@@ -17,7 +18,6 @@ type Props = {
   task: string;
   priority: string;
   isDone: boolean;
-  onDelete?: () => void;
   onEdit?: (id: string) => void;
   onLongPress: (id: string) => void;
   onSelect: (id: string) => void;
@@ -30,13 +30,15 @@ function TodoItem({
   task,
   priority,
   isDone,
-  onDelete,
   onEdit,
   onLongPress,
   onSelect,
   isSelected,
   isSelectionMode,
 }: Props) {
+  // Zustand stores
+  const deleteTodoByID = useTodoStore((state) => state.deleteByID);
+
   const markTodoDone = () => {
     console.log("this todo is done... from MarkTodoDone");
   };
@@ -69,7 +71,7 @@ function TodoItem({
       <View style={styles.deleteButtonContainer}>
         <TouchableOpacity
           style={styles.deleteButton}
-          onPress={onDelete}
+          onPress={() => deleteTodoByID(id)}
           activeOpacity={0.7}
         >
           <Animated.View style={animatedIconStyles}>
