@@ -38,7 +38,7 @@ function TodoItem({
   isSelectionMode,
 }: Props) {
   const markTodoDone = () => {
-    console.log("this todo is done.");
+    console.log("this todo is done... from MarkTodoDone");
   };
 
   const renderRightActions = (
