@@ -5,7 +5,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Animated,
   BackHandler,
-  Keyboard,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -30,14 +29,22 @@ type Props = {
 export default function TodoContainer({ showAddTodoModalCb }: Props) {
   // Zustand stores
   const todos = useTodoStore((state) => state.todos);
+  const searchTodos = useTodoStore((state) => state.searchTodos);
+  const isSearchMode = useTodoStore((state) => state.isSearchMode);
+  const setIsSearchMode = useTodoStore((state) => state.setIsSearchMode);
+  const searchTextLen = useTodoStore((state) => state.searchTextLen);
+  const resetSearchTextLen = useTodoStore((state) => state.resetSearchTextLen);
   const deleteTodoByID = useTodoStore((state) => state.deleteByID);
   const deleteAllTodo = useTodoStore((state) => state.deleteAll);
+  const clearSearchTodos = useTodoStore((state) => state.clearSearchTodos);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const isSelectAll = todos.length > 0 && selectedIds.size === todos.length;
+  const activeTodos = isSearchMode && searchTextLen > 0 ? searchTodos : todos;
+  const isSelectAll =
+    activeTodos.length > 0 && selectedIds.size === activeTodos.length;
 
   // STATE HOOKS
   const toggleSelection = useCallback((id: string) => {
@@ -59,8 +66,16 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
 
   useEffect(() => {
     const backAction = () => {
+      // Exit selection mode if enabled - Prioritized.
       if (isSelectionMode) {
         cancelSelection();
+        return true;
+      }
+      // Exit search mode if enabled
+      if (isSearchMode) {
+        setIsSearchMode(false);
+        resetSearchTextLen();
+        clearSearchTodos();
         return true;
       }
       return false;
@@ -72,7 +87,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
     );
 
     return () => backHandler.remove();
-  }, [isSelectionMode]);
+  }, [isSelectionMode, isSearchMode, setIsSearchMode]);
 
   const handleLongPress = useCallback(() => {
     setIsSelectionMode(true);
@@ -93,14 +108,15 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
     if (isSelectAll) {
       setSelectedIds(new Set());
     } else {
-      const allIds = todos.map((todo) => todo.id);
+      const allIds = activeTodos.map((todo) => todo.id);
       setSelectedIds(new Set(allIds));
     }
   };
 
   const deleteSelectedTodos = () => {
-    if (selectedIds.size === todos.length) {
+    if (!isSearchMode && selectedIds.size === todos.length) {
       deleteAllTodo();
+      setIsSearchMode(false);
       closeToggleMenu();
       return;
     }
@@ -108,6 +124,13 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
     for (let id of selectedIds) {
       deleteTodoByID(id);
     }
+
+    if (isSearchMode) {
+      setIsSearchMode(false);
+      resetSearchTextLen();
+      clearSearchTodos();
+    }
+
     closeToggleMenu();
   };
 
@@ -156,26 +179,43 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
     ],
   };
 
+  const searchAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(searchAnim, {
+      toValue: isSearchMode ? 1 : 0,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  }, [isSearchMode, searchAnim]);
+
+  const searchFloatingBtnStyles = {
+    opacity: searchAnim,
+    transform: [
+      {
+        scale: searchAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0.85, 1],
+        }),
+      },
+    ],
+  };
+
   const scrollY = useRef(new Animated.Value(0)).current;
 
-  const searchBarOpacity = scrollY.interpolate({
-    inputRange: [0, 35],
-    outputRange: [1, 0],
-    extrapolate: "clamp",
-  });
-
   const renderTodoItem = useCallback(
-    ({ item }: { item: Todo }) => {
+    ({ item }: { item: any }) => {
       return (
         <TodoItem
           id={item.id}
+          task={item.task}
+          priority={item.priority}
+          isDone={item.isDone}
+          indexes={item.indexes}
           isSelectionMode={isSelectionMode}
           isSelected={selectedIds.has(item.id)}
           onLongPress={handleLongPress}
           onSelect={toggleSelection}
-          task={item.task}
-          priority={item.priority}
-          isDone={item.isDone}
           onEdit={handleEditPressCall}
         />
       );
@@ -189,32 +229,67 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
     ],
   );
 
-  const renderListHeader = useCallback(() => {
-    const headerOpacity = animatedValue.interpolate({
-      inputRange: [0, 1],
-      outputRange: [1, 0],
-    });
-
-    return (
-      <Animated.View style={{ opacity: searchBarOpacity }}>
-        <Animated.View
-          style={{ opacity: headerOpacity }}
-          pointerEvents={isSelectionMode ? "none" : "auto"}
-        >
-          <TodoSearchBar />
-        </Animated.View>
-      </Animated.View>
-    );
-  }, [searchBarOpacity, animatedValue, isSelectionMode]);
-
   return (
-    <View style={styles.container} onTouchStart={() => Keyboard.dismiss()}>
+    <View style={styles.container}>
+      {/*FlatList*/}
+      <Animated.FlatList
+        data={isSearchMode && searchTextLen > 0 ? searchTodos : todos}
+        style={styles.listStyle}
+        renderItem={renderTodoItem}
+        keyExtractor={(item, index) =>
+          item?.id ? item.id.toString() : index.toString()
+        }
+        removeClippedSubviews={true}
+        extraData={selectedIds}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
+        ListHeaderComponent={
+          <Animated.View
+            style={{
+              opacity: animatedValue.interpolate({
+                inputRange: [0, 1],
+                outputRange: [1, 0],
+              }),
+            }}
+            pointerEvents={isSelectionMode ? "none" : "auto"}
+          >
+            <TodoSearchBar />
+          </Animated.View>
+        }
+        ListEmptyComponent={
+          isSearchMode ? (
+            <Text
+              style={{ color: "#c1c1c1", alignSelf: "center", marginTop: 50 }}
+            >
+              No results found. Try searching for something else.
+            </Text>
+          ) : (
+            <Text
+              style={{ color: "#c1c1c1", alignSelf: "center", marginTop: 50 }}
+            >
+              Your list is empty. Tap the button to add a task!
+            </Text>
+          )
+        }
+        contentContainerStyle={{
+          paddingBottom: 40,
+          paddingTop: 5,
+        }}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true },
+        )}
+        scrollEventThrottle={16}
+      />
+
+      {/*Add Todo Button*/}
       {isSelectionMode ? (
         ""
       ) : (
         <AddTodo onPress={() => showAddTodoModalCb(true)} />
       )}
 
+      {/*Selection FLoating Buttons*/}
       <Animated.View
         style={[styles.floatingActionContainer, floatingButtonsStyles]}
         pointerEvents={isSelectionMode ? "auto" : "none"}
@@ -248,6 +323,29 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
         </TouchableOpacity>
       </Animated.View>
 
+      {/* Close Search Mode Floating Button */}
+      {isSelectionMode ? (
+        ""
+      ) : (
+        <Animated.View
+          style={[styles.closeSearchFloatingContainer, searchFloatingBtnStyles]}
+          pointerEvents={isSearchMode ? "auto" : "none"}
+        >
+          <TouchableOpacity
+            style={styles.closeSearchActionBtn}
+            activeOpacity={0.8}
+            onPress={() => {
+              setIsSearchMode(false);
+              resetSearchTextLen();
+              clearSearchTodos();
+            }}
+          >
+            <MaterialIcons name="close" size={24} color="#FFF" />
+          </TouchableOpacity>
+        </Animated.View>
+      )}
+
+      {/*Selected Todo Counter*/}
       <Animated.View style={[styles.toggleMenu, animatedStyle]}>
         <Text style={styles.counterText}>
           {selectedIds.size > 0
@@ -256,32 +354,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
         </Text>
       </Animated.View>
 
-      <Animated.FlatList
-        data={todos}
-        style={styles.listStyle}
-        renderItem={renderTodoItem}
-        keyExtractor={(item) => item.id.toString()}
-        removeClippedSubviews={true}
-        extraData={selectedIds}
-        ListHeaderComponent={renderListHeader}
-        ListEmptyComponent={
-          <Text
-            style={{ color: "#c1c1c1", alignSelf: "center", marginTop: 50 }}
-          >
-            Nothing here yet. Add a todo
-          </Text>
-        }
-        contentContainerStyle={{
-          paddingBottom: 40,
-          paddingTop: 5,
-        }}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true },
-        )}
-        scrollEventThrottle={16}
-      />
-
+      {/*Todo edit modal*/}
       {isEditModalOpen && (
         <EditTodoModal
           isModalVisible={isEditModalOpen}
@@ -363,5 +436,19 @@ const styles = StyleSheet.create({
     fontFamily: "Inter-Bold",
     fontSize: 16,
     textAlign: "center",
+  },
+  closeSearchFloatingContainer: {
+    position: "absolute",
+    top: "50%",
+    right: 25,
+    zIndex: 99999,
+  },
+  closeSearchActionBtn: {
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

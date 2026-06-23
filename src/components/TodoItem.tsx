@@ -2,7 +2,13 @@ import { useTodoStore } from "@/store/useTodoStore";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Fontisto from "@expo/vector-icons/Fontisto";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Keyboard,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import Animated, {
   Extrapolation,
@@ -18,6 +24,7 @@ type Props = {
   task: string;
   priority: string;
   isDone: boolean;
+  indexes?: number[];
   onEdit?: (id: string) => void;
   onLongPress: (id: string) => void;
   onSelect: (id: string) => void;
@@ -30,6 +37,7 @@ function TodoItem({
   task,
   priority,
   isDone,
+  indexes,
   onEdit,
   onLongPress,
   onSelect,
@@ -38,9 +46,23 @@ function TodoItem({
 }: Props) {
   // Zustand stores
   const deleteTodoByID = useTodoStore((state) => state.deleteByID);
+  const deleteFromSearchTodos = useTodoStore(
+    (state) => state.deleteFromSearchTodos,
+  );
+  const searchTextLen = useTodoStore((state) => state.searchTextLen);
+  const isSearchMode = useTodoStore((state) => state.isSearchMode);
 
   const markTodoDone = () => {
     console.log("this todo is done... from MarkTodoDone");
+  };
+
+  const deleteTodoItem = () => {
+    if (isSearchMode) {
+      deleteTodoByID(id);
+      deleteFromSearchTodos(id);
+      return;
+    }
+    deleteTodoByID(id);
   };
 
   const renderRightActions = (
@@ -71,7 +93,7 @@ function TodoItem({
       <View style={styles.deleteButtonContainer}>
         <TouchableOpacity
           style={styles.deleteButton}
-          onPress={() => deleteTodoByID(id)}
+          onPress={deleteTodoItem}
           activeOpacity={0.7}
         >
           <Animated.View style={animatedIconStyles}>
@@ -96,8 +118,8 @@ function TodoItem({
         style={[styles.container, isSelected && styles.selectedContainer]}
         onPress={isSelectionMode ? () => onSelect(id) : markTodoDone}
         onLongPress={() => {
+          Keyboard.dismiss();
           onSelect(id);
-          console.log("long pressed on this id todo: ", id, "name: ", task);
           onLongPress(id);
         }}
         activeOpacity={0.5}
@@ -118,7 +140,11 @@ function TodoItem({
               style={{ borderRadius: 4 }}
             />
           )}
-          <Text style={styles.taskText}>{task}</Text>
+          {isSearchMode ? (
+            getHighlightedText(task, indexes, searchTextLen)
+          ) : (
+            <Text style={styles.taskText}>{task}</Text>
+          )}
           <View style={styles.glowCircleContainer}>
             <GlowCircle color={GetColorByLevel(priority)} size="small" />
           </View>
@@ -135,6 +161,40 @@ function TodoItem({
 }
 
 export default React.memo(TodoItem);
+
+const getHighlightedText = (
+  task: string,
+  indexes: number[] | undefined,
+  matchLength: number,
+) => {
+  if (!indexes || indexes.length === 0 || matchLength === 0) {
+    return <Text style={styles.taskText}>{task}</Text>;
+  }
+
+  const indexSet = new Set<number>();
+  indexes.forEach((startIndex) => {
+    for (let i = 0; i < matchLength; i++) {
+      indexSet.add(startIndex + i);
+    }
+  });
+
+  return (
+    <Text style={styles.taskText}>
+      {task.split("").map((char, i) => (
+        <Text
+          key={i}
+          style={
+            indexSet.has(i)
+              ? { color: "#FF3B30", fontFamily: "Inter-Regular" }
+              : null
+          }
+        >
+          {char}
+        </Text>
+      ))}
+    </Text>
+  );
+};
 
 const styles = StyleSheet.create({
   swipeableContainer: {

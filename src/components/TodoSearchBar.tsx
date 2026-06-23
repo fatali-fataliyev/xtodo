@@ -1,3 +1,4 @@
+import { useTodoStore } from "@/store/useTodoStore";
 import Fontisto from "@expo/vector-icons/Fontisto";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useEffect, useRef, useState } from "react";
@@ -11,29 +12,37 @@ import {
 import TodoFilterModal from "./TodoFilterModal";
 
 export default function TodoSearchBar() {
-  // STATES
+  // ZUSTAND STATES
+  const filterSearchTodos = useTodoStore((state) => state.filterSearchTodos);
+  const isSearchMode = useTodoStore((state) => state.isSearchMode);
+  const setIsSearchMode = useTodoStore((state) => state.setIsSearchMode);
+  const updateSearchTextLen = useTodoStore(
+    (state) => state.updateSearchTextLen,
+  );
+  // LOCAL STATES
   const [searchText, setSearchText] = useState<string>("");
   const inputRef = useRef<TextInput>(null);
-  const [filters, setFilters] = useState<Set<string>>(new Set());
   const [isFilterModalVisible, setIsFilterModalVisible] =
     useState<boolean>(false);
+  const [isEditable, setIsEditable] = useState<boolean>(true);
 
   useEffect(() => {
-    const keyboardDidHideListener = Keyboard.addListener(
-      "keyboardDidHide",
-      () => {
-        setSearchText("");
-        inputRef.current?.blur();
-      },
-    );
+    if (!isSearchMode) {
+      setSearchText("");
+      filterSearchTodos("");
+      inputRef.current?.blur();
+      Keyboard.dismiss();
+    }
+  }, [isSearchMode]);
 
-    return () => {
-      keyboardDidHideListener.remove();
-    };
-  }, []);
+  const handleTextChange = (text: string) => {
+    setSearchText(text);
+    updateSearchTextLen(text.length);
+    filterSearchTodos(text);
+  };
 
-  const searchTodo = () => {
-    console.log("searching... ", searchText);
+  const handleOnSubmit = () => {
+    Keyboard.dismiss();
   };
 
   return (
@@ -46,14 +55,17 @@ export default function TodoSearchBar() {
         <Fontisto name="search" size={15} color="#5D5D5D" />
         <TextInput
           ref={inputRef}
-          onChangeText={(char) => setSearchText(char)}
+          onChangeText={handleTextChange}
+          onFocus={() => setIsSearchMode(true)}
           placeholder="Search todos"
           placeholderTextColor={"#7A7A7A"}
           style={styles.input}
-          onSubmitEditing={searchTodo}
+          onSubmitEditing={handleOnSubmit}
           value={searchText}
           spellCheck={false}
           autoCorrect={false}
+          autoCapitalize="none"
+          editable={isEditable}
         />
       </View>
 
