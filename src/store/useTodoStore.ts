@@ -41,85 +41,104 @@ interface TodoState {
 
 export const useTodoStore = create<TodoState>()(
   persist(
-    (set) => ({
-      todos: [],
-      searchTodos: [],
-      isSearchMode: false,
-      searchTextLen: 0,
-      addTodo: (newTodo) =>
-        set((state) => ({
-          todos: [...state.todos, newTodo],
-        })),
+    (set) => {
+      const sortTodos = (todosArr: Todo[]): Todo[] => {
+        const priorityWeights: Record<string, number> = {
+          high: 1,
+          medium: 2,
+          low: 3,
+        };
 
-      updateSearchTextLen: (len: number) => set({ searchTextLen: len }),
+        return [...todosArr].sort((a, b) => {
+          const weightA = priorityWeights[a.priority.toLowerCase()] ?? 99;
+          const weightB = priorityWeights[b.priority.toLowerCase()] ?? 99;
 
-      updateTodo: (id, payload) =>
-        set((state) => ({
-          todos: state.todos.map((todo) =>
-            todo.id === id
-              ? {
-                  ...todo,
-                  task: payload.newTask,
-                  priority: payload.newPriority,
-                }
-              : todo,
-          ),
-        })),
+          return weightA - weightB;
+        });
+      };
 
-      deleteByID: (id) =>
-        set((state) => ({
-          todos: state.todos.filter((todo) => todo.id !== id),
-        })),
+      return {
+        todos: [],
+        searchTodos: [],
+        isSearchMode: false,
+        searchTextLen: 0,
 
-      deleteFromSearchTodos: (id) =>
-        set((state) => ({
-          searchTodos: state.searchTodos.filter((todo) => todo.id !== id),
-        })),
+        addTodo: (newTodo) =>
+          set((state) => {
+            const updatedTodos = [...state.todos, newTodo];
+            return { todos: sortTodos(updatedTodos) };
+          }),
 
-      deleteAll: () => set({ todos: [] }),
+        updateTodo: (id, payload) =>
+          set((state) => {
+            const updatedTodos = state.todos.map((todo) =>
+              todo.id === id
+                ? {
+                    ...todo,
+                    task: payload.newTask,
+                    priority: payload.newPriority,
+                  }
+                : todo,
+            );
+            return { todos: sortTodos(updatedTodos) };
+          }),
 
-      clearSearchTodos: () => set({ searchTodos: [] }),
-      resetSearchTextLen: () => set({ searchTextLen: 0 }),
-      setIsSearchMode: (value) => set({ isSearchMode: value }),
+        deleteByID: (id) =>
+          set((state) => {
+            const updatedTodos = state.todos.filter((todo) => todo.id !== id);
+            return { todos: sortTodos(updatedTodos) };
+          }),
 
-      filterSearchTodos: (text) =>
-        set((state) => {
-          if (!text.trim()) {
-            return { searchTodos: [] };
-          }
+        deleteFromSearchTodos: (id) =>
+          set((state) => ({
+            searchTodos: state.searchTodos.filter((todo) => todo.id !== id),
+          })),
 
-          const searchResults: SearchTodo[] = [];
+        deleteAll: () => set({ todos: [] }),
 
-          state.todos.forEach((todo: Todo) => {
-            let currentIdx = todo.task
-              .toLowerCase()
-              .indexOf(text.toLowerCase());
-            const foundIndexes: number[] = [];
+        clearSearchTodos: () => set({ searchTodos: [] }),
+        resetSearchTextLen: () => set({ searchTextLen: 0 }),
+        setIsSearchMode: (value) => set({ isSearchMode: value }),
+        updateSearchTextLen: (len: number) => set({ searchTextLen: len }),
 
-            while (currentIdx !== -1) {
-              foundIndexes.push(currentIdx);
-              currentIdx = todo.task
+        filterSearchTodos: (text) =>
+          set((state) => {
+            if (!text.trim()) {
+              return { searchTodos: [] };
+            }
+
+            const searchResults: SearchTodo[] = [];
+
+            state.todos.forEach((todo: Todo) => {
+              let currentIdx = todo.task
                 .toLowerCase()
-                .indexOf(text.toLowerCase(), currentIdx + 1);
-            }
+                .indexOf(text.toLowerCase());
+              const foundIndexes: number[] = [];
 
-            if (foundIndexes.length > 0) {
-              searchResults.push({
-                id: todo.id,
-                task: todo.task,
-                priority: todo.priority,
-                isDone: todo.isDone,
-                indexes: foundIndexes,
-              });
-            }
-          });
+              while (currentIdx !== -1) {
+                foundIndexes.push(currentIdx);
+                currentIdx = todo.task
+                  .toLowerCase()
+                  .indexOf(text.toLowerCase(), currentIdx + 1);
+              }
 
-          return {
-            searchTodos: searchResults,
-          };
-        }),
-    }),
+              if (foundIndexes.length > 0) {
+                searchResults.push({
+                  id: todo.id,
+                  task: todo.task,
+                  priority: todo.priority,
+                  isDone: todo.isDone,
+                  indexes: foundIndexes,
+                });
+              }
+            });
 
+            return {
+              searchTodos: searchResults,
+            };
+          }),
+      };
+    },
     {
       name: "todos",
       storage: createJSONStorage(() => encryptedStorageEngine),
