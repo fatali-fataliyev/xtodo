@@ -13,7 +13,7 @@ import TodoFilterModal from "./TodoFilterModal";
 
 export default function TodoSearchBar() {
   // ZUSTAND STATES
-  const filterSearchTodos = useTodoStore((state) => state.filterSearchTodos);
+  const executeSearch = useTodoStore((state) => state.executeSearch);
   const isSearchMode = useTodoStore((state) => state.isSearchMode);
   const setIsSearchMode = useTodoStore((state) => state.setIsSearchMode);
   const updateSearchTextLen = useTodoStore(
@@ -29,7 +29,7 @@ export default function TodoSearchBar() {
   useEffect(() => {
     if (!isSearchMode) {
       setSearchText("");
-      filterSearchTodos("");
+      executeSearch("");
       inputRef.current?.blur();
       Keyboard.dismiss();
     }
@@ -38,7 +38,7 @@ export default function TodoSearchBar() {
   const handleTextChange = (text: string) => {
     setSearchText(text);
     updateSearchTextLen(text.length);
-    filterSearchTodos(text);
+    executeSearch(text);
   };
 
   const handleOnSubmit = () => {
