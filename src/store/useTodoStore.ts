@@ -36,9 +36,11 @@ interface TodoState {
   deleteFromSearchResults: (id: string) => void;
   deleteAll: () => void;
   setIsSearchMode: (value: boolean) => void;
+  setIsFilterMode: (value: boolean) => void;
   executeSearch: (text: string) => void;
   applyFilters: (filters: string[]) => void;
-  clearSearchResults: () => void; 
+  clearSearchResults: () => void;
+  clearFilterResults: () => void;
   resetSearchTextLen: () => void;
 }
 
@@ -90,9 +92,19 @@ export const useTodoStore = create<TodoState>()(
 
         applyFilters: (filters) =>
           set((state) => {
-            const newFilteredTodos = state.todos.filter((todo) =>
-              filters.includes(todo.priority),
-            );
+            let newFilteredTodos;
+
+            if (filters.includes("completed")) {
+              newFilteredTodos = state.todos.filter(
+                (todo) =>
+                  filters.includes(todo.priority) && todo.isDone === true,
+              );
+            } else {
+              newFilteredTodos = state.todos.filter((todo) =>
+                filters.includes(todo.priority),
+              );
+            }
+
             return { filteredTodos: newFilteredTodos };
           }),
 
@@ -110,8 +122,10 @@ export const useTodoStore = create<TodoState>()(
         deleteAll: () => set({ todos: [] }),
 
         clearSearchResults: () => set({ searchResults: [] }),
+        clearFilterResults: () => set({ filteredTodos: [] }),
         resetSearchTextLen: () => set({ searchTextLen: 0 }),
         setIsSearchMode: (value) => set({ isSearchMode: value }),
+        setIsFilterMode: (value) => set({ isFilterMode: value }),
         updateSearchTextLen: (len: number) => set({ searchTextLen: len }),
 
         executeSearch: (text) =>

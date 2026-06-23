@@ -30,8 +30,10 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
   // Zustand stores
   const todos = useTodoStore((state) => state.todos);
   const searchResults = useTodoStore((state) => state.searchResults);
+  const filterResults = useTodoStore((state) => state.filteredTodos);
   const isSearchMode = useTodoStore((state) => state.isSearchMode);
   const setIsSearchMode = useTodoStore((state) => state.setIsSearchMode);
+  const isFilterMode = useTodoStore((state) => state.isFilterMode);
   const searchTextLen = useTodoStore((state) => state.searchTextLen);
   const resetSearchTextLen = useTodoStore((state) => state.resetSearchTextLen);
   const deleteTodoByID = useTodoStore((state) => state.deleteByID);
@@ -233,7 +235,13 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
     <View style={styles.container}>
       {/*FlatList*/}
       <Animated.FlatList
-        data={isSearchMode && searchTextLen > 0 ? searchResults : todos}
+        data={
+          isFilterMode
+            ? filterResults
+            : isSearchMode && searchTextLen > 0
+              ? searchResults
+              : todos
+        }
         style={styles.listStyle}
         renderItem={renderTodoItem}
         keyExtractor={(item, index) =>

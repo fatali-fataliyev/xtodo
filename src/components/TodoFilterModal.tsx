@@ -1,4 +1,5 @@
 import CapitalizeFirstLetter from "@/constants/firstLetterCapitalizer";
+import { useTodoStore } from "@/store/useTodoStore";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -15,6 +16,9 @@ const FILTER_LEVELS = [...PriorityLevels, { level: "completed" }];
 
 export default function TodoFilterModal({ isVisible, onClose }: Props) {
   const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
+  const setFilteres = useTodoStore((state) => state.applyFilters);
+  const setIsFilterMode = useTodoStore((state) => state.setIsFilterMode);
+  const clearFilterResults = useTodoStore((state) => state.clearFilterResults);
 
   const togglePriority = (priority: string) => {
     setSelectedPriorities((prev) =>
@@ -25,12 +29,15 @@ export default function TodoFilterModal({ isVisible, onClose }: Props) {
   };
 
   const applyFilters = () => {
+    setFilteres(selectedPriorities);
+    setIsFilterMode(true);
     onClose();
-    // XTODO: redux based change
   };
 
   const clearAndClose = () => {
     setSelectedPriorities([]);
+    setIsFilterMode(false);
+    clearFilterResults();
     onClose();
   };
 
@@ -96,7 +103,14 @@ export default function TodoFilterModal({ isVisible, onClose }: Props) {
           })}
         </View>
 
-        <TouchableOpacity style={styles.filterApplyBtn} onPress={applyFilters}>
+        <TouchableOpacity
+          style={[
+            styles.filterApplyBtn,
+            selectedPriorities.length === 0 && { backgroundColor: "gray" },
+          ]}
+          onPress={applyFilters}
+          disabled={selectedPriorities.length === 0}
+        >
           <Text style={styles.filterApplyBtnText}>Apply</Text>
         </TouchableOpacity>
       </View>
