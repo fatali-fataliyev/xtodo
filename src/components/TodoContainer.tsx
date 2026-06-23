@@ -29,20 +29,20 @@ type Props = {
 export default function TodoContainer({ showAddTodoModalCb }: Props) {
   // Zustand stores
   const todos = useTodoStore((state) => state.todos);
-  const searchTodos = useTodoStore((state) => state.searchTodos);
+  const searchResults = useTodoStore((state) => state.searchResults);
   const isSearchMode = useTodoStore((state) => state.isSearchMode);
   const setIsSearchMode = useTodoStore((state) => state.setIsSearchMode);
   const searchTextLen = useTodoStore((state) => state.searchTextLen);
   const resetSearchTextLen = useTodoStore((state) => state.resetSearchTextLen);
   const deleteTodoByID = useTodoStore((state) => state.deleteByID);
   const deleteAllTodo = useTodoStore((state) => state.deleteAll);
-  const clearSearchTodos = useTodoStore((state) => state.clearSearchTodos);
+  const clearSearchTodos = useTodoStore((state) => state.clearSearchResults);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const activeTodos = isSearchMode && searchTextLen > 0 ? searchTodos : todos;
+  const activeTodos = isSearchMode && searchTextLen > 0 ? searchResults : todos;
   const isSelectAll =
     activeTodos.length > 0 && selectedIds.size === activeTodos.length;
 
@@ -233,7 +233,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
     <View style={styles.container}>
       {/*FlatList*/}
       <Animated.FlatList
-        data={isSearchMode && searchTextLen > 0 ? searchTodos : todos}
+        data={isSearchMode && searchTextLen > 0 ? searchResults : todos}
         style={styles.listStyle}
         renderItem={renderTodoItem}
         keyExtractor={(item, index) =>

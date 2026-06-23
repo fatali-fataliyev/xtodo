@@ -47,7 +47,7 @@ function TodoItem({
   // Zustand stores
   const deleteTodoByID = useTodoStore((state) => state.deleteByID);
   const deleteFromSearchTodos = useTodoStore(
-    (state) => state.deleteFromSearchTodos,
+    (state) => state.deleteFromSearchResults,
   );
   const searchTextLen = useTodoStore((state) => state.searchTextLen);
   const isSearchMode = useTodoStore((state) => state.isSearchMode);

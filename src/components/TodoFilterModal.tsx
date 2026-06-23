@@ -44,11 +44,12 @@ export default function TodoFilterModal({ isVisible, onClose }: Props) {
       hideModalContentWhileAnimating={true}
     >
       <View style={styles.modalCard}>
-        <TouchableOpacity style={styles.closeBtn} onPress={clearAndClose}>
-          <Ionicons name="close-circle-sharp" size={25} color="#FFF" />
-        </TouchableOpacity>
-
-        <Text style={styles.title}>Filter by Priority</Text>
+        <View style={styles.modalCardHeader}>
+          <Text style={styles.title}>Filter by Priority</Text>
+          <TouchableOpacity style={styles.closeBtn} onPress={clearAndClose}>
+            <Ionicons name="close-circle-sharp" size={25} color="#FFF" />
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.checkboxContainer}>
           {FILTER_LEVELS.map((priority) => {
@@ -116,12 +117,19 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
+  modalCardHeader: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
   title: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 16,
     color: "#FFF",
     fontFamily: "Inter-Regular",
+    paddingLeft: 10,
   },
   checkboxContainer: {
     width: "100%",
@@ -139,14 +147,10 @@ const styles = StyleSheet.create({
     fontFamily: "Inter-Bold",
   },
   closeBtn: {
-    alignSelf: "flex-end",
     justifyContent: "center",
     alignItems: "center",
     width: 40,
     height: 35,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: "#c1c1c1",
     marginBottom: 10,
   },
   filterApplyBtn: {

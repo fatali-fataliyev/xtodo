@@ -9,7 +9,7 @@ interface Todo {
   isDone: boolean;
 }
 
-export interface SearchTodo {
+export interface TodoSearchResult {
   id: string;
   task: string;
   priority: string;
@@ -24,18 +24,21 @@ type EditPayload = {
 
 interface TodoState {
   todos: Todo[];
-  searchTodos: SearchTodo[];
+  searchResults: TodoSearchResult[];
+  filteredTodos: Todo[];
   isSearchMode: boolean;
+  isFilterMode: boolean;
   searchTextLen: number;
   addTodo: (todo: Todo) => void;
   updateSearchTextLen: (len: number) => void;
   updateTodo: (id: string, payload: EditPayload) => void;
   deleteByID: (id: string) => void;
-  deleteFromSearchTodos: (id: string) => void;
+  deleteFromSearchResults: (id: string) => void;
   deleteAll: () => void;
   setIsSearchMode: (value: boolean) => void;
-  filterSearchTodos: (text: string) => void;
-  clearSearchTodos: () => void;
+  executeSearch: (text: string) => void;
+  applyFilters: (filters: string[]) => void;
+  clearSearchResults: () => void; 
   resetSearchTextLen: () => void;
 }
 
@@ -59,8 +62,10 @@ export const useTodoStore = create<TodoState>()(
 
       return {
         todos: [],
-        searchTodos: [],
+        searchResults: [],
+        filteredTodos: [],
         isSearchMode: false,
+        isFilterMode: false,
         searchTextLen: 0,
 
         addTodo: (newTodo) =>
@@ -83,31 +88,39 @@ export const useTodoStore = create<TodoState>()(
             return { todos: sortTodos(updatedTodos) };
           }),
 
+        applyFilters: (filters) =>
+          set((state) => {
+            const newFilteredTodos = state.todos.filter((todo) =>
+              filters.includes(todo.priority),
+            );
+            return { filteredTodos: newFilteredTodos };
+          }),
+
         deleteByID: (id) =>
           set((state) => {
             const updatedTodos = state.todos.filter((todo) => todo.id !== id);
             return { todos: sortTodos(updatedTodos) };
           }),
 
-        deleteFromSearchTodos: (id) =>
+        deleteFromSearchResults: (id) =>
           set((state) => ({
-            searchTodos: state.searchTodos.filter((todo) => todo.id !== id),
+            searchResults: state.searchResults.filter((todo) => todo.id !== id),
           })),
 
         deleteAll: () => set({ todos: [] }),
 
-        clearSearchTodos: () => set({ searchTodos: [] }),
+        clearSearchResults: () => set({ searchResults: [] }),
         resetSearchTextLen: () => set({ searchTextLen: 0 }),
         setIsSearchMode: (value) => set({ isSearchMode: value }),
         updateSearchTextLen: (len: number) => set({ searchTextLen: len }),
 
-        filterSearchTodos: (text) =>
+        executeSearch: (text) =>
           set((state) => {
             if (!text.trim()) {
-              return { searchTodos: [] };
+              return { searchResults: [] };
             }
 
-            const searchResults: SearchTodo[] = [];
+            const newSearchResults: TodoSearchResult[] = [];
 
             state.todos.forEach((todo: Todo) => {
               let currentIdx = todo.task
@@ -123,7 +136,7 @@ export const useTodoStore = create<TodoState>()(
               }
 
               if (foundIndexes.length > 0) {
-                searchResults.push({
+                newSearchResults.push({
                   id: todo.id,
                   task: todo.task,
                   priority: todo.priority,
@@ -134,7 +147,7 @@ export const useTodoStore = create<TodoState>()(
             });
 
             return {
-              searchTodos: searchResults,
+              searchResults: newSearchResults,
             };
           }),
       };
