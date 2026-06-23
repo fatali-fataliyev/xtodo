@@ -140,12 +140,13 @@ function TodoItem({
               style={{ borderRadius: 4 }}
             />
           )}
-          {isSearchMode ? (
-            getHighlightedText(task, indexes, searchTextLen)
-          ) : (
-            <Text style={styles.taskText}>{task}</Text>
-          )}
-          <View style={styles.glowCircleContainer}>
+          <View style={styles.taskContainer}>
+            {isSearchMode ? (
+              getHighlightedText(task, indexes, searchTextLen)
+            ) : (
+              <Text style={styles.taskText}>{task}</Text>
+            )}
+
             <GlowCircle color={GetColorByLevel(priority)} size="small" />
           </View>
         </View>
@@ -230,18 +231,14 @@ const styles = StyleSheet.create({
     textAlignVertical: "center",
     flexShrink: 1,
   },
-  glowCircleContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
   editButton: {
     justifyContent: "center",
-    alignItems: "center",
-    paddingLeft: 10,
+    alignSelf: "center",
+    paddingLeft: 15,
     borderLeftColor: "#454545",
     borderLeftWidth: 1,
     height: "100%",
-    paddingRight: 18,
+    paddingRight: 15,
   },
   deleteButtonContainer: {
     height: "100%",
@@ -252,5 +249,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  taskContainer: {
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "90%",
+    flexDirection: "row",
   },
 });
