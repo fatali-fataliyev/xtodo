@@ -97,7 +97,7 @@ export const useTodoStore = create<TodoState>()(
             if (filters.includes("completed")) {
               newFilteredTodos = state.todos.filter(
                 (todo) =>
-                  filters.includes(todo.priority) && todo.isDone === true,
+                  filters.includes(todo.priority) || todo.isDone === true,
               );
             } else {
               newFilteredTodos = state.todos.filter((todo) =>
