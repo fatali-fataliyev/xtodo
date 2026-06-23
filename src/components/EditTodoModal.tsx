@@ -29,18 +29,19 @@ export default function EditTodoModal({
   setIsModalVisible,
   todoIdx,
 }: Props) {
-  // TODO FROM STORE
+  // ZUSTAND STATES
   const todo = useTodoStore((state) =>
     state.todos.find((i) => i.id === todoIdx),
   );
   const updateTodo = useTodoStore((state) => state.updateTodo);
 
-  // STATES
+  // LOCAL STATES
   const [newTodoName, setNewTodoName] = useState("");
   const [inputHeight, setInputHeight] = useState<number>(60);
   const [toggleDropdown, setToggleDropdown] = useState<boolean>(false);
   const [newPriorityLevel, setNewPriorityLevel] = useState<string>("high");
 
+  // FUNCTIONS
   useEffect(() => {
     if (todo) {
       setNewTodoName(todo.task || "");
@@ -53,7 +54,6 @@ export default function EditTodoModal({
     (newTodoName.trim() === todo?.task?.trim() &&
       newPriorityLevel === todo?.priority);
 
-  // FUNCTIONS
   const hideModal = () => {
     setIsModalVisible(false);
     resetInputs();
@@ -74,7 +74,7 @@ export default function EditTodoModal({
     hideModal();
   };
 
-  // Animations
+  // ANIMATIONS
   const dropdownAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     Animated.timing(dropdownAnim, {

@@ -19,12 +19,12 @@ export default function TodoSearchBar() {
   const updateSearchTextLen = useTodoStore(
     (state) => state.updateSearchTextLen,
   );
+
   // LOCAL STATES
   const [searchText, setSearchText] = useState<string>("");
   const inputRef = useRef<TextInput>(null);
   const [isFilterModalVisible, setIsFilterModalVisible] =
     useState<boolean>(false);
-  const [isEditable, setIsEditable] = useState<boolean>(true);
 
   useEffect(() => {
     if (!isSearchMode) {
@@ -65,7 +65,6 @@ export default function TodoSearchBar() {
           spellCheck={false}
           autoCorrect={false}
           autoCapitalize="none"
-          editable={isEditable}
         />
       </View>
 

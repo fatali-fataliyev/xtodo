@@ -15,10 +15,14 @@ type Props = {
 const FILTER_LEVELS = [...PriorityLevels, { level: "completed" }];
 
 export default function TodoFilterModal({ isVisible, onClose }: Props) {
-  const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
+  // ZUSTAND STATES
   const setFilteres = useTodoStore((state) => state.applyFilters);
   const setIsFilterMode = useTodoStore((state) => state.setIsFilterMode);
   const clearFilterResults = useTodoStore((state) => state.clearFilterResults);
+
+  // LOCAL STATES
+  const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
+  
 
   const togglePriority = (priority: string) => {
     setSelectedPriorities((prev) =>

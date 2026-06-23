@@ -44,7 +44,7 @@ function TodoItem({
   isSelected,
   isSelectionMode,
 }: Props) {
-  // Zustand stores
+  // ZUSTAND STATES
   const deleteTodoByID = useTodoStore((state) => state.deleteByID);
   const deleteFromSearchTodos = useTodoStore(
     (state) => state.deleteFromSearchResults,

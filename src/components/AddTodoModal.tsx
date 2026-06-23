@@ -28,6 +28,27 @@ export default function AddTodoModal({
   isModalVisible,
   setIsModalVisible,
 }: Props) {
+  // ZUSTAND STATE
+  const saveTodo = useTodoStore((state) => state.addTodo);
+
+  // LOCAL STATES
+  const [todoName, setTodoName] = useState("");
+  const [inputHeight, setInputHeight] = useState<number>(60);
+  const [toggleDropdown, setToggleDropdown] = useState<boolean>(false);
+  const [priorityLevel, setPriorityLevel] = useState<string>("high");
+  const isSaveBtnDisabled = todoName.trim() === "";
+
+  // FUNCTIONS
+  const addTodo = () => {
+    saveTodo({
+      id: Crypto.randomUUID(),
+      task: todoName,
+      isDone: false,
+      priority: priorityLevel,
+    });
+    triggerSnackbar();
+  };
+
   const hideModal = () => {
     setIsModalVisible(false);
     resetInputs();
@@ -74,25 +95,7 @@ export default function AddTodoModal({
     });
   };
 
-  // Todo saving
-  const saveTodo = useTodoStore((state) => state.addTodo);
-  const addTodo = () => {
-    saveTodo({
-      id: Crypto.randomUUID(),
-      task: todoName,
-      isDone: false,
-      priority: priorityLevel,
-    });
-    triggerSnackbar();
-  };
-
-  const [todoName, setTodoName] = useState("");
-  const [inputHeight, setInputHeight] = useState<number>(60);
-  const [toggleDropdown, setToggleDropdown] = useState<boolean>(false);
-  const [priorityLevel, setPriorityLevel] = useState<string>("high");
-  const isSaveBtnDisabled = todoName.trim() === "";
-
-  // Animations
+  // ANIMATIONS
   const dropdownAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     Animated.timing(dropdownAnim, {

@@ -27,7 +27,7 @@ type Props = {
 };
 
 export default function TodoContainer({ showAddTodoModalCb }: Props) {
-  // Zustand stores
+  // ZUSTAND STATES
   const todos = useTodoStore((state) => state.todos);
   const searchResults = useTodoStore((state) => state.searchResults);
   const filterResults = useTodoStore((state) => state.filteredTodos);
@@ -40,6 +40,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
   const deleteAllTodo = useTodoStore((state) => state.deleteAll);
   const clearSearchTodos = useTodoStore((state) => state.clearSearchResults);
 
+  // LOCAL STATES
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
