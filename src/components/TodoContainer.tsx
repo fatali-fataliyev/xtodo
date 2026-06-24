@@ -1,26 +1,30 @@
 import { useTodoStore } from "@/store/useTodoStore";
 import Fontisto from "@expo/vector-icons/Fontisto";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-  Animated,
   BackHandler,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated, {
+  Extrapolation,
+  interpolate,
+  LinearTransition,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+
+import Ionicons from "@expo/vector-icons/Ionicons";
 import AddTodo from "./AddTodoButton";
 import EditTodoModal from "./EditTodoModal";
 import TodoItem from "./TodoItem";
 import TodoSearchBar from "./TodoSearchBar";
-
-interface Todo {
-  id: string;
-  task: string;
-  priority: string;
-  isDone: boolean;
-}
 
 type Props = {
   showAddTodoModalCb: (val: boolean) => void;
@@ -138,73 +142,82 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
   };
 
   // ANIMATIONS
-  const animatedValue = useRef(new Animated.Value(0)).current;
+  const animatedValue = useSharedValue(0);
+  const selectionAnim = useSharedValue(0);
+  const searchAnim = useSharedValue(0);
+  const scrollY = useSharedValue(0);
 
   useEffect(() => {
-    Animated.timing(animatedValue, {
-      toValue: isSelectionMode ? 1 : 0,
+    animatedValue.value = withTiming(isSelectionMode ? 1 : 0, {
       duration: 200,
-      useNativeDriver: false,
-    }).start();
-  }, [isSelectionMode, animatedValue]);
-
-  const animatedStyle = {
-    opacity: animatedValue,
-    height: animatedValue.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, 55],
-    }),
-    marginTop: animatedValue.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, 6],
-    }),
-  };
-
-  const selectionAnim = useRef(new Animated.Value(0)).current;
+    });
+    selectionAnim.value = withTiming(isSelectionMode ? 1 : 0, {
+      duration: 250,
+    });
+  }, [isSelectionMode]);
 
   useEffect(() => {
-    Animated.timing(selectionAnim, {
-      toValue: isSelectionMode ? 1 : 0,
-      duration: 250,
-      useNativeDriver: true,
-    }).start();
-  }, [isSelectionMode, selectionAnim]);
+    searchAnim.value = withTiming(isSearchMode ? 1 : 0, { duration: 250 });
+  }, [isSearchMode]);
 
-  const floatingButtonsStyles = {
-    opacity: selectionAnim,
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: animatedValue.value,
+    height: interpolate(
+      animatedValue.value,
+      [0, 1],
+      [0, 55],
+      Extrapolation.CLAMP,
+    ),
+    marginTop: interpolate(
+      animatedValue.value,
+      [0, 1],
+      [0, 6],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
+  const floatingButtonsStyles = useAnimatedStyle(() => ({
+    opacity: selectionAnim.value,
     transform: [
       {
-        scale: selectionAnim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0.85, 1],
-        }),
+        scale: interpolate(
+          selectionAnim.value,
+          [0, 1],
+          [0.85, 1],
+          Extrapolation.CLAMP,
+        ),
       },
     ],
-  };
+  }));
 
-  const searchAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(searchAnim, {
-      toValue: isSearchMode ? 1 : 0,
-      duration: 250,
-      useNativeDriver: true,
-    }).start();
-  }, [isSearchMode, searchAnim]);
-
-  const searchFloatingBtnStyles = {
-    opacity: searchAnim,
+  const searchFloatingBtnStyles = useAnimatedStyle(() => ({
+    opacity: searchAnim.value,
     transform: [
       {
-        scale: searchAnim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0.85, 1],
-        }),
+        scale: interpolate(
+          searchAnim.value,
+          [0, 1],
+          [0.85, 1],
+          Extrapolation.CLAMP,
+        ),
       },
     ],
-  };
+  }));
 
-  const scrollY = useRef(new Animated.Value(0)).current;
+  const headerSearchStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      animatedValue.value,
+      [0, 1],
+      [1, 0],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
 
   const renderTodoItem = useCallback(
     ({ item }: { item: any }) => {
@@ -232,9 +245,29 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
     ],
   );
 
+  const EmptyState = ({ isSearchMode }: { isSearchMode: boolean }) => (
+    <View style={styles.listEmptyComponent}>
+      {isSearchMode ? (
+        <>
+          <Ionicons name="telescope" size={25} color="#c1c1c1" />
+          <Text style={styles.emptyText}>No todos found</Text>
+        </>
+      ) : (
+        <>
+          <MaterialCommunityIcons
+            name="clipboard-check-multiple-outline"
+            size={25}
+            color="#c1c1c1"
+          />
+          <Text style={styles.emptyText}>No todos here yet</Text>
+        </>
+      )}
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-      {/*FlatList*/}
+      {/* FlatList */}
       <Animated.FlatList
         data={
           isFilterMode
@@ -245,60 +278,34 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
         }
         style={styles.listStyle}
         renderItem={renderTodoItem}
+        itemLayoutAnimation={LinearTransition}
         keyExtractor={(item, index) =>
           item?.id ? item.id.toString() : index.toString()
         }
-        removeClippedSubviews={true}
         extraData={selectedIds}
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <Animated.View
-            style={{
-              opacity: animatedValue.interpolate({
-                inputRange: [0, 1],
-                outputRange: [1, 0],
-              }),
-            }}
+            style={headerSearchStyle}
             pointerEvents={isSelectionMode ? "none" : "auto"}
           >
             <TodoSearchBar />
           </Animated.View>
         }
-        ListEmptyComponent={
-          isSearchMode ? (
-            <Text
-              style={{ color: "#c1c1c1", alignSelf: "center", marginTop: 50 }}
-            >
-              No results found. Try searching for something else.
-            </Text>
-          ) : (
-            <Text
-              style={{ color: "#c1c1c1", alignSelf: "center", marginTop: 50 }}
-            >
-              Your list is empty. Tap the button to add a task!
-            </Text>
-          )
-        }
+        ListEmptyComponent={<EmptyState isSearchMode={isSearchMode} />}
         contentContainerStyle={{
           paddingBottom: 40,
           paddingTop: 5,
         }}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true },
-        )}
+        onScroll={scrollHandler}
         scrollEventThrottle={16}
       />
 
-      {/*Add Todo Button*/}
-      {isSelectionMode ? (
-        ""
-      ) : (
-        <AddTodo onPress={() => showAddTodoModalCb(true)} />
-      )}
+      {/* Add Todo Button */}
+      {!isSelectionMode && <AddTodo onPress={() => showAddTodoModalCb(true)} />}
 
-      {/*Selection FLoating Buttons*/}
+      {/* Selection Floating Buttons */}
       <Animated.View
         style={[styles.floatingActionContainer, floatingButtonsStyles]}
         pointerEvents={isSelectionMode ? "auto" : "none"}
@@ -333,9 +340,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
       </Animated.View>
 
       {/* Close Search Mode Floating Button */}
-      {isSelectionMode ? (
-        ""
-      ) : (
+      {!isSelectionMode && (
         <Animated.View
           style={[styles.closeSearchFloatingContainer, searchFloatingBtnStyles]}
           pointerEvents={isSearchMode ? "auto" : "none"}
@@ -354,7 +359,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
         </Animated.View>
       )}
 
-      {/*Selected Todo Counter*/}
+      {/* Selected Todo Counter */}
       <Animated.View style={[styles.toggleMenu, animatedStyle]}>
         <Text style={styles.counterText}>
           {selectedIds.size > 0
@@ -363,7 +368,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
         </Text>
       </Animated.View>
 
-      {/*Todo edit modal*/}
+      {/* Todo edit modal */}
       {isEditModalOpen && (
         <EditTodoModal
           isModalVisible={isEditModalOpen}
@@ -459,5 +464,17 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     justifyContent: "center",
     alignItems: "center",
+  },
+  listEmptyComponent: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 50,
+  },
+  emptyText: {
+    color: "#c1c1c1",
+    marginLeft: 8,
   },
 });

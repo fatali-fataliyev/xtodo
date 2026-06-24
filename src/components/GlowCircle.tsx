@@ -1,5 +1,12 @@
-import React, { useEffect, useRef } from "react";
-import { Animated, View } from "react-native";
+import React, { useEffect } from "react";
+import { View } from "react-native";
+import Animated, {
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from "react-native-reanimated";
 
 type SizeType = keyof typeof sizes;
 
@@ -12,37 +19,24 @@ export const GlowCircle: React.FC<GlowCircleProps> = ({
   color,
   size = "normal",
 }) => {
-  const glowAnimation = useRef(new Animated.Value(0)).current;
+  const glowProgress = useSharedValue(0);
 
   useEffect(() => {
-    startGlow();
+
+    glowProgress.value = withRepeat(
+      withTiming(1, { duration: 2500 }),
+      -1,
+      true
+    );
   }, []);
 
-  const startGlow = () => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(glowAnimation, {
-          toValue: 1,
-          duration: 2500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(glowAnimation, {
-          toValue: 0,
-          duration: 2500,
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-  };
-
-  const scale = glowAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 1.4],
-  });
-
-  const opacity = glowAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.3, 0.8],
+  const animatedGlowStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { scale: interpolate(glowProgress.value, [0, 1], [1, 1.4]) },
+      ],
+      opacity: interpolate(glowProgress.value, [0, 1], [0.3, 0.8]),
+    };
   });
 
   const currentStyles = getStyleBySize(size);
@@ -52,11 +46,8 @@ export const GlowCircle: React.FC<GlowCircleProps> = ({
       <Animated.View
         style={[
           currentStyles.outerCircle,
-          {
-            backgroundColor: color,
-            transform: [{ scale: scale }],
-            opacity: opacity,
-          },
+          { backgroundColor: color },
+          animatedGlowStyle,
         ]}
       />
       <View
@@ -76,6 +67,7 @@ interface SizedStyle {
   innerCircle: Record<string, any>;
   outerCircle: Record<string, any>;
 }
+
 
 const sizes = {
   small: {

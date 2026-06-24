@@ -2,9 +2,8 @@ import CapitalizeFirstLetter from "@/constants/firstLetterCapitalizer";
 import { useTodoStore } from "@/store/useTodoStore";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  Animated,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -14,6 +13,12 @@ import {
   View,
 } from "react-native";
 import Modal from "react-native-modal";
+import Animated, {
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { GetColorByLevel } from "../constants/colors";
 import { PriorityLevels } from "../constants/priorityLevels";
 import { GlowCircle } from "./GlowCircle";
@@ -75,22 +80,19 @@ export default function EditTodoModal({
   };
 
   // ANIMATIONS
-  const dropdownAnim = useRef(new Animated.Value(0)).current;
+
+  const dropdownProgress = useSharedValue(0);
   useEffect(() => {
-    Animated.timing(dropdownAnim, {
-      toValue: toggleDropdown ? 1 : 0,
+    dropdownProgress.value = withTiming(toggleDropdown ? 1 : 0, {
       duration: 300,
-      useNativeDriver: false,
-    }).start();
+    });
   }, [toggleDropdown]);
 
-  const menuHeight = dropdownAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 160],
-  });
-  const menuOpacity = dropdownAnim.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [0, 0, 1],
+  const dropdownAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      height: interpolate(dropdownProgress.value, [0, 1], [0, 160]),
+      opacity: interpolate(dropdownProgress.value, [0, 0.5, 1], [0, 0, 1]),
+    };
   });
 
   return (
@@ -177,10 +179,7 @@ export default function EditTodoModal({
             </TouchableOpacity>
 
             <Animated.View
-              style={[
-                styles.dropdownContainer,
-                { height: menuHeight, opacity: menuOpacity },
-              ]}
+              style={[styles.dropdownContainer, dropdownAnimatedStyle]}
             >
               {PriorityLevels.map((item, idx) => {
                 const isSelected = item.level === newPriorityLevel;

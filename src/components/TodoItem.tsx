@@ -1,17 +1,15 @@
 import { useTodoStore } from "@/store/useTodoStore";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import Fontisto from "@expo/vector-icons/Fontisto";
-import React from "react";
-import {
-  Keyboard,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import React, { useRef } from "react";
+import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
+import Swipeable, {
+  SwipeableMethods,
+} from "react-native-gesture-handler/ReanimatedSwipeable";
 import Animated, {
   Extrapolation,
+  FadeIn,
+  FadeOutUp,
   interpolate,
   SharedValue,
   useAnimatedStyle,
@@ -52,6 +50,7 @@ function TodoItem({
   const searchTextLen = useTodoStore((state) => state.searchTextLen);
   const isSearchMode = useTodoStore((state) => state.isSearchMode);
 
+  // FUNCTIONS
   const markTodoDone = () => {
     console.log("this todo is done... from MarkTodoDone");
   };
@@ -64,6 +63,11 @@ function TodoItem({
     }
     deleteTodoByID(id);
   };
+
+  // ANIMATIONS
+
+  const swipeableRef = useRef<SwipeableMethods>(null);
+  
 
   const renderRightActions = (
     _progress: SharedValue<number>,
@@ -89,75 +93,92 @@ function TodoItem({
         opacity,
       };
     });
+
     return (
       <View style={styles.deleteButtonContainer}>
-        <TouchableOpacity
-          style={styles.deleteButton}
+        <Pressable
+          style={({ pressed }) => [
+            styles.deleteButton,
+            pressed && { opacity: 0.7 },
+          ]}
           onPress={deleteTodoItem}
-          activeOpacity={0.7}
         >
           <Animated.View style={animatedIconStyles}>
             <FontAwesome6 name="trash" size={20} color="#FFF" />
           </Animated.View>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     );
   };
 
   return (
-    <ReanimatedSwipeable
-      friction={2}
-      enableTrackpadTwoFingerGesture
-      rightThreshold={40}
-      renderRightActions={renderRightActions}
-      containerStyle={styles.swipeableContainer}
-      dragOffsetFromRightEdge={30}
-      dragOffsetFromLeftEdge={30}
-    >
-      <TouchableOpacity
-        style={[styles.container, isSelected && styles.selectedContainer]}
-        onPress={isSelectionMode ? () => onSelect(id) : markTodoDone}
-        onLongPress={() => {
-          Keyboard.dismiss();
-          onSelect(id);
-          onLongPress(id);
-        }}
-        activeOpacity={0.5}
+    <Animated.View entering={FadeIn} exiting={FadeOutUp.duration(500)}>
+      <Swipeable
+        friction={1}
+        enableTrackpadTwoFingerGesture
+        rightThreshold={40}
+        renderRightActions={renderRightActions}
+        containerStyle={styles.swipeableContainer}
+        dragOffsetFromRightEdge={30}
+        dragOffsetFromLeftEdge={30}
+        overshootRight={false}
+        ref={swipeableRef}
       >
-        <View style={styles.mainAreaContainer}>
-          {isSelectionMode ? (
-            <Fontisto
-              name={isSelected ? "checkbox-active" : "checkbox-passive"}
-              size={20}
-              color={Colors.medium}
-              style={{ borderRadius: 4 }}
-            />
-          ) : (
-            <Fontisto
-              name={isDone ? "checkbox-active" : "checkbox-passive"}
-              size={20}
-              color="#8E8E93"
-              style={{ borderRadius: 4 }}
-            />
-          )}
-          <View style={styles.taskContainer}>
-            {isSearchMode ? (
-              getHighlightedText(task, indexes, searchTextLen)
-            ) : (
-              <Text style={styles.taskText}>{task}</Text>
-            )}
-
-            <GlowCircle color={GetColorByLevel(priority)} size="small" />
-          </View>
-        </View>
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={() => onEdit?.(id)}
+        {/* Main Row Pressable */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.container,
+            isSelected && styles.selectedContainer,
+            pressed && { opacity: 0.7 },
+          ]}
+          onPress={isSelectionMode ? () => onSelect(id) : markTodoDone}
+          onLongPress={() => {
+            Keyboard.dismiss();
+            onSelect(id);
+            onLongPress(id);
+            swipeableRef.current!.close()
+          }}
         >
-          <FontAwesome6 name="edit" size={20} color="#B3B3B3" />
-        </TouchableOpacity>
-      </TouchableOpacity>
-    </ReanimatedSwipeable>
+          <View style={styles.mainAreaContainer}>
+            {isSelectionMode ? (
+              <Ionicons
+                name={isSelected ? "checkbox" : "square-outline"}
+                size={21}
+                color={Colors.medium}
+                style={{ borderRadius: 4 }}
+              />
+            ) : (
+              <Ionicons
+                name={isSelected ? "checkbox" : "square-outline"}
+                size={21}
+                color={"#8E8E93"}
+                style={{ borderRadius: 4 }}
+              />
+            )}
+            <View style={styles.taskContainer}>
+              {isSearchMode ? (
+                getHighlightedText(task, indexes, searchTextLen)
+              ) : (
+                <Text style={styles.taskText}>{task}</Text>
+              )}
+
+              <GlowCircle color={GetColorByLevel(priority)} size="small" />
+            </View>
+          </View>
+
+          {/* Edit Button Pressable */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.editButton,
+              pressed && { opacity: 0.5 },
+            ]}
+            onPress={() => onEdit?.(id)}
+          >
+            <FontAwesome6 name="edit" size={20} color="#B3B3B3" />
+          </Pressable>
+        </Pressable>
+      </Swipeable>
+    </Animated.View>
   );
 }
 
