@@ -1,7 +1,7 @@
 import { useTodoStore } from "@/store/useTodoStore";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
 import Swipeable, {
   SwipeableMethods,
@@ -9,10 +9,11 @@ import Swipeable, {
 import Animated, {
   Extrapolation,
   FadeIn,
-  FadeOutUp,
+  FadeOutDown,
   interpolate,
   SharedValue,
   useAnimatedStyle,
+  withTiming,
 } from "react-native-reanimated";
 import { Colors, GetColorByLevel } from "../constants/colors";
 import { GlowCircle } from "./GlowCircle";
@@ -49,12 +50,12 @@ function TodoItem({
   );
   const searchTextLen = useTodoStore((state) => state.searchTextLen);
   const isSearchMode = useTodoStore((state) => state.isSearchMode);
+  const markTodoDone = useTodoStore((state) => state.markTodoDone);
+
+  // LOCAL STATE FOR ANIMATION
+  const [isCompleting, setIsCompleting] = useState(false);
 
   // FUNCTIONS
-  const markTodoDone = () => {
-    console.log("this todo is done... from MarkTodoDone");
-  };
-
   const deleteTodoItem = () => {
     if (isSearchMode) {
       deleteTodoByID(id);
@@ -64,10 +65,24 @@ function TodoItem({
     deleteTodoByID(id);
   };
 
-  // ANIMATIONS
+  const handlePress = () => {
+    if (isSelectionMode) {
+      onSelect(id);
+      return;
+    }
 
+    if (!isDone) {
+      setIsCompleting(true);
+      setTimeout(() => {
+        markTodoDone(id);
+      }, 300);
+    } else {
+      markTodoDone(id);
+    }
+  };
+
+  // ANIMATIONS
   const swipeableRef = useRef<SwipeableMethods>(null);
-  
 
   const renderRightActions = (
     _progress: SharedValue<number>,
@@ -111,8 +126,16 @@ function TodoItem({
     );
   };
 
+  const doneLineStyle = useAnimatedStyle(() => {
+    return {
+      width: withTiming(isCompleting ? "100%" : "0%", { duration: 300 }),
+      left: withTiming(isCompleting ? "0%" : "50%", { duration: 300 }),
+      opacity: withTiming(isCompleting ? 1 : 0, { duration: 300 }),
+    };
+  });
+
   return (
-    <Animated.View entering={FadeIn} exiting={FadeOutUp.duration(500)}>
+    <Animated.View entering={FadeIn} exiting={FadeOutDown.duration(500)}>
       <Swipeable
         friction={1}
         enableTrackpadTwoFingerGesture
@@ -124,19 +147,26 @@ function TodoItem({
         overshootRight={false}
         ref={swipeableRef}
       >
-        {/* Main Row Pressable */}
+        <Animated.View
+          style={[styles.doneLine, doneLineStyle]}
+          pointerEvents="none"
+        />
+
         <Pressable
           style={({ pressed }) => [
             styles.container,
             isSelected && styles.selectedContainer,
+            isDone && {
+              backgroundColor: "#0D0B0B",
+            },
             pressed && { opacity: 0.7 },
           ]}
-          onPress={isSelectionMode ? () => onSelect(id) : markTodoDone}
+          onPress={handlePress}
           onLongPress={() => {
             Keyboard.dismiss();
             onSelect(id);
             onLongPress(id);
-            swipeableRef.current!.close()
+            swipeableRef.current!.close();
           }}
         >
           <View style={styles.mainAreaContainer}>
@@ -149,7 +179,7 @@ function TodoItem({
               />
             ) : (
               <Ionicons
-                name={isSelected ? "checkbox" : "square-outline"}
+                name={isDone || isCompleting ? "checkbox" : "square-outline"}
                 size={21}
                 color={"#8E8E93"}
                 style={{ borderRadius: 4 }}
@@ -159,14 +189,27 @@ function TodoItem({
               {isSearchMode ? (
                 getHighlightedText(task, indexes, searchTextLen)
               ) : (
-                <Text style={styles.taskText}>{task}</Text>
+                <Text
+                  style={[
+                    styles.taskText,
+                    (isDone || isCompleting) && {
+                      textDecorationLine: "line-through",
+                    },
+                  ]}
+                >
+                  {task}
+                </Text>
               )}
 
-              <GlowCircle color={GetColorByLevel(priority)} size="small" />
+              <GlowCircle
+                color={
+                  isDone || isCompleting ? "#454545" : GetColorByLevel(priority)
+                }
+                size="small"
+              />
             </View>
           </View>
 
-          {/* Edit Button Pressable */}
           <Pressable
             style={({ pressed }) => [
               styles.editButton,
@@ -225,6 +268,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     borderRadius: 10,
     overflow: "hidden",
+    position: "relative",
   },
   container: {
     width: "100%",
@@ -276,5 +320,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: "90%",
     flexDirection: "row",
+  },
+  doneLine: {
+    backgroundColor: "#454545",
+    position: "absolute",
+    top: "50%",
+    marginTop: -2.5,
+    height: 5,
+    zIndex: 10,
   },
 });

@@ -1,8 +1,10 @@
 import { useTodoStore } from "@/store/useTodoStore";
+import AntDesign from "@expo/vector-icons/AntDesign";
 import Fontisto from "@expo/vector-icons/Fontisto";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   BackHandler,
   StyleSheet,
@@ -19,8 +21,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-
-import Ionicons from "@expo/vector-icons/Ionicons";
+import getQuote from "../constants/getQuote";
 import AddTodo from "./AddTodoButton";
 import EditTodoModal from "./EditTodoModal";
 import TodoItem from "./TodoItem";
@@ -49,9 +50,30 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const activeTodos = isSearchMode && searchTextLen > 0 ? searchResults : todos;
+
+  const activeTodos = useMemo(() => {
+    if (isSearchMode && searchTextLen > 0) {
+      return searchResults;
+    }
+    if (isFilterMode) {
+      return filterResults;
+    }
+
+    return todos.filter((todo) => todo.isDone !== true);
+  }, [
+    isSearchMode,
+    searchTextLen,
+    searchResults,
+    isFilterMode,
+    filterResults,
+    todos,
+  ]);
+
   const isSelectAll =
     activeTodos.length > 0 && selectedIds.size === activeTodos.length;
+  const [quote, setQuote] = useState<string>(getQuote().quote);
+
+  console.log(quote);
 
   // STATE HOOKS
   const toggleSelection = useCallback((id: string) => {
@@ -65,6 +87,35 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
       return newSelected;
     });
   }, []);
+
+  const displayData = useMemo(() => {
+    if (isFilterMode) {
+      return filterResults;
+    }
+    if (isSearchMode && searchTextLen > 0) {
+      return searchResults;
+    }
+
+    return todos.filter((todo) => todo.isDone !== true);
+  }, [
+    isFilterMode,
+    filterResults,
+    isSearchMode,
+    searchTextLen,
+    searchResults,
+    todos,
+  ]);
+
+  const displayDoneData = useMemo(() => {
+    return todos.filter((todo) => todo.isDone === true);
+  }, [
+    isFilterMode,
+    filterResults,
+    isSearchMode,
+    searchTextLen,
+    searchResults,
+    todos,
+  ]);
 
   const cancelSelection = () => {
     setSelectedIds(new Set());
@@ -107,7 +158,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
 
   const closeToggleMenu = () => {
     setSelectedIds(new Set());
-    setIsSelectionMode(!isSelectionMode);
+    setIsSelectionMode(false);
     setSelectedTodoId(null);
   };
 
@@ -146,6 +197,8 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
   const selectionAnim = useSharedValue(0);
   const searchAnim = useSharedValue(0);
   const scrollY = useSharedValue(0);
+  const arrowRotation = useSharedValue(0);
+  const listExpansion = useSharedValue(0);
 
   useEffect(() => {
     animatedValue.value = withTiming(isSelectionMode ? 1 : 0, {
@@ -213,6 +266,35 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
     ),
   }));
 
+  const arrowAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ rotate: `-${arrowRotation.value}deg` }],
+    };
+  });
+
+  const doneListAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      height: interpolate(
+        listExpansion.value,
+        [0, 1],
+        [0, 250],
+        Extrapolation.CLAMP,
+      ),
+      opacity: listExpansion.value,
+      overflow: "hidden",
+    };
+  });
+
+  const toggleDoneTodos = () => {
+    const nextState = listExpansion.value === 0;
+    arrowRotation.value = withTiming(nextState ? 180 : 0, { duration: 800 });
+    listExpansion.value = withTiming(nextState ? 1 : 0, { duration: 300 });
+
+    if (displayDoneData.length === 0 && nextState) {
+      setQuote(getQuote().quote);
+    }
+  };
+
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       scrollY.value = event.contentOffset.y;
@@ -267,16 +349,10 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
 
   return (
     <View style={styles.container}>
-      {/* FlatList */}
+      {/* Main FlatList */}
       <Animated.FlatList
-        data={
-          isFilterMode
-            ? filterResults
-            : isSearchMode && searchTextLen > 0
-              ? searchResults
-              : todos
-        }
-        style={styles.listStyle}
+        data={displayData}
+        style={[styles.listStyle, { flex: 1 }]}
         renderItem={renderTodoItem}
         itemLayoutAnimation={LinearTransition}
         keyExtractor={(item, index) =>
@@ -302,6 +378,46 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
         scrollEventThrottle={16}
       />
 
+      {/* Done Todos Toggle Menu */}
+      <TouchableOpacity
+        style={styles.completedTodosContainer}
+        onPress={toggleDoneTodos}
+      >
+        <View style={styles.divider} />
+        <View style={styles.completedTodosToggleMenu}>
+          <Text style={styles.completedTodosText}>
+            Completed {displayDoneData.length}
+          </Text>
+
+          <Animated.View style={arrowAnimatedStyle}>
+            <AntDesign name="arrow-down" size={18} color="#454545" />
+          </Animated.View>
+        </View>
+        <View style={styles.divider} />
+      </TouchableOpacity>
+
+      {/* Done Todos Flatlist */}
+      <Animated.View style={doneListAnimatedStyle}>
+        <Animated.FlatList
+          data={displayDoneData}
+          style={styles.listStyle}
+          renderItem={renderTodoItem}
+          itemLayoutAnimation={LinearTransition}
+          keyExtractor={(item, index) =>
+            item?.id ? item.id.toString() : index.toString()
+          }
+          extraData={selectedIds}
+          keyboardDismissMode="on-drag"
+          keyboardShouldPersistTaps="handled"
+          ListEmptyComponent={<Text style={styles.quoteText}>{quote}</Text>}
+          contentContainerStyle={{
+            paddingBottom: 40,
+            paddingTop: 5,
+          }}
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
+        />
+      </Animated.View>
       {/* Add Todo Button */}
       {!isSelectionMode && <AddTodo onPress={() => showAddTodoModalCb(true)} />}
 
@@ -362,9 +478,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
       {/* Selected Todo Counter */}
       <Animated.View style={[styles.toggleMenu, animatedStyle]}>
         <Text style={styles.counterText}>
-          {selectedIds.size > 0
-            ? `${selectedIds.size} ${selectedIds.size === 1 ? "todo" : "todos"} selected`
-            : ""}
+          {`${selectedIds.size} ${selectedIds.size === 1 ? "todo" : "todos"} selected`}
         </Text>
       </Animated.View>
 
@@ -387,7 +501,6 @@ const styles = StyleSheet.create({
   },
   listStyle: {
     width: "100%",
-    height: "100%",
   },
   toggleMenu: {
     position: "absolute",
@@ -476,5 +589,33 @@ const styles = StyleSheet.create({
   emptyText: {
     color: "#c1c1c1",
     marginLeft: 8,
+  },
+  quoteText: {
+    color: "#c1c1c1",
+    textAlign: "center",
+    fontFamily: "Inter-Regular",
+  },
+  completedTodosContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 5,
+  },
+  divider: {
+    backgroundColor: "#454545",
+    height: 2,
+    width: "33%",
+  },
+  completedTodosToggleMenu: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+    marginLeft: 10,
+  },
+  completedTodosText: {
+    color: "#CCC",
+    fontFamily: "Inter-Bold",
+    marginRight: 5,
   },
 });

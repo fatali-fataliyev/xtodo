@@ -30,6 +30,7 @@ interface TodoState {
   isFilterMode: boolean;
   searchTextLen: number;
   addTodo: (todo: Todo) => void;
+  markTodoDone: (idx: string) => void;
   updateSearchTextLen: (len: number) => void;
   updateTodo: (id: string, payload: EditPayload) => void;
   deleteByID: (id: string) => void;
@@ -75,7 +76,18 @@ export const useTodoStore = create<TodoState>()(
             const updatedTodos = [...state.todos, newTodo];
             return { todos: sortTodos(updatedTodos) };
           }),
-
+        markTodoDone: (id) =>
+          set((state) => {
+            const updatedTodos = state.todos.map((todo) =>
+              todo.id === id
+                ? {
+                    ...todo,
+                    isDone: !todo.isDone,
+                  }
+                : todo,
+            );
+            return { todos: sortTodos(updatedTodos) };
+          }),
         updateTodo: (id, payload) =>
           set((state) => {
             const updatedTodos = state.todos.map((todo) =>
