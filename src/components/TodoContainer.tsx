@@ -7,6 +7,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   BackHandler,
+  Keyboard,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -131,6 +132,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
       }
       // Exit search mode if enabled
       if (isSearchMode) {
+        Keyboard.dismiss();
         setIsSearchMode(false);
         resetSearchTextLen();
         clearSearchTodos();
@@ -418,6 +420,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
           scrollEventThrottle={16}
         />
       </Animated.View>
+
       {/* Add Todo Button */}
       {!isSelectionMode && <AddTodo onPress={() => showAddTodoModalCb(true)} />}
 
@@ -454,26 +457,6 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
           <Fontisto name="trash" size={20} color="#FF4D4D" />
         </TouchableOpacity>
       </Animated.View>
-
-      {/* Close Search Mode Floating Button */}
-      {!isSelectionMode && (
-        <Animated.View
-          style={[styles.closeSearchFloatingContainer, searchFloatingBtnStyles]}
-          pointerEvents={isSearchMode ? "auto" : "none"}
-        >
-          <TouchableOpacity
-            style={styles.closeSearchActionBtn}
-            activeOpacity={0.8}
-            onPress={() => {
-              setIsSearchMode(false);
-              resetSearchTextLen();
-              clearSearchTodos();
-            }}
-          >
-            <MaterialIcons name="close" size={24} color="#FFF" />
-          </TouchableOpacity>
-        </Animated.View>
-      )}
 
       {/* Selected Todo Counter */}
       <Animated.View style={[styles.toggleMenu, animatedStyle]}>

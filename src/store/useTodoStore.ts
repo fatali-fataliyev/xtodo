@@ -88,6 +88,7 @@ export const useTodoStore = create<TodoState>()(
             );
             return { todos: sortTodos(updatedTodos) };
           }),
+
         updateTodo: (id, payload) =>
           set((state) => {
             const updatedTodos = state.todos.map((todo) =>
@@ -99,7 +100,27 @@ export const useTodoStore = create<TodoState>()(
                   }
                 : todo,
             );
-            return { todos: sortTodos(updatedTodos) };
+
+            const updatedSearchResults = state.searchResults.map(
+              (searchItem) =>
+                searchItem.id === id
+                  ? {
+                      ...searchItem,
+                      task: payload.newTask,
+                      priority: payload.newPriority,
+                    }
+                  : searchItem,
+            );
+
+            const sortedTodos = sortTodos(updatedTodos);
+            const sortedSearchResults = sortTodos(
+              updatedSearchResults as Todo[],
+            ) as TodoSearchResult[];
+
+            return {
+              todos: sortedTodos,
+              searchResults: sortedSearchResults,
+            };
           }),
 
         applyFilters: (filters) =>

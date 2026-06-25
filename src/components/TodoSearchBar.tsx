@@ -1,6 +1,7 @@
 import { useTodoStore } from "@/store/useTodoStore";
 import Fontisto from "@expo/vector-icons/Fontisto";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useEffect, useRef, useState } from "react";
 import {
   Keyboard,
@@ -19,6 +20,7 @@ export default function TodoSearchBar() {
   const updateSearchTextLen = useTodoStore(
     (state) => state.updateSearchTextLen,
   );
+  const clearSearchTodos = useTodoStore((state) => state.clearSearchResults);
 
   // LOCAL STATES
   const [searchText, setSearchText] = useState<string>("");
@@ -45,6 +47,15 @@ export default function TodoSearchBar() {
     Keyboard.dismiss();
   };
 
+  const handleClearSearch = () => {
+    setIsSearchMode(false);
+    updateSearchTextLen(0);
+    clearSearchTodos();
+    setSearchText("");
+    inputRef.current?.blur();
+    Keyboard.dismiss();
+  };
+
   return (
     <View style={styles.searchAndFilterBar}>
       <TodoFilterModal
@@ -66,6 +77,15 @@ export default function TodoSearchBar() {
           autoCorrect={false}
           autoCapitalize="none"
         />
+        {isSearchMode && (
+          <TouchableOpacity
+            onPress={handleClearSearch}
+            style={styles.clearButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <MaterialIcons name="cancel" size={18} color="#7A7A7A" />
+          </TouchableOpacity>
+        )}
       </View>
 
       <TouchableOpacity
@@ -101,13 +121,18 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#242424",
     borderRadius: 20,
-    width: "101%",
+    flex: 1,
     paddingHorizontal: 8,
     paddingVertical: 0,
     color: "#FFF",
     fontFamily: "Inter-Bold",
     fontSize: 15,
     height: 40,
+  },
+  clearButton: {
+    marginLeft: 4,
+    justifyContent: "center",
+    alignItems: "center",
   },
   filterBtn: {
     width: "15%",
