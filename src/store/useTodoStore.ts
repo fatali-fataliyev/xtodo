@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { encryptedStorageEngine } from "../utils/secureStorage";
+import { zustandStorageEngine } from "../utils/secureStorage";
 
 interface Todo {
   id: string;
@@ -64,9 +64,9 @@ export const useTodoStore = create<TodoState>()(
       };
 
       return {
-        todos: [],
-        searchResults: [],
-        filteredTodos: [],
+        todos: [] as Todo[],
+        searchResults: [] as TodoSearchResult[],
+        filteredTodos: [] as Todo[],
         isSearchMode: false,
         isFilterMode: false,
         searchTextLen: 0,
@@ -221,8 +221,9 @@ export const useTodoStore = create<TodoState>()(
     },
     {
       name: "todos",
-      storage: createJSONStorage(() => encryptedStorageEngine),
+      storage: createJSONStorage(() => zustandStorageEngine),
       partialize: (state) => ({ todos: state.todos }),
+      skipHydration: true,
     },
   ),
 );
