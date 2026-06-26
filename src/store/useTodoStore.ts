@@ -79,14 +79,34 @@ export const useTodoStore = create<TodoState>()(
         markTodoDone: (id) =>
           set((state) => {
             const updatedTodos = state.todos.map((todo) =>
-              todo.id === id
-                ? {
-                    ...todo,
-                    isDone: !todo.isDone,
-                  }
-                : todo,
+              todo.id === id ? { ...todo, isDone: !todo.isDone } : todo,
             );
-            return { todos: sortTodos(updatedTodos) };
+
+            const updatedSearchResults = state.searchResults.map(
+              (searchItem) =>
+                searchItem.id === id
+                  ? { ...searchItem, isDone: !searchItem.isDone }
+                  : searchItem,
+            );
+
+            const updatedFilteredTodos = state.filteredTodos.map(
+              (filteredItem) =>
+                filteredItem.id === id
+                  ? { ...filteredItem, isDone: !filteredItem.isDone }
+                  : filteredItem,
+            );
+
+            const sortedTodos = sortTodos(updatedTodos);
+            const sortedSearchResults = sortTodos(
+              updatedSearchResults as Todo[],
+            ) as TodoSearchResult[];
+            const sortedFilteredTodos = sortTodos(updatedFilteredTodos);
+
+            return {
+              todos: sortedTodos,
+              searchResults: sortedSearchResults,
+              filteredTodos: sortedFilteredTodos,
+            };
           }),
 
         updateTodo: (id, payload) =>
