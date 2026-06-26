@@ -1,6 +1,7 @@
 import { useTodoStore } from "@/store/useTodoStore";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useAudioPlayer } from "expo-audio";
 import React, { useRef, useState } from "react";
 import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
 import Swipeable, {
@@ -15,6 +16,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from "react-native-reanimated";
+import { getClickSound } from "../constants/clickSounds";
 import { Colors, GetColorByLevel } from "../constants/colors";
 import { GlowCircle } from "./GlowCircle";
 
@@ -66,6 +68,10 @@ function TodoItem({
   };
 
   const handlePress = () => {
+    if (isCompleting) return;
+
+    if (!isDone) player.play();
+
     if (isSelectionMode) {
       onSelect(id);
       return;
@@ -80,6 +86,8 @@ function TodoItem({
       markTodoDone(id);
     }
   };
+
+  const player = useAudioPlayer(getClickSound("dwLine1Default"));
 
   // ANIMATIONS
   const swipeableRef = useRef<SwipeableMethods>(null);
@@ -153,6 +161,7 @@ function TodoItem({
         />
 
         <Pressable
+          disabled={isCompleting}
           style={({ pressed }) => [
             styles.container,
             isSelected && styles.selectedContainer,
