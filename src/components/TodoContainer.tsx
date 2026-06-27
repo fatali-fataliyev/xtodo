@@ -25,6 +25,7 @@ import Animated, {
 import getQuote from "../constants/getQuote";
 import AddTodo from "./AddTodoButton";
 import { AddTodoModal } from "./AddTodoModal";
+import { EditTodoModal } from "./EditTodoModal";
 import TodoItem from "./TodoItem";
 import TodoSearchBar from "./TodoSearchBar";
 
@@ -462,11 +463,14 @@ export default function TodoContainer() {
         </Text>
       </Animated.View>
 
-      {/* Todo edit modal */}
+      {/* Todo edit BOTTOM sheet */}
+      <EditTodoModal
+        isOpen={isEditModalOpen}
+        setIsOpen={setIsEditModalOpen}
+        todoIdx={selectedTodoId ?? ""}
+      />
 
-      {/*>>>panic implement*/}
-
-      {/* Add Todo MODAL*/}
+      {/* Add Todo botom sheet*/}
       <AddTodoModal isOpen={isTestModalShow} setIsOpen={setIsTestModalShow} />
     </View>
   );

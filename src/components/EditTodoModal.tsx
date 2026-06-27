@@ -1,371 +1,315 @@
-import CapitalizeFirstLetter from "@/constants/firstLetterCapitalizer";
+import { GetColorByLevel } from "@/constants/colors";
+import { PriorityLevels } from "@/constants/priorityLevels";
 import { useTodoStore } from "@/store/useTodoStore";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import { useEffect, useState } from "react";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetTextInput,
+  BottomSheetView,
+  TouchableOpacity,
+} from "@gorhom/bottom-sheet";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  BackHandler,
+  Keyboard,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
-import Modal from "react-native-modal";
 import Animated, {
-  interpolate,
+  interpolateColor,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { GetColorByLevel } from "../constants/colors";
-import { PriorityLevels } from "../constants/priorityLevels";
 import { GlowCircle } from "./GlowCircle";
 
 type Props = {
-  isModalVisible?: boolean;
-  setIsModalVisible: (val: boolean) => void;
+  isOpen: boolean;
+  setIsOpen: (val: boolean) => void;
   todoIdx: string;
 };
 
-export default function EditTodoModal({
-  isModalVisible,
-  setIsModalVisible,
-  todoIdx,
-}: Props) {
-  // ZUSTAND STATES
+// ANIMATED COMPONENT
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const PriorityButton = ({ item, isSelected, onPress, isMedium }: any) => {
+  const color = GetColorByLevel(item.level);
+  const progress = useSharedValue(0);
+
+  useEffect(() => {
+    progress.value = withTiming(isSelected ? 1 : 0, { duration: 250 });
+  }, [isSelected]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      progress.value,
+      [0, 1],
+      ["rgba(42, 42, 42, 0)", "rgba(42, 42, 42, 1)"],
+    );
+
+    return {
+      backgroundColor,
+      transform: [
+        { scale: withTiming(isSelected ? 1.03 : 1, { duration: 200 }) },
+      ],
+    };
+  });
+
+  return (
+    <AnimatedPressable
+      onPress={onPress}
+      style={[styles.priorityBtn, { borderColor: color }, animatedStyle]}
+    >
+      <View style={styles.btnContent}>
+        <Text style={[styles.priorityBtnText, { color }]}>
+          {item.level.toUpperCase()}
+        </Text>
+        <View style={[styles.glowContainer, isMedium && { right: 3.5 }]}>
+          {isSelected && <GlowCircle size="small" color={color} />}
+        </View>
+      </View>
+    </AnimatedPressable>
+  );
+};
+
+// MAIN COMPONENT
+export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
+  // ZUSTAND
   const todo = useTodoStore((state) =>
     state.todos.find((i) => i.id === todoIdx),
   );
   const updateTodo = useTodoStore((state) => state.updateTodo);
 
-  // LOCAL STATES
+  // LOCAL STATES & REFS
   const [newTodoName, setNewTodoName] = useState("");
-  const [inputHeight, setInputHeight] = useState<number>(60);
-  const [toggleDropdown, setToggleDropdown] = useState<boolean>(false);
   const [newPriorityLevel, setNewPriorityLevel] = useState<string>("high");
-
-  // FUNCTIONS
-  useEffect(() => {
-    if (todo) {
-      setNewTodoName(todo.task || "");
-      setNewPriorityLevel(todo.priority || "high");
-    }
-  }, [todo, isModalVisible]);
 
   const isSaveBtnDisabled =
     newTodoName.trim() === "" ||
     (newTodoName.trim() === todo?.task?.trim() &&
       newPriorityLevel === todo?.priority);
 
-  const hideModal = () => {
-    setIsModalVisible(false);
-    resetInputs();
+  const sheetRef = useRef<any>(null);
+  const inputRef = useRef<any>(null);
+
+  // FUNCTIONS
+  const closeModal = () => {
+    console.log("closing modal...");
+    Keyboard.dismiss();
+    sheetRef.current?.close();
+    setIsOpen(false);
   };
 
-  const resetInputs = () => {
-    setNewTodoName(todo?.task || "");
-    setNewPriorityLevel(todo?.priority || "high");
-    setToggleDropdown(false);
-  };
-
-  const saveTodo = () => {
-    console.log("Saving edited todo", { newTodoName, newPriorityLevel });
+  const saveChanges = () => {
     updateTodo(todoIdx, {
       newTask: newTodoName,
       newPriority: newPriorityLevel,
     });
-    hideModal();
+    closeModal();
   };
 
-  // ANIMATIONS
+  const resetInputs = useCallback(() => {
+    setNewTodoName(todo?.task || "");
+    setNewPriorityLevel(todo?.priority || "high");
+  }, [todo]);
 
-  const dropdownProgress = useSharedValue(0);
   useEffect(() => {
-    dropdownProgress.value = withTiming(toggleDropdown ? 1 : 0, {
-      duration: 300,
-    });
-  }, [toggleDropdown]);
+    if (isOpen) {
+      resetInputs();
 
-  const dropdownAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      height: interpolate(dropdownProgress.value, [0, 1], [0, 160]),
-      opacity: interpolate(dropdownProgress.value, [0, 0.5, 1], [0, 0, 1]),
-    };
-  });
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 350);
+
+      const backAction = () => {
+        closeModal();
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction,
+      );
+
+      return () => {
+        clearTimeout(timer);
+        backHandler.remove();
+      };
+    }
+  }, [isOpen, resetInputs]);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
 
   return (
-    <Modal
-      isVisible={isModalVisible}
-      onBackButtonPress={hideModal}
-      animationIn="slideInUp"
-      animationOut="slideOutDown"
-      swipeDirection={["down"]}
-      onSwipeComplete={hideModal}
-      avoidKeyboard={true}
-      hasBackdrop={true}
-      backdropTransitionOutTiming={0}
-      backdropTransitionInTiming={0}
-      style={styles.modal}
-      onBackdropPress={hideModal}
+    <BottomSheet
+      ref={sheetRef}
+      index={isOpen ? 0 : -1}
+      backdropComponent={renderBackdrop}
+      onClose={closeModal}
+      enablePanDownToClose={true}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+      backgroundStyle={styles.sheetBackground}
+      handleStyle={styles.sheetBackground}
+      handleIndicatorStyle={{ backgroundColor: "#CCC" }}
     >
-      <View style={styles.modalContent}>
-        <View style={styles.swipeAreaContainer}>
-          <View style={styles.swipeHandle} />
-          <Pressable onPress={hideModal} style={styles.closeButton}>
-            <FontAwesome5 name="window-close" size={24} color="#ccc" />
-          </Pressable>
+      <BottomSheetView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.closeBtn} onPress={closeModal}>
+            <MaterialIcons name="close" size={24} color="#CCC" />
+          </TouchableOpacity>
         </View>
 
-        <ScrollView
-          bounces={false}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps={"handled"}
-        >
-          {/* Input part */}
-          <TextInput
-            value={newTodoName}
-            autoFocus={true}
-            placeholderTextColor={"#c2c2c2"}
-            placeholder="Todo name"
-            onChangeText={setNewTodoName}
-            multiline={true}
-            onContentSizeChange={(e) => {
-              setInputHeight(e.nativeEvent.contentSize.height);
-            }}
-            style={[styles.input, { height: Math.max(60, inputHeight) }]}
-            spellCheck={false}
-            autoCorrect={false}
-          />
+        {/* Input */}
+        <BottomSheetTextInput
+          ref={inputRef}
+          value={newTodoName}
+          onChangeText={setNewTodoName}
+          multiline={true}
+          placeholderTextColor={"#c2c2c2"}
+          placeholder="Todo name"
+          style={[styles.input, { padding: 15 }]}
+          spellCheck={false}
+          autoCorrect={false}
+          autoFocus={false}
+        />
 
-          {/* Select part */}
-          <View style={styles.selectMenuWrapper}>
-            <TouchableOpacity
-              style={styles.selectMenuToggler}
-              onPress={() => setToggleDropdown(!toggleDropdown)}
-            >
-              <View style={styles.prioritySelectContainer}>
-                <Text style={styles.priorityText}>Priority: </Text>
-                <View style={styles.glowAndLevelTextContainer}>
-                  <View>
-                    <Text
-                      style={{
-                        color: GetColorByLevel(newPriorityLevel),
-                        fontWeight: "600",
-                        paddingTop: 3,
-                      }}
-                    >
-                      {newPriorityLevel.toUpperCase()}
-                    </Text>
-                  </View>
-                  <View style={{ paddingTop: 3.5, paddingLeft: 5 }}>
-                    <GlowCircle
-                      color={GetColorByLevel(newPriorityLevel)}
-                      size="small"
-                    />
-                  </View>
-                </View>
-              </View>
-              <View>
-                <FontAwesome
-                  name={toggleDropdown ? "chevron-up" : "chevron-down"}
-                  size={14}
-                  color="#fff"
-                  style={{ pointerEvents: "none" }}
-                />
-              </View>
-            </TouchableOpacity>
-
-            <Animated.View
-              style={[styles.dropdownContainer, dropdownAnimatedStyle]}
-            >
-              {PriorityLevels.map((item, idx) => {
-                const isSelected = item.level === newPriorityLevel;
-
-                return (
-                  <TouchableOpacity
-                    key={idx}
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      setNewPriorityLevel(item.level);
-                      setToggleDropdown(false);
-                    }}
-                  >
-                    <View style={styles.textContainer}>
-                      <View style={styles.rowContent}>
-                        <Text
-                          style={[
-                            styles.levelColumn,
-                            isSelected && styles.selectedText,
-                            { color: GetColorByLevel(item.level) },
-                          ]}
-                        >
-                          {CapitalizeFirstLetter(item.level)}{" "}
-                        </Text>
-                        <Text
-                          style={[
-                            styles.infoColumn,
-                            { color: GetColorByLevel(item.level) },
-                          ]}
-                        >
-                          {item.info}
-                        </Text>
-                      </View>
-
-                      {isSelected && (
-                        <FontAwesome
-                          name="check-circle"
-                          size={20}
-                          color="#0088CC"
-                        />
-                      )}
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
-            </Animated.View>
+        {/* Priority Selector Fieldset */}
+        <View style={styles.fieldset}>
+          <Text style={styles.fieldsetLabel}>Priority</Text>
+          <View style={styles.priorityBtnsContainer}>
+            {PriorityLevels.map((item) => (
+              <PriorityButton
+                key={item.level}
+                item={item}
+                isSelected={item.level === newPriorityLevel}
+                onPress={() => setNewPriorityLevel(item.level)}
+                isMedium={item.level === "medium"}
+              />
+            ))}
           </View>
+        </View>
 
-          {/* Save Part */}
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              onPress={saveTodo}
+        <View style={styles.buttonContainer}>
+          {/* Add & Close */}
+          <TouchableOpacity
+            onPress={saveChanges}
+            style={[
+              styles.saveBtn,
+              { backgroundColor: "#34C759" },
+              isSaveBtnDisabled && styles.saveBtnDisabled,
+            ]}
+            disabled={isSaveBtnDisabled}
+          >
+            <Text
               style={[
-                styles.saveBtn,
-                isSaveBtnDisabled && styles.saveBtnDisabled,
+                styles.saveBtnText,
+                isSaveBtnDisabled && styles.saveBtnTextDisabled,
               ]}
-              disabled={isSaveBtnDisabled}
             >
-              <Text
-                style={[
-                  styles.saveBtnText,
-                  isSaveBtnDisabled && styles.saveBtnTextDisabled,
-                ]}
-              >
-                Save
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </View>
-    </Modal>
+              Save
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </BottomSheetView>
+    </BottomSheet>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  prioritySelectContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  priorityText: {
-    color: "#FFF",
-    fontSize: 16,
-  },
-  selectMenuWrapper: {
-    width: "100%",
-    marginBottom: 20,
-    backgroundColor: "#2a2a2a",
-    borderRadius: 8,
-    overflow: "hidden",
-  },
-  selectMenuToggler: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
-    padding: 15,
-    backgroundColor: "#2a2a2a",
-  },
-  dropdownContainer: {
-    width: "100%",
-    backgroundColor: "#222222",
-  },
-  dropdownItem: {
-    paddingVertical: 14,
-    paddingHorizontal: 15,
-    borderTopWidth: 1,
-    borderTopColor: "#333",
-  },
-  textContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  itemText: {
-    color: "#aaa",
-    fontSize: 15,
-  },
-  selectedText: {
-    fontWeight: "600",
-  },
-  modal: {
-    justifyContent: "flex-end",
-    margin: 0,
-  },
-  modalContent: {
+  sheetBackground: {
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
     backgroundColor: "#242424",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    maxHeight: "80%",
   },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-  buttonContainer: {
+  container: {
     flex: 1,
+    paddingHorizontal: 20,
+    backgroundColor: "#242424",
+  },
+  header: {
     width: "100%",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 10,
+    alignItems: "flex-end",
+    marginBottom: 10,
+    marginTop: 5,
   },
-  swipeAreaContainer: {
-    width: "100%",
-    alignItems: "center",
-    position: "relative",
-    justifyContent: "center",
-    paddingVertical: 10,
-    marginBottom: 5,
-  },
-  swipeHandle: {
-    width: 40,
-    height: 5,
-    backgroundColor: "#444",
-    borderRadius: 3,
-  },
-  closeButton: {
-    position: "absolute",
-    right: 0,
-    top: 0,
-    justifyContent: "center",
-    alignItems: "center",
+  closeBtn: {
+    padding: 5,
   },
   input: {
+    fontFamily: "Inter-Regular",
     width: "100%",
     backgroundColor: "#1a1a1a",
     color: "#fff",
-    padding: 20,
     borderRadius: 8,
     marginBottom: 15,
     fontSize: 16,
   },
-  rowContent: {
+  fieldset: {
+    marginTop: 20,
+    marginBottom: 25,
+    borderWidth: 1,
+    borderColor: "#444",
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+  },
+  fieldsetLabel: {
+    position: "absolute",
+    top: -10,
+    left: 12,
+    backgroundColor: "#242424",
+    paddingHorizontal: 4,
+    color: "#FFF",
+    fontSize: 13,
+  },
+  priorityBtnsContainer: {
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  priorityBtn: {
     flex: 1,
+    borderWidth: 1.5,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  btnContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    position: "relative",
+  },
+  priorityBtnText: {
+    fontFamily: "Inter-Bold",
+    fontSize: 13,
+    textAlign: "center",
+  },
+  glowContainer: {
+    position: "absolute",
+    right: 14,
+    width: 12,
+    height: 12,
+    justifyContent: "center",
     alignItems: "center",
   },
-  levelColumn: {
-    width: 90,
-    fontSize: 15,
-  },
-  infoColumn: {
-    color: "#888",
-    fontSize: 14,
-    flex: 1,
+  buttonContainer: {
+    width: "100%",
+    flexDirection: "column",
+    marginBottom: 10,
   },
   saveBtn: {
     backgroundColor: "#4F46E5",
@@ -388,9 +332,5 @@ const styles = StyleSheet.create({
   saveBtnText: {
     fontFamily: "Inter-SemiBold",
     color: "#FFF",
-  },
-  glowAndLevelTextContainer: {
-    flexDirection: "row",
-    alignItems: "center",
   },
 });
