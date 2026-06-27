@@ -12,6 +12,7 @@
       "bundleIdentifier": "com.github.fatalifataliyev.xtodo"
     },
     "android": {
+      "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "backgroundColor": "#000000",
         "foregroundImage": "./assets/images/logo.png",

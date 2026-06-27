@@ -24,15 +24,11 @@ import Animated, {
 } from "react-native-reanimated";
 import getQuote from "../constants/getQuote";
 import AddTodo from "./AddTodoButton";
-import EditTodoModal from "./EditTodoModal";
+import { AddTodoModal } from "./AddTodoModal";
 import TodoItem from "./TodoItem";
 import TodoSearchBar from "./TodoSearchBar";
 
-type Props = {
-  showAddTodoModalCb: (val: boolean) => void;
-};
-
-export default function TodoContainer({ showAddTodoModalCb }: Props) {
+export default function TodoContainer() {
   // ZUSTAND STATES
   const todos = useTodoStore((state) => state.todos);
   const searchResults = useTodoStore((state) => state.searchResults);
@@ -51,6 +47,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isTestModalShow, setIsTestModalShow] = useState<boolean>(false);
 
   const activeTodos = useMemo(() => {
     if (isSearchMode && searchTextLen > 0) {
@@ -125,6 +122,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
 
   useEffect(() => {
     const backAction = () => {
+      // setIsTestModalShow(false);
       // Exit selection mode if enabled - Prioritized.
       if (isSelectionMode) {
         cancelSelection();
@@ -421,8 +419,7 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
         />
       </Animated.View>
 
-      {/* Add Todo Button */}
-      {!isSelectionMode && <AddTodo onPress={() => showAddTodoModalCb(true)} />}
+      <AddTodo onPress={() => setIsTestModalShow(true)} />
 
       {/* Selection Floating Buttons */}
       <Animated.View
@@ -466,13 +463,11 @@ export default function TodoContainer({ showAddTodoModalCb }: Props) {
       </Animated.View>
 
       {/* Todo edit modal */}
-      {isEditModalOpen && (
-        <EditTodoModal
-          isModalVisible={isEditModalOpen}
-          setIsModalVisible={setIsEditModalOpen}
-          todoIdx={selectedTodoId ?? ""}
-        />
-      )}
+
+      {/*>>>panic implement*/}
+
+      {/* Add Todo MODAL*/}
+      <AddTodoModal isOpen={isTestModalShow} setIsOpen={setIsTestModalShow} />
     </View>
   );
 }

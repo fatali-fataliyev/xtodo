@@ -87,7 +87,7 @@ function TodoItem({
     }
   };
 
-  const player = useAudioPlayer(getClickSound("dwLine1Default"));
+  const player = useAudioPlayer(getClickSound("impact"));
 
   // ANIMATIONS
   const swipeableRef = useRef<SwipeableMethods>(null);

@@ -1,4 +1,4 @@
-package com.fatali_fataliyev.XTodo
+package com.github.fatalifataliyev.xtodo
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
