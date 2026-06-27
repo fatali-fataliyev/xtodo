@@ -50,6 +50,9 @@ export default function TodoContainer() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isTestModalShow, setIsTestModalShow] = useState<boolean>(false);
 
+  const isAddButtonHidden =
+    isSelectionMode || isEditModalOpen || isTestModalShow;
+
   const activeTodos = useMemo(() => {
     if (isSearchMode && searchTextLen > 0) {
       return searchResults;
@@ -123,7 +126,6 @@ export default function TodoContainer() {
 
   useEffect(() => {
     const backAction = () => {
-      // setIsTestModalShow(false);
       // Exit selection mode if enabled - Prioritized.
       if (isSelectionMode) {
         cancelSelection();
@@ -244,12 +246,20 @@ export default function TodoContainer() {
     ],
   }));
 
-  const searchFloatingBtnStyles = useAnimatedStyle(() => ({
-    opacity: searchAnim.value,
+  const addBtnAnim = useSharedValue(1);
+
+  useEffect(() => {
+    addBtnAnim.value = withTiming(isAddButtonHidden ? 0 : 1, {
+      duration: 250,
+    });
+  }, [isAddButtonHidden]);
+
+  const addBtnAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: addBtnAnim.value,
     transform: [
       {
         scale: interpolate(
-          searchAnim.value,
+          addBtnAnim.value,
           [0, 1],
           [0.85, 1],
           Extrapolation.CLAMP,
@@ -420,8 +430,6 @@ export default function TodoContainer() {
         />
       </Animated.View>
 
-      <AddTodo onPress={() => setIsTestModalShow(true)} />
-
       {/* Selection Floating Buttons */}
       <Animated.View
         style={[styles.floatingActionContainer, floatingButtonsStyles]}
@@ -461,6 +469,14 @@ export default function TodoContainer() {
         <Text style={styles.counterText}>
           {`${selectedIds.size} ${selectedIds.size === 1 ? "todo" : "todos"} selected`}
         </Text>
+      </Animated.View>
+
+      {/*Add todo button*/}
+      <Animated.View
+        style={addBtnAnimatedStyle}
+        pointerEvents={isAddButtonHidden ? "none" : "auto"}
+      >
+        <AddTodo onPress={() => setIsTestModalShow(true)} />
       </Animated.View>
 
       {/* Todo edit BOTTOM sheet */}
