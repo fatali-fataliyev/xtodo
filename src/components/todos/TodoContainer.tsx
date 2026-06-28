@@ -466,7 +466,7 @@ export default function TodoContainer() {
                 activeOpacity={0.8}
                 onPress={clearAllDoneTodos}
               >
-                <Fontisto name="trash" size={20} color="#FF4D4D" />
+                <Fontisto name="trash" size={16} color="#FF4D4D" />
               </TouchableOpacity>
             </Animated.View>
           }
@@ -697,9 +697,8 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 8,
     backgroundColor: "rgba(0,0,0, 0.4)",
-    width: "95%",
-    alignSelf: "center",
-
-    zIndex: 99999,
+    width: 50,
+    alignSelf: "flex-end",
+    marginRight: 10,
   },
 });
