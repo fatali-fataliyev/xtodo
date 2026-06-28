@@ -43,6 +43,7 @@ export default function TodoContainer() {
   const deleteTodoByID = useTodoStore((state) => state.deleteByID);
   const deleteAllTodo = useTodoStore((state) => state.deleteAll);
   const clearSearchTodos = useTodoStore((state) => state.clearSearchResults);
+  const clearAllDoneTodos = useTodoStore((state) => state.clearAllDoneTodos);
 
   // LOCAL STATES
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -203,6 +204,9 @@ export default function TodoContainer() {
   const animatedValue = useSharedValue(0);
   const selectionAnim = useSharedValue(0);
   const searchAnim = useSharedValue(0);
+  const addBtnAnim = useSharedValue(1);
+  const closeButtonAnim = useSharedValue(0);
+  const clearBtnAni = useSharedValue(displayDoneData.length > 0 ? 1 : 0);
   const arrowRotation = useSharedValue(0);
   const listExpansion = useSharedValue(0);
 
@@ -217,6 +221,16 @@ export default function TodoContainer() {
 
   useEffect(() => {
     searchAnim.value = withTiming(isSearchMode ? 1 : 0, { duration: 250 });
+  }, [isSearchMode]);
+
+  useEffect(() => {
+    clearBtnAni.value = withTiming(displayDoneData.length > 0 ? 1 : 0, {
+      duration: 250,
+    });
+  }, [displayDoneData.length]);
+
+  useEffect(() => {
+    closeButtonAnim.value = withTiming(isSearchMode ? 1 : 0, { duration: 250 });
   }, [isSearchMode]);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -249,12 +263,6 @@ export default function TodoContainer() {
     ],
   }));
 
-  const closeButtonAnim = useSharedValue(0);
-
-  useEffect(() => {
-    closeButtonAnim.value = withTiming(isSearchMode ? 1 : 0, { duration: 250 });
-  }, [isSearchMode]);
-
   const closeSearchButton = useAnimatedStyle(() => ({
     opacity: closeButtonAnim.value,
     transform: [
@@ -268,8 +276,6 @@ export default function TodoContainer() {
       },
     ],
   }));
-
-  const addBtnAnim = useSharedValue(1);
 
   useEffect(() => {
     addBtnAnim.value = withTiming(isAddButtonHidden ? 0 : 1, {
@@ -318,6 +324,20 @@ export default function TodoContainer() {
       overflow: "hidden",
     };
   });
+
+  const clearBtnAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: clearBtnAni.value,
+    transform: [
+      {
+        scale: interpolate(
+          clearBtnAni.value,
+          [0, 1],
+          [0.8, 1],
+          Extrapolation.CLAMP,
+        ),
+      },
+    ],
+  }));
 
   const toggleDoneTodos = () => {
     const nextState = listExpansion.value === 0;
@@ -436,6 +456,20 @@ export default function TodoContainer() {
           renderItem={renderTodoItem}
           initialNumToRender={15}
           maxToRenderPerBatch={10}
+          ListHeaderComponent={
+            <Animated.View
+              style={clearBtnAnimatedStyle}
+              pointerEvents={displayDoneData.length === 0 ? "none" : "auto"}
+            >
+              <TouchableOpacity
+                style={styles.clearDoneTodosBtn}
+                activeOpacity={0.8}
+                onPress={clearAllDoneTodos}
+              >
+                <Fontisto name="trash" size={20} color="#FF4D4D" />
+              </TouchableOpacity>
+            </Animated.View>
+          }
           windowSize={5}
           removeClippedSubviews={true}
           itemLayoutAnimation={LinearTransition}
@@ -656,5 +690,16 @@ const styles = StyleSheet.create({
     color: "#CCC",
     fontFamily: "Inter-Bold",
     marginRight: 5,
+  },
+  clearDoneTodosBtn: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: "rgba(0,0,0, 0.4)",
+    width: "95%",
+    alignSelf: "center",
+
+    zIndex: 99999,
   },
 });

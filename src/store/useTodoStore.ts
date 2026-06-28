@@ -42,6 +42,7 @@ interface TodoState {
   applyFilters: (filters: string[]) => void;
   clearSearchResults: () => void;
   clearFilterResults: () => void;
+  clearAllDoneTodos: () => void;
   resetSearchTextLen: () => void;
 }
 
@@ -176,6 +177,10 @@ export const useTodoStore = create<TodoState>()(
 
         clearSearchResults: () => set({ searchResults: [] }),
         clearFilterResults: () => set({ filteredTodos: [] }),
+        clearAllDoneTodos: () =>
+          set((state) => ({
+            todos: state.todos.filter((todo) => todo.isDone !== true),
+          })),
         resetSearchTextLen: () => set({ searchTextLen: 0 }),
         setIsSearchMode: (value) => set({ isSearchMode: value }),
         setIsFilterMode: (value) => set({ isFilterMode: value }),
