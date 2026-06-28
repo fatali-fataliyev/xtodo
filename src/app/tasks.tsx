@@ -4,10 +4,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import TaskContainer from "../components/TodoContainer";
+import { GlowProvider } from "@/components/GlowContext";
 
 export default function TasksScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
+      <GlowProvider>
       <View style={styles.container}>
         {/*Header*/}
         <View style={styles.header}>
@@ -23,7 +25,8 @@ export default function TasksScreen() {
         <View style={styles.footer}>
           <Footer label="Notes" href={"/notes"} iconName="notes" />
         </View>
-      </View>
+        </View>
+      </GlowProvider>
     </SafeAreaView>
   );
 }

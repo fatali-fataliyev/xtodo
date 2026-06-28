@@ -7,6 +7,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from "react-native-reanimated";
+import { useGlowContext } from "./GlowContext";
 
 type SizeType = keyof typeof sizes;
 
@@ -19,16 +20,8 @@ export const GlowCircle: React.FC<GlowCircleProps> = ({
   color,
   size = "normal",
 }) => {
-  const glowProgress = useSharedValue(0);
+  const glowProgress = useGlowContext();
 
-  useEffect(() => {
-
-    glowProgress.value = withRepeat(
-      withTiming(1, { duration: 2500 }),
-      -1,
-      true
-    );
-  }, []);
 
   const animatedGlowStyle = useAnimatedStyle(() => {
     return {
@@ -53,9 +46,7 @@ export const GlowCircle: React.FC<GlowCircleProps> = ({
       <View
         style={[
           currentStyles.innerCircle,
-          {
-            backgroundColor: color,
-          },
+          { backgroundColor: color },
         ]}
       />
     </View>

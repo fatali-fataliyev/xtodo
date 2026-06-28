@@ -7,6 +7,7 @@ import BottomSheet, {
   BottomSheetTextInput,
   BottomSheetView,
   TouchableOpacity,
+  useBottomSheetSpringConfigs,
 } from "@gorhom/bottom-sheet";
 import * as Crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -31,7 +32,7 @@ type Props = {
   setIsOpen: (val: boolean) => void;
 };
 
-// ANIMATED COMPONENT
+// ANIMATED PRIORITY SELECT BUTTON COMPONENT
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const PriorityButton = ({ item, isSelected, onPress, isMedium }: any) => {
   const color = GetColorByLevel(item.level);
@@ -97,7 +98,6 @@ export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
   };
 
   const closeModal = () => {
-    console.log("closing modal...");
     Keyboard.dismiss();
     sheetRef.current?.close();
     setIsOpen(false);
@@ -121,10 +121,6 @@ export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
 
   useEffect(() => {
     if (isOpen) {
-      const timer = setTimeout(() => {
-        inputRef.current?.focus();
-      }, 350);
-
       const backAction = () => {
         closeModal();
         return true;
@@ -136,11 +132,18 @@ export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
       );
 
       return () => {
-        clearTimeout(timer);
         backHandler.remove();
       };
     }
   }, [isOpen]);
+
+  const handleSheetChange = useCallback((index: number) => {
+    if (index >= 0) {
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+      });
+    }
+  }, []);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -154,10 +157,18 @@ export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
     [],
   );
 
+  const animationConfigs = useBottomSheetSpringConfigs({
+    damping: 80,
+    overshootClamping: true,
+    stiffness: 500,
+  });
+
   return (
     <BottomSheet
       ref={sheetRef}
       index={isOpen ? 0 : -1}
+      onChange={handleSheetChange}
+      animationConfigs={animationConfigs}
       backdropComponent={renderBackdrop}
       onClose={closeModal}
       enablePanDownToClose={true}

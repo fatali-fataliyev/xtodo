@@ -1,9 +1,11 @@
+import { getClickSound } from "@/constants/clickSounds";
 import { useTodoStore } from "@/store/useTodoStore";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Fontisto from "@expo/vector-icons/Fontisto";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useAudioPlayer } from "expo-audio";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   BackHandler,
@@ -17,7 +19,6 @@ import Animated, {
   Extrapolation,
   interpolate,
   LinearTransition,
-  useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -49,9 +50,14 @@ export default function TodoContainer() {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isTestModalShow, setIsTestModalShow] = useState<boolean>(false);
-
   const isAddButtonHidden =
     isSelectionMode || isEditModalOpen || isTestModalShow;
+
+  const clickPlayer = useAudioPlayer(getClickSound("impact"));
+  const handlePlaySound = useCallback(() => {
+    clickPlayer.seekTo(0);
+    clickPlayer.play();
+  }, [clickPlayer]);
 
   const activeTodos = useMemo(() => {
     if (isSearchMode && searchTextLen > 0) {
@@ -74,8 +80,6 @@ export default function TodoContainer() {
   const isSelectAll =
     activeTodos.length > 0 && selectedIds.size === activeTodos.length;
   const [quote, setQuote] = useState<string>(getQuote().quote);
-
-  console.log(quote);
 
   // STATE HOOKS
   const toggleSelection = useCallback((id: string) => {
@@ -199,7 +203,6 @@ export default function TodoContainer() {
   const animatedValue = useSharedValue(0);
   const selectionAnim = useSharedValue(0);
   const searchAnim = useSharedValue(0);
-  const scrollY = useSharedValue(0);
   const arrowRotation = useSharedValue(0);
   const listExpansion = useSharedValue(0);
 
@@ -238,6 +241,26 @@ export default function TodoContainer() {
       {
         scale: interpolate(
           selectionAnim.value,
+          [0, 1],
+          [0.85, 1],
+          Extrapolation.CLAMP,
+        ),
+      },
+    ],
+  }));
+
+  const closeButtonAnim = useSharedValue(0);
+
+  useEffect(() => {
+    closeButtonAnim.value = withTiming(isSearchMode ? 1 : 0, { duration: 250 });
+  }, [isSearchMode]);
+
+  const closeSearchButton = useAnimatedStyle(() => ({
+    opacity: closeButtonAnim.value,
+    transform: [
+      {
+        scale: interpolate(
+          closeButtonAnim.value,
           [0, 1],
           [0.85, 1],
           Extrapolation.CLAMP,
@@ -306,12 +329,6 @@ export default function TodoContainer() {
     }
   };
 
-  const scrollHandler = useAnimatedScrollHandler({
-    onScroll: (event) => {
-      scrollY.value = event.contentOffset.y;
-    },
-  });
-
   const renderTodoItem = useCallback(
     ({ item }: { item: any }) => {
       return (
@@ -326,6 +343,7 @@ export default function TodoContainer() {
           onLongPress={handleLongPress}
           onSelect={toggleSelection}
           onEdit={handleEditPressCall}
+          onClickPlaySound={handlePlaySound}
         />
       );
     },
@@ -335,6 +353,7 @@ export default function TodoContainer() {
       handleLongPress,
       toggleSelection,
       handleEditPressCall,
+      handlePlaySound
     ],
   );
 
@@ -365,6 +384,10 @@ export default function TodoContainer() {
         data={displayData}
         style={[styles.listStyle, { flex: 1 }]}
         renderItem={renderTodoItem}
+        initialNumToRender={15}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        removeClippedSubviews={true}
         itemLayoutAnimation={LinearTransition}
         keyExtractor={(item, index) =>
           item?.id ? item.id.toString() : index.toString()
@@ -385,8 +408,6 @@ export default function TodoContainer() {
           paddingBottom: 40,
           paddingTop: 5,
         }}
-        onScroll={scrollHandler}
-        scrollEventThrottle={16}
       />
 
       {/* Done Todos Toggle Menu */}
@@ -413,6 +434,10 @@ export default function TodoContainer() {
           data={displayDoneData}
           style={styles.listStyle}
           renderItem={renderTodoItem}
+          initialNumToRender={15}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
           itemLayoutAnimation={LinearTransition}
           keyExtractor={(item, index) =>
             item?.id ? item.id.toString() : index.toString()
@@ -425,8 +450,6 @@ export default function TodoContainer() {
             paddingBottom: 40,
             paddingTop: 5,
           }}
-          onScroll={scrollHandler}
-          scrollEventThrottle={16}
         />
       </Animated.View>
 
@@ -461,6 +484,24 @@ export default function TodoContainer() {
           onPress={deleteSelectedTodos}
         >
           <Fontisto name="trash" size={20} color="#FF4D4D" />
+        </TouchableOpacity>
+      </Animated.View>
+
+      {/*Search Exit Floating Button*/}
+      <Animated.View
+        style={[styles.closeSearchFloatingContainer, closeSearchButton]}
+        pointerEvents={isSearchMode ? "auto" : "none"}
+      >
+        <TouchableOpacity
+          style={styles.closeSearchActionBtn}
+          onPress={() => {
+            Keyboard.dismiss();
+            setIsSearchMode(false);
+            resetSearchTextLen();
+            clearSearchTodos();
+          }}
+        >
+          <MaterialIcons name="search-off" size={24} color="#FFF" />
         </TouchableOpacity>
       </Animated.View>
 

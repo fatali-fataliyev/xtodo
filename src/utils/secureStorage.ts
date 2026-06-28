@@ -16,7 +16,7 @@ export const initializeStorage = async (): Promise<boolean> => {
   if (mmkvInstance) return true;
 
   let isFirstLaunch = await SecureStore.getItemAsync("hasLaunchedBefore");
-  
+
   if (!isFirstLaunch) {
     const newKey = generateAES128Key();
     await SecureStore.setItemAsync("aes_key", newKey);

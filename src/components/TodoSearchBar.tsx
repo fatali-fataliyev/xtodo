@@ -10,6 +10,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import TodoFilterModal from "./TodoFilterModal";
 
 export default function TodoSearchBar() {
@@ -20,13 +27,20 @@ export default function TodoSearchBar() {
   const updateSearchTextLen = useTodoStore(
     (state) => state.updateSearchTextLen,
   );
-  const clearSearchTodos = useTodoStore((state) => state.clearSearchResults);
 
   // LOCAL STATES
   const [searchText, setSearchText] = useState<string>("");
   const inputRef = useRef<TextInput>(null);
   const [isFilterModalVisible, setIsFilterModalVisible] =
     useState<boolean>(false);
+
+  // REANIMATED SHARED VALUE
+  const animValue = useSharedValue(0);
+  const showClearButton = isSearchMode && searchText.length > 0;
+
+  useEffect(() => {
+    animValue.value = withTiming(showClearButton ? 1 : 0, { duration: 100 });
+  }, [showClearButton]);
 
   useEffect(() => {
     if (!isSearchMode) {
@@ -48,13 +62,27 @@ export default function TodoSearchBar() {
   };
 
   const handleClearSearch = () => {
-    setIsSearchMode(false);
-    updateSearchTextLen(0);
-    clearSearchTodos();
     setSearchText("");
-    inputRef.current?.blur();
-    Keyboard.dismiss();
+    updateSearchTextLen(0);
+    executeSearch("");
   };
+
+  // REANIMATED ANIMATED STYLE
+  const animatedStyles = useAnimatedStyle(() => {
+    return {
+      opacity: animValue.value,
+      transform: [
+        {
+          scale: interpolate(
+            animValue.value,
+            [0, 1],
+            [0.7, 1],
+            Extrapolation.CLAMP,
+          ),
+        },
+      ],
+    };
+  });
 
   return (
     <View style={styles.searchAndFilterBar}>
@@ -62,6 +90,7 @@ export default function TodoSearchBar() {
         isVisible={isFilterModalVisible}
         onClose={() => setIsFilterModalVisible(false)}
       />
+
       <View style={styles.searchBox}>
         <Fontisto name="search" size={15} color="#5D5D5D" />
         <TextInput
@@ -77,7 +106,11 @@ export default function TodoSearchBar() {
           autoCorrect={false}
           autoCapitalize="none"
         />
-        {isSearchMode && (
+
+        <Animated.View
+          style={[styles.clearButtonContainer, animatedStyles]}
+          pointerEvents={showClearButton ? "auto" : "none"}
+        >
           <TouchableOpacity
             onPress={handleClearSearch}
             style={styles.clearButton}
@@ -85,7 +118,7 @@ export default function TodoSearchBar() {
           >
             <MaterialIcons name="cancel" size={18} color="#7A7A7A" />
           </TouchableOpacity>
-        )}
+        </Animated.View>
       </View>
 
       <TouchableOpacity
@@ -129,8 +162,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
     height: 40,
   },
-  clearButton: {
+  clearButtonContainer: {
     marginLeft: 4,
+  },
+  clearButton: {
     justifyContent: "center",
     alignItems: "center",
   },

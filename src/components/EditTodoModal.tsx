@@ -31,7 +31,7 @@ type Props = {
   todoIdx: string;
 };
 
-// ANIMATED COMPONENT
+// ANIMATED PRIORITY SELECT BUTTON COMPONENT
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const PriorityButton = ({ item, isSelected, onPress, isMedium }: any) => {
   const color = GetColorByLevel(item.level);
@@ -95,7 +95,6 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
 
   // FUNCTIONS
   const closeModal = () => {
-    console.log("closing modal...");
     Keyboard.dismiss();
     sheetRef.current?.close();
     setIsOpen(false);
@@ -117,11 +116,6 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
   useEffect(() => {
     if (isOpen) {
       resetInputs();
-
-      const timer = setTimeout(() => {
-        inputRef.current?.focus();
-      }, 350);
-
       const backAction = () => {
         closeModal();
         return true;
@@ -133,11 +127,18 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
       );
 
       return () => {
-        clearTimeout(timer);
         backHandler.remove();
       };
     }
   }, [isOpen, resetInputs]);
+
+  const handleSheetChange = useCallback((index: number) => {
+    if (index >= 0) {
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+      });
+    }
+  }, []);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -155,6 +156,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
     <BottomSheet
       ref={sheetRef}
       index={isOpen ? 0 : -1}
+      onChange={handleSheetChange}
       backdropComponent={renderBackdrop}
       onClose={closeModal}
       enablePanDownToClose={true}
