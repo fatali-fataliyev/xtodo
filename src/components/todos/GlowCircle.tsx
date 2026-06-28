@@ -1,11 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { View } from "react-native";
 import Animated, {
   interpolate,
   useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming,
 } from "react-native-reanimated";
 import { useGlowContext } from "./GlowContext";
 
@@ -22,12 +19,9 @@ export const GlowCircle: React.FC<GlowCircleProps> = ({
 }) => {
   const glowProgress = useGlowContext();
 
-
   const animatedGlowStyle = useAnimatedStyle(() => {
     return {
-      transform: [
-        { scale: interpolate(glowProgress.value, [0, 1], [1, 1.4]) },
-      ],
+      transform: [{ scale: interpolate(glowProgress.value, [0, 1], [1, 1.4]) }],
       opacity: interpolate(glowProgress.value, [0, 1], [0.3, 0.8]),
     };
   });
@@ -43,12 +37,7 @@ export const GlowCircle: React.FC<GlowCircleProps> = ({
           animatedGlowStyle,
         ]}
       />
-      <View
-        style={[
-          currentStyles.innerCircle,
-          { backgroundColor: color },
-        ]}
-      />
+      <View style={[currentStyles.innerCircle, { backgroundColor: color }]} />
     </View>
   );
 };
@@ -58,7 +47,6 @@ interface SizedStyle {
   innerCircle: Record<string, any>;
   outerCircle: Record<string, any>;
 }
-
 
 const sizes = {
   small: {

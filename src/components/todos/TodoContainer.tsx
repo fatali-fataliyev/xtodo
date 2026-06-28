@@ -23,7 +23,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import getQuote from "../constants/getQuote";
+import getQuote from "../../constants/getQuote";
 import AddTodo from "./AddTodoButton";
 import { AddTodoModal } from "./AddTodoModal";
 import { EditTodoModal } from "./EditTodoModal";
@@ -353,7 +353,7 @@ export default function TodoContainer() {
       handleLongPress,
       toggleSelection,
       handleEditPressCall,
-      handlePlaySound
+      handlePlaySound,
     ],
   );
 

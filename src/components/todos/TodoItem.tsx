@@ -15,7 +15,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from "react-native-reanimated";
-import { Colors, GetColorByLevel } from "../constants/colors";
+import { Colors, GetColorByLevel } from "../../constants/colors";
 import { GlowCircle } from "./GlowCircle";
 
 type Props = {

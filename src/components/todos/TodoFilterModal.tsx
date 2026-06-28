@@ -16,8 +16,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
-import { GetColorByLevel } from "../constants/colors";
-import { PriorityLevels } from "../constants/priorityLevels";
+import { GetColorByLevel } from "../../constants/colors";
+import { PriorityLevels } from "../../constants/priorityLevels";
 
 type Props = {
   isVisible: boolean;

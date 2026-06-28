@@ -1,10 +1,10 @@
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import Footer from "../components/Footer";
-import Header from "../components/Header";
-import TaskContainer from "../components/TodoContainer";
-import { GlowProvider } from "@/components/GlowContext";
+import Footer from "../components/ui/Footer";
+import Header from "../components/ui/Header";
+import TaskContainer from "../components/todos/TodoContainer";
+import { GlowProvider } from "../components/todos/GlowContext";
 
 export default function TodosScreen() {
   return (

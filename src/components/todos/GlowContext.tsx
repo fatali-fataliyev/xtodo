@@ -15,14 +15,12 @@ export const GlowProvider = ({ children }: { children: React.ReactNode }) => {
     glowProgress.value = withRepeat(
       withTiming(1, { duration: 2500 }),
       -1,
-      true
+      true,
     );
   }, []);
 
   return (
-    <GlowContext.Provider value={glowProgress}>
-      {children}
-    </GlowContext.Provider>
+    <GlowContext.Provider value={glowProgress}>{children}</GlowContext.Provider>
   );
 };
 
