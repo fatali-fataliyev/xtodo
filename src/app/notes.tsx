@@ -18,7 +18,7 @@ export default function NotesScreen() {
 
         {/*Footer*/}
         <View style={styles.footer}>
-          <Footer label="Tasks" href={"/tasks"} iconName="task-alt" />
+          <Footer label="Todos" href={"/todos"} iconName="task-alt" />
         </View>
       </View>
     </SafeAreaView>

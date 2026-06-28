@@ -6,14 +6,14 @@ import Header from "../components/Header";
 import TaskContainer from "../components/TodoContainer";
 import { GlowProvider } from "@/components/GlowContext";
 
-export default function TasksScreen() {
+export default function TodosScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <GlowProvider>
       <View style={styles.container}>
         {/*Header*/}
         <View style={styles.header}>
-          <Header label="Tasks" />
+          <Header label="Todos" />
         </View>
 
         {/*Section*/}
