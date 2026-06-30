@@ -17,6 +17,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { Colors, GetColorByLevel } from "../../constants/colors";
 import { GlowCircle } from "./GlowCircle";
+import { useSettingsStore } from "@/store/useSettingsStore";
 
 type Props = {
   id: string;
@@ -53,6 +54,7 @@ function TodoItem({
   const searchTextLen = useTodoStore((state) => state.searchTextLen);
   const isSearchMode = useTodoStore((state) => state.isSearchMode);
   const markTodoDone = useTodoStore((state) => state.markTodoDone);
+  const doneTodoTextStyle = useSettingsStore((state) => state.doneTodoTextStyle)
 
   // LOCAL STATE FOR ANIMATION
   const [isCompleting, setIsCompleting] = useState(false);
@@ -200,7 +202,7 @@ function TodoItem({
                   style={[
                     styles.taskText,
                     (isDone || isCompleting) && {
-                      textDecorationLine: "line-through",
+                      textDecorationLine: doneTodoTextStyle,
                     },
                   ]}
                 >

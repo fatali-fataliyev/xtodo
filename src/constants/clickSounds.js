@@ -21,6 +21,10 @@ export function getClickSound(key) {
   return SOUNDS_MAP.get(key);
 }
 
+export function getSoundByMapName(name) {
+  return SOUNDS_DATA.filter((sound) => sound.mapName === name)[0];
+}
+
 export const SOUNDS_DATA = [
   {
     name: "Draw Line 1 (Default)",

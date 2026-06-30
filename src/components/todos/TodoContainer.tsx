@@ -1,4 +1,5 @@
 import { getClickSound } from "@/constants/clickSounds";
+import { useSettingsStore } from "@/store/useSettingsStore";
 import { useTodoStore } from "@/store/useTodoStore";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Fontisto from "@expo/vector-icons/Fontisto";
@@ -44,6 +45,7 @@ export default function TodoContainer() {
   const deleteAllTodo = useTodoStore((state) => state.deleteAll);
   const clearSearchTodos = useTodoStore((state) => state.clearSearchResults);
   const clearAllDoneTodos = useTodoStore((state) => state.clearAllDoneTodos);
+  const clickSound = useSettingsStore((state) => state.todoClickSound);
 
   // LOCAL STATES
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -53,8 +55,8 @@ export default function TodoContainer() {
   const [isTestModalShow, setIsTestModalShow] = useState<boolean>(false);
   const isAddButtonHidden =
     isSelectionMode || isEditModalOpen || isTestModalShow;
+  const clickPlayer = useAudioPlayer(getClickSound(clickSound));
 
-  const clickPlayer = useAudioPlayer(getClickSound("impact"));
   const handlePlaySound = useCallback(() => {
     clickPlayer.seekTo(0);
     clickPlayer.play();

@@ -1,10 +1,10 @@
 // app/index.tsx
-import Constants from "expo-constants";
+import { useSettingsStore } from "@/store/useSettingsStore";
+import NotesScreen from "./notes";
 import TodosScreen from "./todos";
 
-const appVersion = Constants.expoConfig?.version;
-console.log("Current App Version:", appVersion);
-
 export default function Index() {
-  return <TodosScreen />;
+  const rootPage = useSettingsStore((state) => state.rootPage);
+
+  return rootPage === "todos" ? <TodosScreen /> : <NotesScreen />;
 }

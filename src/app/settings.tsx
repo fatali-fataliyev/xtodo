@@ -1,9 +1,5 @@
-import { Text, View } from "react-native";
+import SettingsContainer from "@/components/settings/settingsContainer";
 
 export default function SettingsScreen() {
-  return (
-    <View style={{ marginTop: 500 }}>
-      <Text style={{ color: "#FFF" }}>Settings Screen Page</Text>
-    </View>
-  );
+  return <SettingsContainer />;
 }

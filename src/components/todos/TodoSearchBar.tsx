@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 0,
     color: "#FFF",
-    fontFamily: "Inter-Bold",
+    fontFamily: "Inter-Regular",
     fontSize: 15,
     height: 40,
   },
