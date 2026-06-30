@@ -335,7 +335,7 @@ export default function SettingsContainer() {
         {/* ADD TODO BUTTON DROPDOWN */}
         <Animated.View style={[styles.menuItem, styles.menuItemMultiLine]}>
           <Text style={[styles.menuItemTitle, { marginBottom: 10 }]}>
-            Change add button
+            Add button
           </Text>
           <TouchableOpacity style={styles.header} onPress={toggleBtnDropdown}>
             <Text style={styles.headerText}>{currentAddBtnType}</Text>
