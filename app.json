@@ -40,7 +40,7 @@
           "backgroundColor": "#000000",
           "android": {
             "image": "./assets/images/logo.png",
-            "imageWidth": 76
+            "imageWidth": 180
           }
         }
       ],
