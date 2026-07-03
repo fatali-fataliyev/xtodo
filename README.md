@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="./assets/images/xtodo_clear.png" alt="XTodo Logo" width="200">
-</p>
+<img src="./assets/images/xtodo_clear.png" alt="XTodo Logo" width="200">
 
 
 Secure todo and task manager app.
@@ -26,7 +24,7 @@ XTodo is built with a zero-knowledge approach to your data privacy.
 
 - **Key Generation:** On the first launch, the app generates AES-128 encryption key.
 
-- **Hardware-Backed Security:** This key is instantly moved into the [Android Keystore system](https://developer.android.com/privacy-and-security/keystore).
+- **Key Security:** This key is instantly moved into the [Android Keystore system](https://developer.android.com/privacy-and-security/keystore).
 
 - **Data Isolation:** Every note and to-do item is encrypted before being written to the disk.
 
