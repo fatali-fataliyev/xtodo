@@ -1,13 +1,9 @@
-
-<div style="padding-left: 20px;">
 <img src="./assets/images/xtodo_clear.png" alt="XTodo Logo" width="200">
 
-
 Secure todo and task manager app.
-</div>
 
-[<img alt="Get it on Google Play" src="./docs/images/get-gplay.png" width="240">](https://play.google.com/store/apps/details?id=com.github.fatalifataliyev.xtodo) 
-[<img alt="Get it on GitHub" src="./docs/images/get-git.png" width="240">](https://github.com/fatali-fataliyev/xtodo/releases/latest/app_release.apk) 
+[<img alt="Get it on Google Play" src="./docs/images/get-gplay.png" width="240">](https://play.google.com/store/apps/details?id=com.github.fatalifataliyev.xtodo)
+[<img alt="Get it on GitHub" src="./docs/images/get-git.png" width="240">](https://github.com/fatali-fataliyev/xtodo/releases/latest/app_release.apk)
 
 ---
 
@@ -30,8 +26,6 @@ XTodo is built with a zero-knowledge approach to your data privacy.
 - **Key Security:** This key is instantly moved into the [Android Keystore system](https://developer.android.com/privacy-and-security/keystore).
 
 - **Data Isolation:** Every note and to-do item is encrypted before being written to the disk.
-
-
 
 > ⚠️ **Important Note on Data Persistence:** Because your encryption key lives exclusively within your device's Key store, **uninstalling the app or clearing its system data will permanently delete the key**. If the key is deleted, any existing encrypted data cannot be recovered.
 
