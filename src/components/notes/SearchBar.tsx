@@ -1,6 +1,5 @@
-import { useTodoStore } from "@/store/useTodoStore";
+import { useNoteStore } from "@/store/useNoteStore";
 import Fontisto from "@expo/vector-icons/Fontisto";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -17,22 +16,19 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import TodoFilterModal from "./TodoFilterModal";
 
-export default function TodoSearchBar() {
+export default function NoteSearchBar() {
   // ZUSTAND STATES
-  const executeSearch = useTodoStore((state) => state.executeSearch);
-  const isSearchMode = useTodoStore((state) => state.isSearchMode);
-  const setIsSearchMode = useTodoStore((state) => state.setIsSearchMode);
-  const updateSearchTextLen = useTodoStore(
+  const executeSearch = useNoteStore((state) => state.executeSearch);
+  const isSearchMode = useNoteStore((state) => state.isSearchMode);
+  const setIsSearchMode = useNoteStore((state) => state.setIsSearchMode);
+  const updateSearchTextLen = useNoteStore(
     (state) => state.updateSearchTextLen,
   );
 
   // LOCAL STATES
   const [searchText, setSearchText] = useState<string>("");
   const inputRef = useRef<TextInput>(null);
-  const [isFilterModalVisible, setIsFilterModalVisible] =
-    useState<boolean>(false);
 
   // REANIMATED SHARED VALUE
   const animValue = useSharedValue(0);
@@ -89,18 +85,13 @@ export default function TodoSearchBar() {
   });
 
   return (
-    <View style={styles.searchAndFilterBar}>
-      <TodoFilterModal
-        isVisible={isFilterModalVisible}
-        onClose={() => setIsFilterModalVisible(false)}
-      />
-
+    <View style={styles.searchBar}>
       <View style={styles.searchBox}>
         <Fontisto name="search" size={15} color="#5D5D5D" />
         <TextInput
           ref={inputRef}
           onChangeText={handleTextChange}
-          placeholder="Search todos"
+          placeholder="Search notes"
           placeholderTextColor={"#7A7A7A"}
           style={styles.input}
           onSubmitEditing={handleOnSubmit}
@@ -123,20 +114,12 @@ export default function TodoSearchBar() {
           </TouchableOpacity>
         </Animated.View>
       </View>
-
-      <TouchableOpacity
-        style={styles.filterBtn}
-        activeOpacity={0.8}
-        onPress={() => setIsFilterModalVisible(true)}
-      >
-        <Ionicons name="filter" size={24} color="white" />
-      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  searchAndFilterBar: {
+  searchBar: {
     width: "100%",
     height: 45,
     flexDirection: "row",
@@ -144,6 +127,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 10,
     backgroundColor: "#1A1818",
+    marginTop: 3,
   },
   searchBox: {
     backgroundColor: "#242424",
@@ -151,7 +135,7 @@ const styles = StyleSheet.create({
     height: 40,
     paddingHorizontal: 18,
     flexDirection: "row",
-    width: "85%",
+    width: "100%",
     alignItems: "center",
   },
   input: {
@@ -169,12 +153,6 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   clearButton: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  filterBtn: {
-    width: "15%",
-    height: 40,
     justifyContent: "center",
     alignItems: "center",
   },

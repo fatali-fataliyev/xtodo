@@ -9,7 +9,7 @@ import BottomSheet, {
   TouchableOpacity,
   useBottomSheetSpringConfigs,
 } from "@gorhom/bottom-sheet";
-import * as Crypto from "expo-crypto";
+import * as crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   BackHandler,
@@ -90,7 +90,7 @@ export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
   // FUNCTIONS
   const addTodo = () => {
     saveTodo({
-      id: Crypto.randomUUID(),
+      id: crypto.randomUUID(),
       task: todoName,
       isDone: false,
       priority: priorityLevel,

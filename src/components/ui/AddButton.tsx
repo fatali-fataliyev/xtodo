@@ -9,7 +9,7 @@ type Props = {
   onPress: () => void;
 };
 
-export default function AddTodo({ onPress }: Props) {
+export default function AddButton({ onPress }: Props) {
   const buttonStyle = useSettingsStore((state) => state.addBtnType);
 
   return buttonStyle === "default" ? (

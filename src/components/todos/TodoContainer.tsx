@@ -25,7 +25,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import getQuote from "../../constants/getQuote";
-import AddTodo from "./AddTodoButton";
+import AddTodo from "../ui/AddButton";
 import { AddTodoModal } from "./AddTodoModal";
 import { EditTodoModal } from "./EditTodoModal";
 import TodoItem from "./TodoItem";
@@ -383,14 +383,14 @@ export default function TodoContainer() {
     <View style={styles.listEmptyComponent}>
       {isSearchMode ? (
         <>
-          <Ionicons name="telescope" size={25} color="#c1c1c1" />
+          <Ionicons name="telescope" size={20} color="#c1c1c1" />
           <Text style={styles.emptyText}>No todos found</Text>
         </>
       ) : (
         <>
           <MaterialCommunityIcons
             name="clipboard-check-multiple-outline"
-            size={25}
+            size={20}
             color="#c1c1c1"
           />
           <Text style={styles.emptyText}>No todos here yet</Text>
@@ -544,7 +544,9 @@ export default function TodoContainer() {
       {/* Selected Todo Counter */}
       <Animated.View style={[styles.toggleMenu, animatedStyle]}>
         <Text style={styles.counterText}>
-          {`${selectedIds.size} ${selectedIds.size === 1 ? "todo" : "todos"} selected`}
+          {selectedIds.size === 0
+            ? "Select items"
+            : `${selectedIds.size} ${selectedIds.size === 1 ? "todo" : "todos"} selected`}
         </Text>
       </Animated.View>
 

@@ -1,4 +1,5 @@
 // app/_layout.tsx
+import { useNoteStore } from "@/store/useNoteStore";
 import {
   Inter_400Regular,
   Inter_600SemiBold,
@@ -30,6 +31,7 @@ export default function RootLayout() {
         const isStorageReady = await initializeStorage();
         if (isStorageReady) {
           await useTodoStore.persist.rehydrate();
+          await useNoteStore.persist.rehydrate();
         }
       } catch (error) {
         console.warn(`Initialization error: ${error}`);

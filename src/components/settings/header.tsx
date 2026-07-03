@@ -22,7 +22,7 @@ export default function Header({
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-        <MaterialIcons name="arrow-back" size={24} color="white" />
+        <MaterialIcons name="arrow-back-ios" size={24} color="#fff" />
       </TouchableOpacity>
 
       {isColorPickerOpen ? (

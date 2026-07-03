@@ -29,7 +29,7 @@ export const initializeStorage = async (): Promise<boolean> => {
     return new Promise((resolve) => {
       Alert.alert(
         "Data Encryption Error",
-        "We couldn't verify your secure security key. To continue using the app, we need to reset your key. This will prevent you from reading old todos.",
+        "We couldn't verify your secure security key. To continue using the app, we need to reset your key. This will prevent you from reading old todos and notes.",
         [
           {
             text: "Cancel",
@@ -51,7 +51,7 @@ export const initializeStorage = async (): Promise<boolean> => {
               await SecureStore.setItemAsync("hasLaunchedBefore", "true");
 
               const config: Configuration = {
-                id: "secure-todo-storage",
+                id: "secure-app-storage",
                 encryptionKey: newKey,
               };
 
@@ -66,7 +66,7 @@ export const initializeStorage = async (): Promise<boolean> => {
   }
 
   const config: Configuration = {
-    id: "secure-todo-storage",
+    id: "secure-app-storage",
     encryptionKey: key,
   };
   mmkvInstance = createMMKV(config);

@@ -1,6 +1,7 @@
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import NotesContainer from "@/components/notes/NoteContainer";
 import Footer from "../components/ui/Footer";
 import Header from "../components/ui/Header";
 
@@ -14,7 +15,9 @@ export default function NotesScreen() {
         </View>
 
         {/*Section*/}
-        <View style={styles.section}></View>
+        <View style={styles.section}>
+          <NotesContainer />
+        </View>
 
         {/*Footer*/}
         <View style={styles.footer}>
