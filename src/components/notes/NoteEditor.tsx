@@ -102,7 +102,7 @@ export default function NoteEditorScreen() {
         id: crypto.randomUUID(),
         title: trimmedTitle,
         content,
-        createdAt: new Date(),
+        createdAt: createdDate,
         updatedAt: new Date(),
       });
     } else {

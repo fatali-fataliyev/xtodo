@@ -1,6 +1,4 @@
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { router } from "expo-router";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import Animated, {
   FadeIn,
   FadeOut,
@@ -21,10 +19,6 @@ export default function Header({
 }: Props) {
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-        <MaterialIcons name="arrow-back-ios" size={24} color="#fff" />
-      </TouchableOpacity>
-
       {isColorPickerOpen ? (
         <Animated.View
           key="color-picker-btn"
@@ -50,23 +44,12 @@ export default function Header({
 
 const styles = StyleSheet.create({
   container: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#454545",
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     minHeight: 50,
     position: "relative",
     marginBottom: 20,
-  },
-  backBtn: {
-    position: "absolute",
-    left: 0,
-    zIndex: 1,
-    width: 50,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "flex-start",
   },
   centerContainer: {
     justifyContent: "center",

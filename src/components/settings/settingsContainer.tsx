@@ -181,12 +181,6 @@ export default function SettingsContainer() {
     customBtnBGSharedColor.value = currentCustomAddBtnBg;
   }, [currentCustomAddBtnBg]);
 
-  const animatedIndicatorStyle = useAnimatedStyle(() => {
-    return {
-      backgroundColor: customBtnBGSharedColor.value,
-    };
-  });
-
   const setCustomBtnBGColor = ({ hex }: { hex: string }) => {
     updateCustomAddBtnBg(hex);
   };
@@ -247,15 +241,17 @@ export default function SettingsContainer() {
   }, [isBtnOpen]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <Header
-        isColorPickerOpen={isColorPickerOpen}
-        bgColor={customBtnBGSharedColor}
-        iconColor={customBtnIconSharedColor}
-      />
+    <View style={styles.container}>
+      <SafeAreaView edges={["top"]} style={styles.headerSafeArea}>
+        <Header
+          isColorPickerOpen={isColorPickerOpen}
+          bgColor={customBtnBGSharedColor}
+          iconColor={customBtnIconSharedColor}
+        />
+      </SafeAreaView>
 
       {/* SETTINGS SECTION */}
-      <Animated.ScrollView>
+      <Animated.ScrollView contentContainerStyle={styles.scrollContent}>
         {/* HOME PAGE */}
         <View style={styles.menuItem}>
           <Text style={styles.menuItemTitle}>Home page</Text>
@@ -501,15 +497,22 @@ export default function SettingsContainer() {
         {/* _FOOTER */}
         <Footer />
       </Animated.ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: "#000000",
+  },
+  scrollContent: {
     padding: 20,
+    paddingBottom: 20,
+  },
+  headerSafeArea: {
+    paddingHorizontal: 20,
+    backgroundColor: "#000000",
   },
   menuItem: {
     borderRadius: 10,

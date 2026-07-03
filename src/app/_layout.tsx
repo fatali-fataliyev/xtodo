@@ -39,7 +39,6 @@ export default function RootLayout() {
         setAppIsReady(true);
       }
     }
-
     prepareApp();
   }, []);
 
@@ -49,26 +48,20 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError, appIsReady]);
 
-  if (!fontsLoaded && !fontError && !appIsReady) {
+  if (!fontsLoaded && !fontError) {
     return null;
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#000000" }}>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: "#000000" },
-        }}
-      >
-        <Stack.Screen name="index" options={{ animation: "none" }} />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+
         <Stack.Screen
-          name="notes"
-          options={{ animation: "slide_from_right" }}
-        />
-        <Stack.Screen
-          name="settings"
-          options={{ animation: "slide_from_right" }}
+          name="note/[id]"
+          options={{
+            animation: "slide_from_right",
+          }}
         />
       </Stack>
     </GestureHandlerRootView>

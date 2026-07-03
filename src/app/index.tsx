@@ -1,10 +1,15 @@
 // app/index.tsx
 import { useSettingsStore } from "@/store/useSettingsStore";
-import NotesScreen from "./notes";
-import TodosScreen from "./todos";
+import { Redirect } from "expo-router";
 
 export default function Index() {
-  const rootPage = useSettingsStore((state) => state.rootPage);
+  const homePage = useSettingsStore((state) => state.rootPage);
 
-  return rootPage === "todos" ? <TodosScreen /> : <NotesScreen />;
+  let hrefRoute: "/todos" | "/notes" = "/todos";
+
+  if (homePage !== "todos") {
+    hrefRoute = "/notes";
+  }
+
+  return <Redirect href={hrefRoute} />;
 }
