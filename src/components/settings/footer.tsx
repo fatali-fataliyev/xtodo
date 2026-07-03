@@ -12,9 +12,8 @@ import {
   View,
 } from "react-native";
 import Animated, {
-  FadeIn,
-  FadeOut,
-  LinearTransition,
+  useAnimatedStyle,
+  withTiming,
 } from "react-native-reanimated";
 import Divider from "./divider";
 
@@ -50,7 +49,7 @@ export default function Footer() {
 
   const onShare = async () => {
     try {
-      const result = await Share.share({
+      await Share.share({
         message:
           "Get XTodo, stay organized and productive. Download here: https://xtodo.app",
         url: "https://xtodo.app",
@@ -65,14 +64,31 @@ export default function Footer() {
     setIsAboutExpanded(!isAboutExpanded);
   };
 
+  const animatedContentStyle = useAnimatedStyle(() => {
+    return {
+      height: withTiming(isAboutExpanded ? 160 : 0, { duration: 250 }),
+      opacity: withTiming(isAboutExpanded ? 1 : 0, { duration: 200 }),
+      overflow: "hidden",
+    };
+  }, [isAboutExpanded]);
+
+  const animatedChevronStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          rotate: withTiming(isAboutExpanded ? "-180deg" : "0deg", {
+            duration: 250,
+          }),
+        },
+      ],
+    };
+  }, [isAboutExpanded]);
+
   return (
     <View style={styles.container}>
       <Divider text="ABOUT" />
 
-      <Animated.View
-        layout={LinearTransition}
-        style={styles.quickLinksContainer}
-      >
+      <View style={styles.quickLinksContainer}>
         <View style={styles.header}>
           <Image source={logo} style={styles.logo} />
         </View>
@@ -89,7 +105,7 @@ export default function Footer() {
           <Text style={styles.linkText}>View on GitHub</Text>
         </TouchableOpacity>
 
-        {/*SHARE*/}
+        {/* SHARE */}
         <TouchableOpacity
           style={styles.linkItem}
           onPress={onShare}
@@ -120,42 +136,39 @@ export default function Footer() {
               <FontAwesome name="question-circle" size={24} color="#FFF" />
             </View>
             <Text style={styles.linkText}>About XTodo</Text>
-            <FontAwesome
-              name={isAboutExpanded ? "chevron-up" : "chevron-down"}
-              size={14}
-              color="#CCC"
-              style={styles.chevron}
-            />
+
+            <Animated.View style={animatedChevronStyle}>
+              <FontAwesome
+                name="chevron-down"
+                size={14}
+                color="#CCC"
+                style={styles.chevron}
+              />
+            </Animated.View>
           </TouchableOpacity>
 
-          {isAboutExpanded && (
-            <Animated.View
-              entering={FadeIn.duration(200)}
-              exiting={FadeOut.duration(150)}
-              style={styles.aboutContent}
-            >
-              <Text style={styles.aboutText}>
-                XTodo is a powerful task manager designed to keep you organized.
-                Rank tasks by priority and take notes with peace of mind,
-                everything is fully secured with strong encryption.
-              </Text>
+          <Animated.View style={[styles.aboutContent, animatedContentStyle]}>
+            <Text style={styles.aboutText}>
+              XTodo is a powerful task & note manager designed to keep you organized.
+              Rank tasks by priority and take notes with peace of mind,
+              everything is fully secured with strong encryption.
+            </Text>
 
-              <View style={styles.developerContainer}>
-                <FontAwesome
-                  name="code"
-                  size={14}
-                  color="#888"
-                  style={styles.developerIcon}
-                />
-                <Text style={styles.developerText}>
-                  Developer:{" "}
-                  <Text style={styles.developerName}>Fatali Fataliyev</Text>
-                </Text>
-              </View>
-            </Animated.View>
-          )}
+            <View style={styles.developerContainer}>
+              <FontAwesome
+                name="code"
+                size={14}
+                color="#888"
+                style={styles.developerIcon}
+              />
+              <Text style={styles.developerText}>
+                Developer:{" "}
+                <Text style={styles.developerName}>Fatali Fataliyev</Text>
+              </Text>
+            </View>
+          </Animated.View>
         </View>
-      </Animated.View>
+      </View>
 
       <Text style={styles.thankText}>Thank you for using XTodo 🤍</Text>
       <Text style={styles.versionText}>v{appVersion}</Text>
@@ -187,7 +200,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   thankText: {
     color: "#FFF",
     fontFamily: "Inter-Regular",
@@ -223,12 +235,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   chevron: {
-    marginLeft: "auto",
+    alignSelf: "center",
   },
   aboutContent: {
     paddingLeft: 45,
     paddingRight: 10,
-    paddingBottom: 12,
   },
   aboutText: {
     color: "#AAA",
@@ -240,6 +251,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginTop: 20,
+    paddingBottom: 12,
     opacity: 0.8,
   },
   developerIcon: {
