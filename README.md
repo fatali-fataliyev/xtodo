@@ -1,14 +1,13 @@
-<div>
 
+<div style="padding-left: 20px;">
 <img src="./assets/images/xtodo_clear.png" alt="XTodo Logo" width="200">
 
 
 Secure todo and task manager app.
+</div>
 
 [<img alt="Get it on Google Play" src="./docs/images/get-gplay.png" width="240">](https://play.google.com/store/apps/details?id=com.github.fatalifataliyev.xtodo) 
 [<img alt="Get it on GitHub" src="./docs/images/get-git.png" width="240">](https://github.com/fatali-fataliyev/xtodo/releases/latest/app_release.apk) 
-
-</div>
 
 ---
 
