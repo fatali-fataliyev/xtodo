@@ -17,6 +17,9 @@ Secure todo and task manager app.
 
 ---
 
+### Preview
+
+---
 ## Security
 
 XTodo is built with a zero-knowledge approach to your data privacy.
@@ -32,3 +35,11 @@ XTodo is built with a zero-knowledge approach to your data privacy.
 > **Note**: App settings are stored without encryption because they do not contain any sensitive data.
 
 ---
+
+## Libraries Used
+- [Zustand](https://github.com/pmndrs/zustand) for state management
+- [Reanimated](https://docs.swmansion.com/react-native-reanimated/) for smooth animations
+- [MMKV](https://github.com/mrousavy/react-native-mmkv) for storing data on disk
+- [BottomSheet](https://github.com/gorhom/react-native-bottom-sheet) for modals and bottom inputs
+- [ColorPicker](https://github.com/alabsi91/reanimated-color-picker) for customizing the Add Button style
+- [SWM TextEditor](https://enriched.swmansion.com/) for text editing within notes
