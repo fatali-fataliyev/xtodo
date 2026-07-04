@@ -7,19 +7,24 @@ Secure todo and task manager app.
 
 ---
 
-### Features
+## Preview
+
+
+<p><img src="./docs/previews/s1.jpg" width="32%" /> <img src="./docs/previews/s2.jpg" width="32%" /> <img src="./docs/previews/s3.jpg" width="32%" />
+<img src="./docs/previews/s4.jpg" width="32%" /> <img src="./docs/previews/s5.jpg" width="32%" /> <img src="./docs/previews/s6.jpg" width="32%" /></p>
+
+
+---
+
+## Features
 
 - **Encryption:** XTodo uses [AES-128](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) encryption to store your Notes and To-dos securely on disk.
-
 - **Priority:** You can set priority levels for your To-dos, making it easy to know exactly where to start.
 - **Rich Text Editing:** Format your notes with headings, bold text, italics, or even `code examples`.
 - **Customization**: You can customize app's look from the settings menu.
 
 ---
 
-### Preview
-
----
 ## Security
 
 XTodo is built with a zero-knowledge approach to your data privacy.
