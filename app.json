@@ -13,6 +13,10 @@
     },
     "android": {
       "softwareKeyboardLayoutMode": "pan",
+      "statusBar": {
+        "backgroundColor": "#00000000",
+        "translucent": true
+      },
       "adaptiveIcon": {
         "backgroundColor": "#000000",
         "foregroundImage": "./assets/images/logo.png",
