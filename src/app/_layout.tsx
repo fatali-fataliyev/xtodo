@@ -9,7 +9,8 @@ import {
 } from "@expo-google-fonts/inter";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { AppState, AppStateStatus } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useTodoStore } from "../store/useTodoStore";
 import { initializeStorage } from "../utils/secureStorage";
@@ -17,6 +18,7 @@ import { initializeStorage } from "../utils/secureStorage";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const appState = useRef(AppState.currentState);
   const [appIsReady, setAppIsReady] = useState(false);
   const [fontsLoaded, fontError] = useFonts({
     "Inter-Regular": Inter_400Regular,
@@ -26,6 +28,20 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
+    const subscription = AppState.addEventListener(
+      "change",
+      (nextAppState: AppStateStatus) => {
+        if (
+          appState.current.match(/inactive|background/) &&
+          nextAppState === "active"
+        ) {
+          useTodoStore.persist.rehydrate();
+        }
+
+        appState.current = nextAppState;
+      },
+    );
+
     async function prepareApp() {
       try {
         const isStorageReady = await initializeStorage();
@@ -40,6 +56,11 @@ export default function RootLayout() {
       }
     }
     prepareApp();
+
+    SplashScreen.hideAsync();
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
   useEffect(() => {
@@ -53,16 +74,17 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#000000" }}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
-
         <Stack.Screen
           name="note/[id]"
-          options={{
-            animation: "slide_from_right",
-          }}
+          options={{ animation: "slide_from_right" }}
         />
+
+        {/* Routes for deep linking from Widget*/}
+        <Stack.Screen name="add" options={{ presentation: "modal" }} />
+        <Stack.Screen name="edit" options={{ presentation: "modal" }} />
       </Stack>
     </GestureHandlerRootView>
   );

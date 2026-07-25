@@ -1,6 +1,6 @@
+import { useSettingsStore } from "@/store/useSettingsStore";
 import { useTodoStore } from "@/store/useTodoStore";
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useRef, useState } from "react";
 import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
 import Swipeable, {
@@ -17,7 +17,8 @@ import Animated, {
 } from "react-native-reanimated";
 import { Colors, GetColorByLevel } from "../../constants/colors";
 import { GlowCircle } from "./GlowCircle";
-import { useSettingsStore } from "@/store/useSettingsStore";
+
+const ICON_SIZE = 20;
 
 type Props = {
   id: string;
@@ -54,7 +55,9 @@ function TodoItem({
   const searchTextLen = useTodoStore((state) => state.searchTextLen);
   const isSearchMode = useTodoStore((state) => state.isSearchMode);
   const markTodoDone = useTodoStore((state) => state.markTodoDone);
-  const doneTodoTextStyle = useSettingsStore((state) => state.doneTodoTextStyle)
+  const doneTodoTextStyle = useSettingsStore(
+    (state) => state.doneTodoTextStyle,
+  );
 
   // LOCAL STATE FOR ANIMATION
   const [isCompleting, setIsCompleting] = useState(false);
@@ -127,7 +130,11 @@ function TodoItem({
           onPress={deleteTodoItem}
         >
           <Animated.View style={animatedIconStyles}>
-            <FontAwesome6 name="trash" size={20} color="#FFF" />
+            <MaterialCommunityIcons
+              name="delete"
+              size={ICON_SIZE}
+              color="#FFF"
+            />
           </Animated.View>
         </Pressable>
       </View>
@@ -180,18 +187,19 @@ function TodoItem({
         >
           <View style={styles.mainAreaContainer}>
             {isSelectionMode ? (
-              <Ionicons
-                name={isSelected ? "checkbox" : "square-outline"}
-                size={21}
+              <MaterialCommunityIcons
+                name={isSelected ? "checkbox-marked" : "square"}
+                size={ICON_SIZE}
                 color={Colors.medium}
-                style={{ borderRadius: 4 }}
               />
             ) : (
-              <Ionicons
-                name={isDone || isCompleting ? "checkbox" : "square-outline"}
-                size={21}
+              <MaterialCommunityIcons
+                name={
+                  isDone || isCompleting ? "checkbox-marked" : "square-outline"
+                }
+                size={ICON_SIZE}
                 color={"#8E8E93"}
-                style={{ borderRadius: 4 }}
+                style={{ borderRadius: 60 }}
               />
             )}
             <View style={styles.taskContainer}>
@@ -226,7 +234,11 @@ function TodoItem({
             ]}
             onPress={() => onEdit?.(id)}
           >
-            <FontAwesome6 name="edit" size={20} color="#B3B3B3" />
+            <MaterialCommunityIcons
+              name="square-edit-outline"
+              size={ICON_SIZE}
+              color="#B3B3B3"
+            />
           </Pressable>
         </Pressable>
       </Swipeable>

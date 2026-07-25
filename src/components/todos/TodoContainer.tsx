@@ -24,7 +24,6 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import getQuote from "../../constants/getQuote";
 import AddTodo from "../ui/AddButton";
 import { AddTodoModal } from "./AddTodoModal";
 import { EditTodoModal } from "./EditTodoModal";
@@ -69,7 +68,6 @@ export default function TodoContainer() {
     if (isFilterMode) {
       return filterResults;
     }
-
     return todos.filter((todo) => todo.isDone !== true);
   }, [
     isSearchMode,
@@ -82,9 +80,7 @@ export default function TodoContainer() {
 
   const isSelectAll =
     activeTodos.length > 0 && selectedIds.size === activeTodos.length;
-  const [quote, setQuote] = useState<string>(getQuote().quote);
 
-  // STATE HOOKS
   const toggleSelection = useCallback((id: string) => {
     setSelectedIds((prevSelected) => {
       const newSelected = new Set(prevSelected);
@@ -104,7 +100,6 @@ export default function TodoContainer() {
     if (isSearchMode && searchTextLen > 0) {
       return searchResults;
     }
-
     return todos.filter((todo) => todo.isDone !== true);
   }, [
     isFilterMode,
@@ -117,14 +112,7 @@ export default function TodoContainer() {
 
   const displayDoneData = useMemo(() => {
     return todos.filter((todo) => todo.isDone === true);
-  }, [
-    isFilterMode,
-    filterResults,
-    isSearchMode,
-    searchTextLen,
-    searchResults,
-    todos,
-  ]);
+  }, [todos]);
 
   const cancelSelection = () => {
     setSelectedIds(new Set());
@@ -133,12 +121,10 @@ export default function TodoContainer() {
 
   useEffect(() => {
     const backAction = () => {
-      // Exit selection mode if enabled - Prioritized.
       if (isSelectionMode) {
         cancelSelection();
         return true;
       }
-      // Exit search mode if enabled
       if (isSearchMode) {
         Keyboard.dismiss();
         setIsSearchMode(false);
@@ -153,7 +139,6 @@ export default function TodoContainer() {
       "hardwareBackPress",
       backAction,
     );
-
     return () => backHandler.remove();
   }, [isSelectionMode, isSearchMode, setIsSearchMode]);
 
@@ -198,7 +183,6 @@ export default function TodoContainer() {
       resetSearchTextLen();
       clearSearchTodos();
     }
-
     closeToggleMenu();
   };
 
@@ -211,6 +195,9 @@ export default function TodoContainer() {
   const clearBtnAni = useSharedValue(displayDoneData.length > 0 ? 1 : 0);
   const arrowRotation = useSharedValue(0);
   const listExpansion = useSharedValue(0);
+  const doneHeaderOpacity = useSharedValue(0);
+
+  const hasDone = displayDoneData.length > 0;
 
   useEffect(() => {
     animatedValue.value = withTiming(isSelectionMode ? 1 : 0, {
@@ -223,17 +210,22 @@ export default function TodoContainer() {
 
   useEffect(() => {
     searchAnim.value = withTiming(isSearchMode ? 1 : 0, { duration: 250 });
-  }, [isSearchMode]);
-
-  useEffect(() => {
-    clearBtnAni.value = withTiming(displayDoneData.length > 0 ? 1 : 0, {
-      duration: 250,
-    });
-  }, [displayDoneData.length]);
-
-  useEffect(() => {
     closeButtonAnim.value = withTiming(isSearchMode ? 1 : 0, { duration: 250 });
   }, [isSearchMode]);
+
+  useEffect(() => {
+    clearBtnAni.value = withTiming(hasDone ? 1 : 0, { duration: 250 });
+    doneHeaderOpacity.value = withTiming(hasDone ? 1 : 0, { duration: 400 });
+
+    if (!hasDone) {
+      listExpansion.value = withTiming(0, { duration: 200 });
+      arrowRotation.value = withTiming(0, { duration: 200 });
+    }
+  }, [hasDone]);
+
+  useEffect(() => {
+    addBtnAnim.value = withTiming(isAddButtonHidden ? 0 : 1, { duration: 250 });
+  }, [isAddButtonHidden]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: animatedValue.value,
@@ -279,12 +271,6 @@ export default function TodoContainer() {
     ],
   }));
 
-  useEffect(() => {
-    addBtnAnim.value = withTiming(isAddButtonHidden ? 0 : 1, {
-      duration: 250,
-    });
-  }, [isAddButtonHidden]);
-
   const addBtnAnimatedStyle = useAnimatedStyle(() => ({
     opacity: addBtnAnim.value,
     transform: [
@@ -308,24 +294,24 @@ export default function TodoContainer() {
     ),
   }));
 
-  const arrowAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ rotate: `-${arrowRotation.value}deg` }],
-    };
-  });
+  const arrowAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `-${arrowRotation.value}deg` }],
+  }));
 
-  const doneListAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      height: interpolate(
-        listExpansion.value,
-        [0, 1],
-        [0, 250],
-        Extrapolation.CLAMP,
-      ),
-      opacity: listExpansion.value,
-      overflow: "hidden",
-    };
-  });
+  const doneListAnimatedStyle = useAnimatedStyle(() => ({
+    height: interpolate(
+      listExpansion.value,
+      [0, 1],
+      [0, 250],
+      Extrapolation.CLAMP,
+    ),
+    opacity: listExpansion.value,
+    overflow: "hidden",
+  }));
+
+  const doneListHeaderAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: doneHeaderOpacity.value, // <--- Directly reference the clean shared value
+  }));
 
   const clearBtnAnimatedStyle = useAnimatedStyle(() => ({
     opacity: clearBtnAni.value,
@@ -345,30 +331,24 @@ export default function TodoContainer() {
     const nextState = listExpansion.value === 0;
     arrowRotation.value = withTiming(nextState ? 180 : 0, { duration: 800 });
     listExpansion.value = withTiming(nextState ? 1 : 0, { duration: 300 });
-
-    if (displayDoneData.length === 0 && nextState) {
-      setQuote(getQuote().quote);
-    }
   };
 
   const renderTodoItem = useCallback(
-    ({ item }: { item: any }) => {
-      return (
-        <TodoItem
-          id={item.id}
-          task={item.task}
-          priority={item.priority}
-          isDone={item.isDone}
-          indexes={item.indexes}
-          isSelectionMode={isSelectionMode}
-          isSelected={selectedIds.has(item.id)}
-          onLongPress={handleLongPress}
-          onSelect={toggleSelection}
-          onEdit={handleEditPressCall}
-          onClickPlaySound={handlePlaySound}
-        />
-      );
-    },
+    ({ item }: { item: any }) => (
+      <TodoItem
+        id={item.id}
+        task={item.task}
+        priority={item.priority}
+        isDone={item.isDone}
+        indexes={item.indexes}
+        isSelectionMode={isSelectionMode}
+        isSelected={selectedIds.has(item.id)}
+        onLongPress={handleLongPress}
+        onSelect={toggleSelection}
+        onEdit={handleEditPressCall}
+        onClickPlaySound={handlePlaySound}
+      />
+    ),
     [
       isSelectionMode,
       selectedIds,
@@ -401,7 +381,6 @@ export default function TodoContainer() {
 
   return (
     <View style={styles.container}>
-      {/* Main FlatList */}
       <Animated.FlatList
         data={displayData}
         style={[styles.listStyle, { flex: 1 }]}
@@ -411,9 +390,7 @@ export default function TodoContainer() {
         windowSize={5}
         removeClippedSubviews={true}
         itemLayoutAnimation={LinearTransition}
-        keyExtractor={(item, index) =>
-          item?.id ? item.id.toString() : index.toString()
-        }
+        keyExtractor={(item) => item.id}
         extraData={selectedIds}
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
@@ -426,70 +403,67 @@ export default function TodoContainer() {
           </Animated.View>
         }
         ListEmptyComponent={<EmptyState isSearchMode={isSearchMode} />}
-        contentContainerStyle={{
-          paddingBottom: 40,
-          paddingTop: 5,
-        }}
+        contentContainerStyle={{ paddingBottom: 40, paddingTop: 5 }}
       />
 
-      {/* Done Todos Toggle Menu */}
-      <TouchableOpacity
-        style={styles.completedTodosContainer}
-        onPress={toggleDoneTodos}
-      >
-        <View style={styles.divider} />
-        <View style={styles.completedTodosToggleMenu}>
-          <Text style={styles.completedTodosText}>
-            Completed {displayDoneData.length}
-          </Text>
-
-          <Animated.View style={arrowAnimatedStyle}>
-            <AntDesign name="arrow-down" size={18} color="#454545" />
-          </Animated.View>
-        </View>
-        <View style={styles.divider} />
-      </TouchableOpacity>
-
-      {/* Done Todos Flatlist */}
-      <Animated.View style={doneListAnimatedStyle}>
-        <Animated.FlatList
-          data={displayDoneData}
-          style={styles.listStyle}
-          renderItem={renderTodoItem}
-          initialNumToRender={15}
-          maxToRenderPerBatch={10}
-          ListHeaderComponent={
-            <Animated.View
-              style={clearBtnAnimatedStyle}
-              pointerEvents={displayDoneData.length === 0 ? "none" : "auto"}
+      {/* Conditional rendering wrapper ensuring the layout adjusts instantly when items change */}
+      {hasDone && (
+        <>
+          <Animated.View style={doneListHeaderAnimatedStyle}>
+            <TouchableOpacity
+              style={styles.completedTodosContainer}
+              onPress={toggleDoneTodos}
             >
-              <TouchableOpacity
-                style={styles.clearDoneTodosBtn}
-                activeOpacity={0.8}
-                onPress={clearAllDoneTodos}
-              >
-                <Fontisto name="trash" size={16} color="#FF4D4D" />
-              </TouchableOpacity>
-            </Animated.View>
-          }
-          windowSize={5}
-          removeClippedSubviews={true}
-          itemLayoutAnimation={LinearTransition}
-          keyExtractor={(item, index) =>
-            item?.id ? item.id.toString() : index.toString()
-          }
-          extraData={selectedIds}
-          keyboardDismissMode="on-drag"
-          keyboardShouldPersistTaps="handled"
-          ListEmptyComponent={<Text style={styles.quoteText}>{quote}</Text>}
-          contentContainerStyle={{
-            paddingBottom: 40,
-            paddingTop: 5,
-          }}
-        />
-      </Animated.View>
+              <View style={styles.divider} />
+              <View style={styles.completedTodosToggleMenu}>
+                <View style={styles.doneTodosTextContainer}>
+                  <Text style={styles.completedTodosText}>
+                    Done {displayDoneData.length}
+                  </Text>
+                  <Animated.View style={arrowAnimatedStyle}>
+                    <AntDesign name="arrow-down" size={14} color="#454545" />
+                  </Animated.View>
+                </View>
+              </View>
+              <View style={styles.divider} />
+            </TouchableOpacity>
+          </Animated.View>
 
-      {/* Selection Floating Buttons */}
+          <Animated.View style={doneListAnimatedStyle}>
+            <Animated.FlatList
+              data={displayDoneData}
+              style={styles.listStyle}
+              renderItem={renderTodoItem}
+              initialNumToRender={15}
+              maxToRenderPerBatch={10}
+              ListHeaderComponent={
+                <Animated.View
+                  style={clearBtnAnimatedStyle}
+                  pointerEvents={displayDoneData.length === 0 ? "none" : "auto"}
+                >
+                  <TouchableOpacity
+                    style={styles.clearDoneTodosBtn}
+                    activeOpacity={0.8}
+                    onPress={clearAllDoneTodos}
+                  >
+                    <Fontisto name="trash" size={16} color="#FF4D4D" />
+                  </TouchableOpacity>
+                </Animated.View>
+              }
+              windowSize={5}
+              removeClippedSubviews={true}
+              itemLayoutAnimation={LinearTransition}
+              keyExtractor={(item) => item.id}
+              extraData={selectedIds}
+              keyboardDismissMode="on-drag"
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{ paddingBottom: 40, paddingTop: 5 }}
+            />
+          </Animated.View>
+        </>
+      )}
+
+      {/* Floating Action Elements unchanged */}
       <Animated.View
         style={[styles.floatingActionContainer, floatingButtonsStyles]}
         pointerEvents={isSelectionMode ? "auto" : "none"}
@@ -501,7 +475,6 @@ export default function TodoContainer() {
         >
           <Fontisto name="close-a" size={18} color="#E0E0E0" />
         </TouchableOpacity>
-
         <TouchableOpacity
           style={styles.selectionCheckAllBtn}
           activeOpacity={0.8}
@@ -513,7 +486,6 @@ export default function TodoContainer() {
             color="#FFF"
           />
         </TouchableOpacity>
-
         <TouchableOpacity
           style={styles.selectionDelBtn}
           activeOpacity={0.8}
@@ -523,7 +495,6 @@ export default function TodoContainer() {
         </TouchableOpacity>
       </Animated.View>
 
-      {/*Search Exit Floating Button*/}
       <Animated.View
         style={[styles.closeSearchFloatingContainer, closeSearchButton]}
         pointerEvents={isSearchMode ? "auto" : "none"}
@@ -541,16 +512,14 @@ export default function TodoContainer() {
         </TouchableOpacity>
       </Animated.View>
 
-      {/* Selected Todo Counter */}
       <Animated.View style={[styles.toggleMenu, animatedStyle]}>
         <Text style={styles.counterText}>
           {selectedIds.size === 0
-            ? "Select items"
+            ? "Select a todo"
             : `${selectedIds.size} ${selectedIds.size === 1 ? "todo" : "todos"} selected`}
         </Text>
       </Animated.View>
 
-      {/*Add todo button*/}
       <Animated.View
         style={addBtnAnimatedStyle}
         pointerEvents={isAddButtonHidden ? "none" : "auto"}
@@ -558,14 +527,11 @@ export default function TodoContainer() {
         <AddTodo onPress={() => setIsTestModalShow(true)} />
       </Animated.View>
 
-      {/* Todo edit BOTTOM sheet */}
       <EditTodoModal
         isOpen={isEditModalOpen}
         setIsOpen={setIsEditModalOpen}
         todoIdx={selectedTodoId ?? ""}
       />
-
-      {/* Add Todo botom sheet*/}
       <AddTodoModal isOpen={isTestModalShow} setIsOpen={setIsTestModalShow} />
     </View>
   );
@@ -667,33 +633,26 @@ const styles = StyleSheet.create({
     color: "#c1c1c1",
     marginLeft: 8,
   },
-  quoteText: {
-    color: "#c1c1c1",
-    textAlign: "center",
-    fontFamily: "Inter-Regular",
-  },
   completedTodosContainer: {
     flexDirection: "row",
-    justifyContent: "center",
     alignItems: "center",
-    padding: 5,
+    paddingVertical: 8,
   },
   divider: {
     backgroundColor: "#454545",
-    height: 2,
-    width: "33%",
+    flex: 1,
+    height: 1,
   },
   completedTodosToggleMenu: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 10,
-    marginLeft: 10,
   },
   completedTodosText: {
     color: "#CCC",
     fontFamily: "Inter-Bold",
     marginRight: 5,
+    fontSize: 14,
   },
   clearDoneTodosBtn: {
     justifyContent: "center",
@@ -704,5 +663,10 @@ const styles = StyleSheet.create({
     width: 50,
     alignSelf: "flex-end",
     marginRight: 10,
+  },
+  doneTodosTextContainer: {
+    marginHorizontal: 5,
+    flexDirection: "row",
+    alignItems: "center",
   },
 });

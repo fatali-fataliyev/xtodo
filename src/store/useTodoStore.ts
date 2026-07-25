@@ -1,8 +1,9 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { zustandStorageEngine } from "../utils/secureStorage";
+import { UpdateWidgetData } from "../../widget/storage";
 
-interface Todo {
+export interface Todo {
   id: string;
   task: string;
   priority: string;
@@ -75,7 +76,10 @@ export const useTodoStore = create<TodoState>()(
         addTodo: (newTodo) =>
           set((state) => {
             const updatedTodos = [...state.todos, newTodo];
-            return { todos: sortTodos(updatedTodos) };
+            const sortedTodos = sortTodos(updatedTodos);
+
+            UpdateWidgetData(sortedTodos);
+            return { todos: sortedTodos };
           }),
         markTodoDone: (id) =>
           set((state) => {
@@ -102,7 +106,7 @@ export const useTodoStore = create<TodoState>()(
               updatedSearchResults as Todo[],
             ) as TodoSearchResult[];
             const sortedFilteredTodos = sortTodos(updatedFilteredTodos);
-
+            UpdateWidgetData(sortedTodos);
             return {
               todos: sortedTodos,
               searchResults: sortedSearchResults,
@@ -138,6 +142,7 @@ export const useTodoStore = create<TodoState>()(
               updatedSearchResults as Todo[],
             ) as TodoSearchResult[];
 
+            UpdateWidgetData(sortedTodos);
             return {
               todos: sortedTodos,
               searchResults: sortedSearchResults,
@@ -165,7 +170,9 @@ export const useTodoStore = create<TodoState>()(
         deleteByID: (id) =>
           set((state) => {
             const updatedTodos = state.todos.filter((todo) => todo.id !== id);
-            return { todos: sortTodos(updatedTodos) };
+            const sortedTodos = sortTodos(updatedTodos);
+            UpdateWidgetData(sortedTodos);
+            return { todos: sortedTodos };
           }),
 
         deleteFromSearchResults: (id) =>
@@ -173,14 +180,27 @@ export const useTodoStore = create<TodoState>()(
             searchResults: state.searchResults.filter((todo) => todo.id !== id),
           })),
 
-        deleteAll: () => set({ todos: [] }),
+        deleteAll: () =>
+          set((state) => {
+            UpdateWidgetData([]);
+            return { todos: [] };
+          }),
 
         clearSearchResults: () => set({ searchResults: [] }),
         clearFilterResults: () => set({ filteredTodos: [] }),
         clearAllDoneTodos: () =>
-          set((state) => ({
-            todos: state.todos.filter((todo) => todo.isDone !== true),
-          })),
+          set((state) => {
+            const updatedTodos = state.todos.filter(
+              (todo) => todo.isDone !== true,
+            );
+            const sortedTodos = sortTodos(updatedTodos);
+            UpdateWidgetData(sortedTodos);
+
+            return {
+              todos: sortedTodos,
+            };
+          }),
+
         resetSearchTextLen: () => set({ searchTextLen: 0 }),
         setIsSearchMode: (value) => set({ isSearchMode: value }),
         setIsFilterMode: (value) => set({ isFilterMode: value }),

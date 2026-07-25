@@ -70,7 +70,6 @@ export const initializeStorage = async (): Promise<boolean> => {
     encryptionKey: key,
   };
   mmkvInstance = createMMKV(config);
-
   return true;
 };
 

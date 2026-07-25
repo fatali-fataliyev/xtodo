@@ -363,7 +363,7 @@ export default function NotesContainer() {
       <Animated.View style={[styles.toggleMenu, counterBoxAnim]}>
         <Text style={styles.counterText}>
           {selectedIds.size === 0
-            ? "Select items"
+            ? "Select a note"
             : `${selectedIds.size} ${selectedIds.size === 1 ? "note" : "notes"} selected`}
         </Text>
       </Animated.View>
