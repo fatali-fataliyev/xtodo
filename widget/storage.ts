@@ -11,7 +11,6 @@ export const SS_AES_KEY = "aes_key"; // SS = Secure Storage
 
 export const TODO_LIST_BG_KEY = "bgColor";
 export const TODO_TEXT_FONTSIZE_KEY = "fontSize";
-export const TODO_LIST_ITEM_BG_KEY = "itemBg";
 
 export function initMMKVStorage() {
   if (mmkvStorage) return;
@@ -93,8 +92,8 @@ export function SaveTodo(todo: Todo) {
 
 export function getStoredFontSize(): number {
   initMMKVStorage();
-  if (!mmkvStorage) return 12;
-  return Number(mmkvStorage.getString(TODO_TEXT_FONTSIZE_KEY)) || 12;
+  if (!mmkvStorage) return 10;
+  return Number(mmkvStorage.getString(TODO_TEXT_FONTSIZE_KEY)) || 10;
 }
 
 

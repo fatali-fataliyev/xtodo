@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,7 +15,6 @@ import {
   getStoredTodos,
   mmkvStorage,
   TODO_LIST_BG_KEY,
-  TODO_LIST_ITEM_BG_KEY,
   TODO_TEXT_FONTSIZE_KEY,
 } from "./storage";
 import { getProrityCircleColor } from "./TodoWidget";
@@ -72,23 +72,10 @@ export function WidgetConfigurationScreen({
 
   const [fontSize, setFontSize] = useState<number>(10);
 
-  const buttonColors: Record<string, string> = {
-    "#1F2937": "#374151",
-    "#FFFFFF": "#E5E7EB",
-    "#F97316": "#E5E7EB",
-    "#3B82F6": "#60A5FA",
-    "#22C55E": "#4ADE80",
-    "#A855F7": "#C084FC",
-    "#EC4899": "#F472B6",
-  };
-
-  const itemAndAddBtnBgColor = buttonColors[selectedColor] || "#374151";
-
   const isDark = selectedColor !== "#FFFFFF" && selectedColor !== "#F97316";
 
   const handleSave = () => {
     mmkvStorage?.set(TODO_LIST_BG_KEY, selectedColor);
-    mmkvStorage?.set(TODO_LIST_ITEM_BG_KEY, itemAndAddBtnBgColor);
     mmkvStorage?.set(TODO_TEXT_FONTSIZE_KEY, fontSize);
 
     const { TodoWidget } = require("./TodoWidget");
@@ -96,12 +83,7 @@ export function WidgetConfigurationScreen({
     const todos = getStoredTodos();
 
     renderWidget(
-      <TodoWidget
-        Todos={todos}
-        ListBg={selectedColor}
-        FontSize={fontSize}
-        ItemBg={itemAndAddBtnBgColor}
-      />,
+      <TodoWidget Todos={todos} ListBg={selectedColor} FontSize={fontSize} />,
     );
 
     setResult("ok");
@@ -133,7 +115,7 @@ export function WidgetConfigurationScreen({
                 <View
                   style={[
                     styles.previewAddButton,
-                    { backgroundColor: itemAndAddBtnBgColor },
+                    { backgroundColor: "#374151" },
                   ]}
                 >
                   <Text
@@ -148,34 +130,49 @@ export function WidgetConfigurationScreen({
                 </View>
               </View>
 
-              {/* Counter display */}
-
               <View style={styles.previewTodoList}>
                 {MOCK_TODOS.map((todo) => (
-                  <View
-                    key={todo.id}
-                    style={[
-                      styles.todoItem,
-                      { backgroundColor: itemAndAddBtnBgColor },
-                    ]}
-                  >
-                    <Text
+                  <View key={todo.id} style={styles.todoItemContainer}>
+                    <View
                       style={[
-                        isDark ? styles.lightText : styles.darkText,
-                        { fontSize: fontSize, paddingLeft: 6 },
+                        styles.todoItemButton,
+                        { marginRight: 5, alignItems: "flex-end" },
                       ]}
                     >
-                      {todo.task}
-                    </Text>
-                    <View
-                      style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: 10,
-                        backgroundColor: getProrityCircleColor(todo.priority),
-                        marginRight: 6,
-                      }}
-                    />
+                      <Image
+                        source={require("../assets/images/widget/undone.png")}
+                        style={{ width: 15, height: 15 }}
+                        resizeMode="contain"
+                      />
+                    </View>
+
+                    <View style={styles.todoItem}>
+                      <Text
+                        style={[
+                          isDark ? styles.lightText : styles.darkText,
+                          { fontSize: fontSize, paddingLeft: 6 },
+                        ]}
+                      >
+                        {todo.task}
+                      </Text>
+                      <View
+                        style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: 10,
+                          backgroundColor: getProrityCircleColor(todo.priority),
+                          marginRight: 6,
+                        }}
+                      />
+                    </View>
+
+                    <View style={[styles.todoItemButton, { marginLeft: 5 }]}>
+                      <Image
+                        source={require("../assets/images/widget/edit.png")}
+                        style={{ width: 15, height: 15 }}
+                        resizeMode="contain"
+                      />
+                    </View>
                   </View>
                 ))}
               </View>
@@ -273,17 +270,24 @@ const styles = StyleSheet.create({
     padding: 24,
   },
 
-  todoItem: {
+  todoItemContainer: {
     width: "100%",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 8,
-    paddingHorizontal: 8,
     marginVertical: 4,
-    borderRadius: 8,
   },
-
+  todoItem: {
+    width: "80%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#374151",
+    borderRadius: 8,
+    padding: 4,
+  },
+  todoItemButton: {
+    width: "10%",
+  },
   fontSizeLabel: {
     fontSize: 14,
     color: "#C1C1C1",

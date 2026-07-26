@@ -86,6 +86,7 @@ function TodoList({ Todos, ListBg, FontSize }: TodoWidgetProps) {
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "space-between",
+                  padding: 4,
                   marginVertical: 4,
                   borderRadius: 8,
                 }}

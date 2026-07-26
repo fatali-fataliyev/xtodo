@@ -14,7 +14,7 @@
     "android": {
       "softwareKeyboardLayoutMode": "pan",
       "statusBar": {
-        "backgroundColor": "#00000000",
+        "backgroundColor": "#000000",
         "translucent": true
       },
       "adaptiveIcon": {
@@ -77,7 +77,7 @@
               "targetCellHeight": 1,
               "description": "Add todo from your home screen",
               "previewImage": "./assets/images/add_neum.png",
-              "resizeMode": "none" 
+              "resizeMode": "none"
             }
           ]
         }
