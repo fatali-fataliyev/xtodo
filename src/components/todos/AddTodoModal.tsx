@@ -1,7 +1,6 @@
 import { GetColorByLevel } from "@/constants/colors";
 import { PriorityLevels } from "@/constants/priorityLevels";
 import { useTodoStore } from "@/store/useTodoStore";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetTextInput,
@@ -11,14 +10,7 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import * as crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  BackHandler,
-  Keyboard,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -74,12 +66,9 @@ const PriorityButton = ({ item, isSelected, onPress, isMedium }: any) => {
   );
 };
 
-// MAIN COMPONENT
 export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
-  // ZUSTAND
   const saveTodo = useTodoStore((state) => state.addTodo);
 
-  // LOCAL STATES & REFS
   const [todoName, setTodoName] = useState("");
   const [priorityLevel, setPriorityLevel] = useState<string>("high");
   const isSaveBtnDisabled = todoName.trim() === "";
@@ -87,7 +76,18 @@ export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
   const sheetRef = useRef<any>(null);
   const inputRef = useRef<any>(null);
 
-  // FUNCTIONS
+  const closeModal = useCallback(() => {
+    Keyboard.dismiss();
+    sheetRef.current?.close();
+    setIsOpen(false);
+    resetInputs();
+  }, [setIsOpen]);
+
+  const resetInputs = () => {
+    setTodoName("");
+    setPriorityLevel("high");
+  };
+
   const addTodo = () => {
     saveTodo({
       id: crypto.randomUUID(),
@@ -95,18 +95,6 @@ export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
       isDone: false,
       priority: priorityLevel,
     });
-  };
-
-  const closeModal = () => {
-    Keyboard.dismiss();
-    sheetRef.current?.close();
-    setIsOpen(false);
-    resetInputs();
-  };
-
-  const resetInputs = () => {
-    setTodoName("");
-    setPriorityLevel("high");
   };
 
   const addAndClose = () => {
@@ -121,29 +109,30 @@ export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
 
   useEffect(() => {
     if (isOpen) {
-      const backAction = () => {
-        closeModal();
-        return true;
-      };
-
-      const backHandler = BackHandler.addEventListener(
-        "hardwareBackPress",
-        backAction,
-      );
-
-      return () => {
-        backHandler.remove();
-      };
+      inputRef.current?.focus();
+    } else {
+      inputRef.current?.blur();
     }
   }, [isOpen]);
 
-  const handleSheetChange = useCallback((index: number) => {
-    if (index >= 0) {
-      requestAnimationFrame(() => {
-        inputRef.current?.focus();
-      });
-    }
-  }, []);
+  useEffect(() => {
+    const hideListener = Keyboard.addListener("keyboardDidHide", () => {
+      if (isOpen) {
+        closeModal();
+      }
+    });
+
+    return () => {
+      hideListener.remove();
+    };
+  }, [isOpen, closeModal]);
+
+  const animationConfigs = useBottomSheetSpringConfigs({
+    damping: 50,
+    stiffness: 300,
+    mass: 0.5,
+    overshootClamping: true,
+  });
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -157,17 +146,11 @@ export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
     [],
   );
 
-  const animationConfigs = useBottomSheetSpringConfigs({
-    damping: 80,
-    overshootClamping: true,
-    stiffness: 500,
-  });
-
   return (
     <BottomSheet
       ref={sheetRef}
       index={isOpen ? 0 : -1}
-      onChange={handleSheetChange}
+      enableDynamicSizing={true}
       animationConfigs={animationConfigs}
       backdropComponent={renderBackdrop}
       onClose={closeModal}
@@ -177,15 +160,10 @@ export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
       backgroundStyle={styles.sheetBackground}
       handleStyle={styles.sheetBackground}
       handleIndicatorStyle={{ backgroundColor: "#CCC" }}
+      animateOnMount={false}
     >
       <BottomSheetView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.closeBtn} onPress={closeModal}>
-            <MaterialIcons name="close" size={24} color="#CCC" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Input */}
+        {/* Controlled Focus Input */}
         <BottomSheetTextInput
           ref={inputRef}
           value={todoName}
@@ -196,7 +174,7 @@ export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
           style={[styles.input, { padding: 15 }]}
           spellCheck={false}
           autoCorrect={false}
-          autoFocus={false}
+          // autoFocus removed here to prevent automatic focus on initial screen load
         />
 
         {/* Priority Selector Fieldset */}
@@ -235,7 +213,6 @@ export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
             </Text>
           </TouchableOpacity>
 
-          {/* Add & Close */}
           <TouchableOpacity
             onPress={addAndClose}
             style={[
@@ -270,15 +247,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     backgroundColor: "#242424",
-  },
-  header: {
-    width: "100%",
-    alignItems: "flex-end",
-    marginBottom: 10,
-    marginTop: 5,
-  },
-  closeBtn: {
-    padding: 5,
   },
   input: {
     fontFamily: "Inter-Regular",

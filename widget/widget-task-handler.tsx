@@ -1,28 +1,20 @@
-import React from "react";
 import { Linking } from "react-native";
 import type {
   ColorProp,
   WidgetTaskHandlerProps,
 } from "react-native-android-widget";
+import { AddTodoWidget } from "./AddTodoWidget";
 import {
   getStoredBackgroundColor,
   getStoredFontSize,
   getStoredTodos,
   SaveTodos,
 } from "./storage";
-import { AddTodoWidget } from "./AddTodoWidget";
 import { TodoWidget } from "./TodoWidget";
 import { updateTodoListWidget } from "./updateTodoWidget";
 
-const nameToWidget = {
-  TodoList: TodoWidget,
-  AddTodo: AddTodoWidget,
-};
-
 export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
   const widgetInfo = props.widgetInfo;
-  const Widget =
-    nameToWidget[widgetInfo.widgetName as keyof typeof nameToWidget];
 
   switch (props.widgetAction) {
     case "WIDGET_ADDED": {
@@ -32,11 +24,7 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
         const fontSize = getStoredFontSize();
 
         props.renderWidget(
-          <TodoWidget
-            Todos={todos}
-            FontSize={fontSize}
-            ListBg={listBg}
-          />,
+          <TodoWidget Todos={todos} FontSize={fontSize} ListBg={listBg} />,
         );
         break;
       } else {
@@ -53,11 +41,7 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
         const fontSize = getStoredFontSize();
 
         props.renderWidget(
-          <TodoWidget
-            Todos={todos}
-            FontSize={fontSize}
-            ListBg={listBg}
-          />,
+          <TodoWidget Todos={todos} FontSize={fontSize} ListBg={listBg} />,
         );
       } else {
         props.renderWidget(<AddTodoWidget />);
@@ -73,11 +57,7 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
         const fontSize = getStoredFontSize();
 
         props.renderWidget(
-          <TodoWidget
-            Todos={todos}
-            FontSize={fontSize}
-            ListBg={listBg}
-          />,
+          <TodoWidget Todos={todos} FontSize={fontSize} ListBg={listBg} />,
         );
       } else {
         props.renderWidget(<AddTodoWidget />);
@@ -102,6 +82,7 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
         }
 
         if (props.clickAction === "MARK_TODO_DONE") {
+          console.log("MARKING Todo done: ", props.clickActionData?.todoId);
           const id = props.clickActionData?.todoId;
           if (!id) break;
 

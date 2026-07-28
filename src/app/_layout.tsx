@@ -1,4 +1,5 @@
 // app/_layout.tsx
+import { GlowProvider } from "@/components/todos/GlowContext";
 import { useNoteStore } from "@/store/useNoteStore";
 import {
   Inter_400Regular,
@@ -7,6 +8,7 @@ import {
   Inter_900Black,
   useFonts,
 } from "@expo-google-fonts/inter";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useRef, useState } from "react";
@@ -20,6 +22,7 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const appState = useRef(AppState.currentState);
   const [appIsReady, setAppIsReady] = useState(false);
+
   const [fontsLoaded, fontError] = useFonts({
     "Inter-Regular": Inter_400Regular,
     "Inter-SemiBold": Inter_600SemiBold,
@@ -37,7 +40,6 @@ export default function RootLayout() {
         ) {
           useTodoStore.persist.rehydrate();
         }
-
         appState.current = nextAppState;
       },
     );
@@ -46,8 +48,10 @@ export default function RootLayout() {
       try {
         const isStorageReady = await initializeStorage();
         if (isStorageReady) {
-          await useTodoStore.persist.rehydrate();
-          await useNoteStore.persist.rehydrate();
+          await Promise.all([
+            useTodoStore.persist.rehydrate(),
+            useNoteStore.persist.rehydrate(),
+          ]);
         }
       } catch (error) {
         console.warn(`Initialization error: ${error}`);
@@ -55,9 +59,9 @@ export default function RootLayout() {
         setAppIsReady(true);
       }
     }
+
     prepareApp();
 
-    SplashScreen.hideAsync();
     return () => {
       subscription.remove();
     };
@@ -69,23 +73,27 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError, appIsReady]);
 
-  if (!fontsLoaded && !fontError) {
+  if ((!fontsLoaded && !fontError) || !appIsReady) {
     return null;
   }
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#000000" }}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen
-          name="note/[id]"
-          options={{ animation: "slide_from_right" }}
-        />
+      <BottomSheetModalProvider>
+        <GlowProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen
+              name="note/[id]"
+              options={{ animation: "slide_from_right" }}
+            />
 
-        {/* Routes for deep linking from Widget*/}
-        <Stack.Screen name="add" options={{ presentation: "modal" }} />
-        <Stack.Screen name="edit" options={{ presentation: "modal" }} />
-      </Stack>
+            {/* Routes for deep linking from Widget*/}
+            <Stack.Screen name="add" options={{ headerShown: false }} />
+            <Stack.Screen name="edit" options={{ headerShown: false }} />
+          </Stack>
+        </GlowProvider>
+      </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
 }

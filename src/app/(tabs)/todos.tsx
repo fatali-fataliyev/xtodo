@@ -1,24 +1,21 @@
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { GlowProvider } from "../../components/todos/GlowContext";
 import TaskContainer from "../../components/todos/TodoContainer";
 import Header from "../../components/ui/Header";
 
 export default function TodosScreen() {
   return (
-    <GlowProvider>
-      <View style={styles.container}>
-        {/* Header */}
-        <SafeAreaView edges={["top"]} style={styles.headerSafeArea}>
-          <Header label="Todos" />
-        </SafeAreaView>
+    <View style={styles.container}>
+      {/* Header */}
+      <SafeAreaView edges={["top"]} style={styles.headerSafeArea}>
+        <Header label="Todos" />
+      </SafeAreaView>
 
-        {/* Section */}
-        <View style={styles.section}>
-          <TaskContainer />
-        </View>
+      {/* Section */}
+      <View style={styles.section}>
+        <TaskContainer />
       </View>
-    </GlowProvider>
+    </View>
   );
 }
 

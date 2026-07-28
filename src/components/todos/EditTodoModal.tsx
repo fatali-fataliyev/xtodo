@@ -1,22 +1,15 @@
 import { GetColorByLevel } from "@/constants/colors";
 import { PriorityLevels } from "@/constants/priorityLevels";
 import { useTodoStore } from "@/store/useTodoStore";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetTextInput,
   BottomSheetView,
   TouchableOpacity,
+  useBottomSheetSpringConfigs,
 } from "@gorhom/bottom-sheet";
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  BackHandler,
-  Keyboard,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -33,47 +26,48 @@ type Props = {
 
 // ANIMATED PRIORITY SELECT BUTTON COMPONENT
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-const PriorityButton = ({ item, isSelected, onPress, isMedium }: any) => {
-  const color = GetColorByLevel(item.level);
-  const progress = useSharedValue(0);
+const PriorityButton = React.memo(
+  ({ item, isSelected, onPress, isMedium }: any) => {
+    const color = GetColorByLevel(item.level);
+    const progress = useSharedValue(isSelected ? 1 : 0);
 
-  useEffect(() => {
-    progress.value = withTiming(isSelected ? 1 : 0, { duration: 250 });
-  }, [isSelected]);
+    useEffect(() => {
+      progress.value = withTiming(isSelected ? 1 : 0, { duration: 200 });
+    }, [isSelected]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const backgroundColor = interpolateColor(
-      progress.value,
-      [0, 1],
-      ["rgba(42, 42, 42, 0)", "rgba(42, 42, 42, 1)"],
-    );
+    const animatedStyle = useAnimatedStyle(() => {
+      const backgroundColor = interpolateColor(
+        progress.value,
+        [0, 1],
+        ["rgba(42, 42, 42, 0)", "rgba(42, 42, 42, 1)"],
+      );
 
-    return {
-      backgroundColor,
-      transform: [
-        { scale: withTiming(isSelected ? 1.03 : 1, { duration: 200 }) },
-      ],
-    };
-  });
+      return {
+        backgroundColor,
+        transform: [
+          { scale: withTiming(isSelected ? 1.03 : 1, { duration: 150 }) },
+        ],
+      };
+    });
 
-  return (
-    <AnimatedPressable
-      onPress={onPress}
-      style={[styles.priorityBtn, { borderColor: color }, animatedStyle]}
-    >
-      <View style={styles.btnContent}>
-        <Text style={[styles.priorityBtnText, { color }]}>
-          {item.level.toUpperCase()}
-        </Text>
-        <View style={[styles.glowContainer, isMedium && { right: 3.5 }]}>
-          {isSelected && <GlowCircle size="small" color={color} />}
+    return (
+      <AnimatedPressable
+        onPress={onPress}
+        style={[styles.priorityBtn, { borderColor: color }, animatedStyle]}
+      >
+        <View style={styles.btnContent}>
+          <Text style={[styles.priorityBtnText, { color }]}>
+            {item.level.toUpperCase()}
+          </Text>
+          <View style={[styles.glowContainer, isMedium && { right: 3.5 }]}>
+            {isSelected && <GlowCircle size="small" color={color} />}
+          </View>
         </View>
-      </View>
-    </AnimatedPressable>
-  );
-};
+      </AnimatedPressable>
+    );
+  },
+);
 
-// MAIN COMPONENT
 export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
   // ZUSTAND
   const todo = useTodoStore((state) =>
@@ -85,60 +79,65 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
   const [newTodoName, setNewTodoName] = useState("");
   const [newPriorityLevel, setNewPriorityLevel] = useState<string>("high");
 
-  const isSaveBtnDisabled =
-    newTodoName.trim() === "" ||
-    (newTodoName.trim() === todo?.task?.trim() &&
-      newPriorityLevel === todo?.priority);
-
   const sheetRef = useRef<any>(null);
   const inputRef = useRef<any>(null);
 
+  useEffect(() => {
+    if (isOpen && todo) {
+      setNewTodoName(todo.task || "");
+      setNewPriorityLevel(todo.priority || "high");
+    }
+  }, [isOpen, todo]);
+
+  const isSaveBtnDisabled =
+    !newTodoName.trim() ||
+    (newTodoName.trim() === todo?.task?.trim() &&
+      newPriorityLevel === todo?.priority);
+
   // FUNCTIONS
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     Keyboard.dismiss();
     sheetRef.current?.close();
     setIsOpen(false);
-  };
+  }, [setIsOpen]);
 
   const saveChanges = () => {
+    if (isSaveBtnDisabled) return;
     updateTodo(todoIdx, {
-      newTask: newTodoName,
+      newTask: newTodoName.trim(),
       newPriority: newPriorityLevel,
     });
     closeModal();
   };
 
-  const resetInputs = useCallback(() => {
-    setNewTodoName(todo?.task || "");
-    setNewPriorityLevel(todo?.priority || "high");
-  }, [todo]);
-
   useEffect(() => {
     if (isOpen) {
-      resetInputs();
-      const backAction = () => {
-        closeModal();
-        return true;
-      };
-
-      const backHandler = BackHandler.addEventListener(
-        "hardwareBackPress",
-        backAction,
-      );
-
-      return () => {
-        backHandler.remove();
-      };
-    }
-  }, [isOpen, resetInputs]);
-
-  const handleSheetChange = useCallback((index: number) => {
-    if (index >= 0) {
       requestAnimationFrame(() => {
         inputRef.current?.focus();
       });
+    } else {
+      inputRef.current?.blur();
     }
-  }, []);
+  }, [isOpen]);
+
+  useEffect(() => {
+    const hideListener = Keyboard.addListener("keyboardDidHide", () => {
+      if (isOpen) {
+        closeModal();
+      }
+    });
+
+    return () => {
+      hideListener.remove();
+    };
+  }, [isOpen, closeModal]);
+
+  const animationConfigs = useBottomSheetSpringConfigs({
+    damping: 50,
+    stiffness: 300,
+    mass: 0.5,
+    overshootClamping: true,
+  });
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -156,7 +155,8 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
     <BottomSheet
       ref={sheetRef}
       index={isOpen ? 0 : -1}
-      onChange={handleSheetChange}
+      enableDynamicSizing={true}
+      animationConfigs={animationConfigs}
       backdropComponent={renderBackdrop}
       onClose={closeModal}
       enablePanDownToClose={true}
@@ -165,14 +165,9 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
       backgroundStyle={styles.sheetBackground}
       handleStyle={styles.sheetBackground}
       handleIndicatorStyle={{ backgroundColor: "#CCC" }}
+      animateOnMount={false}
     >
       <BottomSheetView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.closeBtn} onPress={closeModal}>
-            <MaterialIcons name="close" size={24} color="#CCC" />
-          </TouchableOpacity>
-        </View>
-
         {/* Input */}
         <BottomSheetTextInput
           ref={inputRef}
@@ -184,7 +179,6 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
           style={[styles.input, { padding: 15 }]}
           spellCheck={false}
           autoCorrect={false}
-          autoFocus={false}
         />
 
         {/* Priority Selector Fieldset */}
@@ -204,7 +198,6 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
         </View>
 
         <View style={styles.buttonContainer}>
-          {/* Add & Close */}
           <TouchableOpacity
             onPress={saveChanges}
             style={[
@@ -239,15 +232,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     backgroundColor: "#242424",
-  },
-  header: {
-    width: "100%",
-    alignItems: "flex-end",
-    marginBottom: 10,
-    marginTop: 5,
-  },
-  closeBtn: {
-    padding: 5,
   },
   input: {
     fontFamily: "Inter-Regular",
@@ -314,7 +298,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   saveBtn: {
-    backgroundColor: "#4F46E5",
+    backgroundColor: "#34C759",
     width: "100%",
     height: 45,
     justifyContent: "center",

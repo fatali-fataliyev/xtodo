@@ -63,7 +63,6 @@ const MOCK_TODOS = [
 
 export function WidgetConfigurationScreen({
   setResult,
-
   renderWidget,
 }: WidgetConfigurationScreenProps) {
   const initialColor = getStoredBackgroundColor() as string;
