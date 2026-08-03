@@ -1,6 +1,7 @@
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useTodoStore } from "@/store/useTodoStore";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { parseDate } from "@/utils/dateParser";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import React, { useRef, useState } from "react";
 import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
 import Swipeable, {
@@ -9,7 +10,9 @@ import Swipeable, {
 import Animated, {
   Extrapolation,
   FadeIn,
+  FadeInDown,
   FadeOutDown,
+  FadeOutUp,
   interpolate,
   SharedValue,
   useAnimatedStyle,
@@ -23,6 +26,7 @@ const ICON_SIZE = 20;
 type Props = {
   id: string;
   task: string;
+  remindAt?: Date | string;
   priority: string;
   isDone: boolean;
   indexes?: number[];
@@ -37,6 +41,7 @@ type Props = {
 function TodoItem({
   id,
   task,
+  remindAt,
   priority,
   isDone,
   indexes,
@@ -185,21 +190,42 @@ function TodoItem({
             swipeableRef.current!.close();
           }}
         >
+          {remindAt && (
+            <Animated.View
+              style={styles.reminderBox}
+              entering={FadeInDown.duration(300)}
+              exiting={FadeOutUp.duration(200)}
+            >
+              <MaterialIcons
+                name="access-alarm"
+                size={13}
+                color={isDone ? "gray" : "#CCC"}
+              />
+              <Text
+                style={[styles.reminderBoxText, isDone && { color: "gray" }]}
+              >
+                {parseDate(remindAt)}
+              </Text>
+            </Animated.View>
+          )}
           <View style={styles.mainAreaContainer}>
             {isSelectionMode ? (
               <MaterialCommunityIcons
-                name={isSelected ? "checkbox-marked" : "square"}
-                size={ICON_SIZE}
+                name={
+                  isSelected ? "checkbox-outline" : "square-rounded-outline"
+                }
+                size={ICON_SIZE + 1}
                 color={Colors.medium}
               />
             ) : (
               <MaterialCommunityIcons
                 name={
-                  isDone || isCompleting ? "checkbox-marked" : "square-outline"
+                  isDone || isCompleting
+                    ? "checkbox-marked"
+                    : "square-rounded-outline"
                 }
-                size={ICON_SIZE}
+                size={ICON_SIZE + 1}
                 color={"#8E8E93"}
-                style={{ borderRadius: 60 }}
               />
             )}
             <View style={styles.taskContainer}>
@@ -293,12 +319,13 @@ const styles = StyleSheet.create({
   },
   container: {
     width: "100%",
-    height: 80,
+    height: 70,
     backgroundColor: "#242424",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingLeft: 18,
+    position: "relative",
   },
   selectedContainer: {
     backgroundColor: "#111",
@@ -349,5 +376,21 @@ const styles = StyleSheet.create({
     marginTop: -2.5,
     height: 5,
     zIndex: 10,
+  },
+  reminderBox: {
+    position: "absolute",
+    right: 57,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    bottom: 0,
+    zIndex: 999,
+  },
+  reminderBoxText: {
+    color: "#CCC",
+    marginLeft: 5,
+    fontFamily: "Inter-Regular",
+    marginBottom: 1,
+    fontSize: 12,
   },
 });

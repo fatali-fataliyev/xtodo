@@ -2,25 +2,32 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { zustandStorageEngine } from "../utils/secureStorage";
 import { UpdateWidgetData } from "../../widget/storage";
+import { scheduleNotificationAsync } from "expo-notifications";
+import { scheduleTaskReminder } from "@/utils/notifications";
 
 export interface Todo {
   id: string;
+  notificationIDs?: string[];
   task: string;
   priority: string;
+  remindAt?: Date;
   isDone: boolean;
 }
 
 export interface TodoSearchResult {
   id: string;
+  notificationID?: string;
   task: string;
   priority: string;
   isDone: boolean;
+  remindAt?: Date;
   indexes: number[];
 }
 
-type EditPayload = {
+export type EditPayload = {
   newTask: string;
   newPriority: string;
+  newRemindAt?: Date;
 };
 
 interface TodoState {
@@ -73,19 +80,37 @@ export const useTodoStore = create<TodoState>()(
         isFilterMode: false,
         searchTextLen: 0,
 
-        addTodo: (newTodo) =>
+        addTodo: async (newTodo) => {
+          let notificationIDs: string[] | undefined;
+          if (newTodo.remindAt) {
+            notificationIDs =
+              (await scheduleTaskReminder(
+                newTodo.id,
+                newTodo.task,
+                newTodo.remindAt,
+              )) ?? undefined;
+          }
+
+          if (notificationIDs) {
+            newTodo.notificationIDs = notificationIDs;
+          }
+
           set((state) => {
             const updatedTodos = [...state.todos, newTodo];
             const sortedTodos = sortTodos(updatedTodos);
 
             UpdateWidgetData(sortedTodos);
             return { todos: sortedTodos };
-          }),
+          });
+        },
+
         markTodoDone: (id) =>
           set((state) => {
             const updatedTodos = state.todos.map((todo) =>
               todo.id === id ? { ...todo, isDone: !todo.isDone } : todo,
             );
+
+            // TODO: IF ITS DONE BEFORE REMIND AT DELETE NOTIFICATIONS!
 
             const updatedSearchResults = state.searchResults.map(
               (searchItem) =>
@@ -122,6 +147,7 @@ export const useTodoStore = create<TodoState>()(
                     ...todo,
                     task: payload.newTask,
                     priority: payload.newPriority,
+                    remindAt: payload.newRemindAt && payload.newRemindAt,
                   }
                 : todo,
             );

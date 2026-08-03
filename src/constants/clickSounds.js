@@ -1,11 +1,11 @@
-const DRAW_LINE_1_DEFAULT = require("../../assets/click_sounds/draw_line_1_default.wav");
-const DRAW_LINE_2 = require("../../assets/click_sounds/draw_line_2.wav");
-const BUBBLE_POP_1 = require("../../assets/click_sounds/bubble_pop_1.wav");
-const BUBBLE_POP_2 = require("../../assets/click_sounds/bubble_pop_2.wav");
-const CLICK_1 = require("../../assets/click_sounds/click_1.wav");
-const CLICK_2 = require("../../assets/click_sounds/click_2.wav");
-const CLICK_3 = require("../../assets/click_sounds/click_3.wav");
-const IMPACT = require("../../assets/click_sounds/impact.wav");
+const DRAW_LINE_1_DEFAULT = require("../../assets/sounds/draw_line_1_default.wav");
+const DRAW_LINE_2 = require("../../assets/sounds/draw_line_2.wav");
+const BUBBLE_POP_1 = require("../../assets/sounds/bubble_pop_1.wav");
+const BUBBLE_POP_2 = require("../../assets/sounds/bubble_pop_2.wav");
+const CLICK_1 = require("../../assets/sounds/click_1.wav");
+const CLICK_2 = require("../../assets/sounds/click_2.wav");
+const CLICK_3 = require("../../assets/sounds/click_3.wav");
+const IMPACT = require("../../assets/sounds/impact.wav");
 
 const SOUNDS_MAP = new Map();
 SOUNDS_MAP.set("dwLine1Default", DRAW_LINE_1_DEFAULT);

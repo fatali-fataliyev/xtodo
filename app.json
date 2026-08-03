@@ -12,11 +12,7 @@
       "bundleIdentifier": "com.github.fatalifataliyev.xtodo"
     },
     "android": {
-      "softwareKeyboardLayoutMode": "pan",
-      "statusBar": {
-        "backgroundColor": "#000000",
-        "translucent": true
-      },
+      "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "backgroundColor": "#000000",
         "foregroundImage": "./assets/images/logo.png",
@@ -28,7 +24,10 @@
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS",
         "android.permission.FOREGROUND_SERVICE",
-        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.USE_EXACT_ALARM",
+        "RECEIVE_BOOT_COMPLETED"
       ],
       "package": "com.github.fatalifataliyev.xtodo"
     },
@@ -38,6 +37,14 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification_icon.png",
+          "color": "#000000",
+          "sounds": ["./assets/sounds/reminder.wav"]
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -81,7 +88,10 @@
             }
           ]
         }
-      ]
+      ],
+      "expo-status-bar",
+      "expo-web-browser",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,

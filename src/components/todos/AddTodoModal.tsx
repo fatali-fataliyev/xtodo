@@ -1,139 +1,263 @@
 import { GetColorByLevel } from "@/constants/colors";
+import CapitalizeFirstLetter from "@/constants/firstLetterCapitalizer";
 import { PriorityLevels } from "@/constants/priorityLevels";
-import { useTodoStore } from "@/store/useTodoStore";
+import { Todo, useTodoStore } from "@/store/useTodoStore";
+import { resolveDate } from "@/utils/dateParser";
+import DateTimePicker, {
+  DateTimePickerChangeEvent,
+} from "@expo/ui/community/datetime-picker";
+import {
+  AntDesign,
+  Feather,
+  Fontisto,
+  Foundation,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetTextInput,
   BottomSheetView,
-  TouchableOpacity,
-  useBottomSheetSpringConfigs,
 } from "@gorhom/bottom-sheet";
+import { useAudioPlayer } from "expo-audio";
 import * as crypto from "expo-crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  AppState,
+  BackHandler,
+  Keyboard,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Animated, {
-  interpolateColor,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { GlowCircle } from "./GlowCircle";
+import { Colors } from "../../../widget/TodoWidget";
 
 type Props = {
   isOpen: boolean;
   setIsOpen: (val: boolean) => void;
 };
 
-// ANIMATED PRIORITY SELECT BUTTON COMPONENT
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-const PriorityButton = ({ item, isSelected, onPress, isMedium }: any) => {
-  const color = GetColorByLevel(item.level);
-  const progress = useSharedValue(0);
-
-  useEffect(() => {
-    progress.value = withTiming(isSelected ? 1 : 0, { duration: 250 });
-  }, [isSelected]);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    const backgroundColor = interpolateColor(
-      progress.value,
-      [0, 1],
-      ["rgba(42, 42, 42, 0)", "rgba(42, 42, 42, 1)"],
-    );
-
-    return {
-      backgroundColor,
-      transform: [
-        { scale: withTiming(isSelected ? 1.03 : 1, { duration: 200 }) },
-      ],
-    };
-  });
-
-  return (
-    <AnimatedPressable
-      onPress={onPress}
-      style={[styles.priorityBtn, { borderColor: color }, animatedStyle]}
-    >
-      <View style={styles.btnContent}>
-        <Text style={[styles.priorityBtnText, { color }]}>
-          {item.level.toUpperCase()}
-        </Text>
-        <View style={[styles.glowContainer, isMedium && { right: 3.5 }]}>
-          {isSelected && <GlowCircle size="small" color={color} />}
-        </View>
-      </View>
-    </AnimatedPressable>
-  );
-};
+const addedSoundEffect = require("@/assets/sounds/todo_added.wav");
 
 export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
+  // ZUSTAND
   const saveTodo = useTodoStore((state) => state.addTodo);
 
-  const [todoName, setTodoName] = useState("");
+  // LOCAL STATES
+  const [todoName, setTodoName] = useState<string>("");
   const [priorityLevel, setPriorityLevel] = useState<string>("high");
+  const [isListShow, setIsListShow] = useState<boolean>(false);
+  const [isDateSelection, setIsDateSelection] = useState<boolean>(false);
+  const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+  const [showTimePicker, setShowTimePicker] = useState<boolean>(false);
+  const [isKeyboardCollapsed, setIsKeyboardCollapsed] =
+    useState<boolean>(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const isSaveBtnDisabled = todoName.trim() === "";
+  const todayDate = new Date();
 
+  const player = useAudioPlayer(addedSoundEffect);
+
+  const appStateRef = useRef(AppState.currentState);
   const sheetRef = useRef<any>(null);
   const inputRef = useRef<any>(null);
 
   const closeModal = useCallback(() => {
-    Keyboard.dismiss();
+    inputRef.current?.blur();
     sheetRef.current?.close();
     setIsOpen(false);
+    setIsListShow(false);
+    setIsDateSelection(false);
+    setSelectedDate(null);
     resetInputs();
   }, [setIsOpen]);
+
+  const playSoundEffect = () => {
+    player.seekTo(0);
+    player.play();
+  };
 
   const resetInputs = () => {
     setTodoName("");
     setPriorityLevel("high");
+    setIsListShow(false);
+    setSelectedDate(null);
   };
 
   const addTodo = () => {
-    saveTodo({
-      id: crypto.randomUUID(),
-      task: todoName,
-      isDone: false,
-      priority: priorityLevel,
-    });
-  };
+    let todo: Todo;
 
-  const addAndClose = () => {
-    addTodo();
-    closeModal();
-  };
+    if (!selectedDate) {
+      todo = {
+        id: crypto.randomUUID(),
+        task: todoName.trim(),
+        priority: priorityLevel,
+        isDone: false,
+      };
+    } else {
+      todo = {
+        id: crypto.randomUUID(),
+        task: todoName.trim(),
+        remindAt: selectedDate,
+        priority: priorityLevel,
+        isDone: false,
+      };
+    }
 
-  const addAndAnother = () => {
-    addTodo();
+    saveTodo(todo);
+
     resetInputs();
+    playSoundEffect();
+
+    opacity.value = withTiming(1, { duration: 150 });
+    setTimeout(() => {
+      opacity.value = withTiming(0, { duration: 250 });
+    }, 600);
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      inputRef.current?.focus();
+  const selectPrority = (priority: string) => {
+    setPriorityLevel(priority);
+    setIsListShow(false);
+  };
+
+  const handleDateChange = (event: DateTimePickerChangeEvent, date?: Date) => {
+    setShowDatePicker(false);
+
+    if (date) {
+      const newDate = resolveDate(selectedDate) ?? new Date();
+      newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+
+      const now = new Date();
+      if (newDate < now) {
+        alert("Cannot set a reminder for the past");
+      } else {
+        setSelectedDate(newDate);
+      }
+    }
+  };
+
+  const handleTimeChange = (event: DateTimePickerChangeEvent, date?: Date) => {
+    setShowTimePicker(false);
+
+    if (date) {
+      const newDate = resolveDate(selectedDate) ?? new Date();
+      newDate.setHours(date.getHours(), date.getMinutes(), 0, 0);
+
+      const now = new Date();
+      if (newDate < now) {
+        alert("Cannot set a reminder for the past");
+      } else {
+        setSelectedDate(newDate);
+      }
+    }
+  };
+
+  const handleDismiss = () => {
+    setShowTimePicker(false);
+    setShowDatePicker(false);
+  };
+
+  const handleSheetChanges = useCallback((index: number) => {
+    if (index >= 0) {
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 50);
+      });
     } else {
       inputRef.current?.blur();
     }
-  }, [isOpen]);
+  }, []);
+
+  const openReminderToolbar = () => {
+    if (selectedDate) {
+      setIsDateSelection(true);
+      return;
+    }
+    setSelectedDate(new Date());
+    setIsDateSelection(true);
+    setShowTimePicker(true);
+  };
 
   useEffect(() => {
     const hideListener = Keyboard.addListener("keyboardDidHide", () => {
-      if (isOpen) {
-        closeModal();
+      setIsKeyboardCollapsed(true);
+      if (
+        appStateRef.current === "active" &&
+        isOpen &&
+        !showDatePicker &&
+        !showTimePicker
+      ) {
+        if (appStateRef.current === "active") {
+          closeModal();
+        }
       }
+    });
+
+    const showListener = Keyboard.addListener("keyboardDidShow", () => {
+      setIsKeyboardCollapsed(false);
     });
 
     return () => {
       hideListener.remove();
+      showListener.remove();
     };
-  }, [isOpen, closeModal]);
+  }, [isOpen, closeModal, showDatePicker, showTimePicker]);
 
-  const animationConfigs = useBottomSheetSpringConfigs({
-    damping: 50,
-    stiffness: 300,
-    mass: 0.5,
-    overshootClamping: true,
-  });
+  useEffect(() => {
+    const onBackPress = () => {
+      if (!isOpen) {
+        return false;
+      }
 
+      if (showDatePicker || showTimePicker) {
+        setShowDatePicker(false);
+        setShowTimePicker(false);
+        return true;
+      }
+
+      if (isListShow) {
+        setIsListShow(false);
+        return true;
+      }
+
+      if (isDateSelection) {
+        setIsDateSelection(false);
+        return true;
+      }
+
+      closeModal();
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress,
+    );
+
+    return () => subscription.remove();
+  }, [
+    isOpen,
+    showDatePicker,
+    showTimePicker,
+    isListShow,
+    isDateSelection,
+    closeModal,
+  ]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      appStateRef.current = nextAppState;
+    });
+    return () => subscription.remove();
+  }, []);
+
+  // Styling & Animations
   const renderBackdrop = useCallback(
     (props: any) => (
       <BottomSheetBackdrop
@@ -146,13 +270,19 @@ export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
     [],
   );
 
+  const opacity = useSharedValue(0);
+
+  const animatedBadgeStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
+
   return (
     <BottomSheet
       ref={sheetRef}
       index={isOpen ? 0 : -1}
       enableDynamicSizing={true}
-      animationConfigs={animationConfigs}
       backdropComponent={renderBackdrop}
+      onChange={handleSheetChanges}
       onClose={closeModal}
       enablePanDownToClose={true}
       keyboardBehavior="interactive"
@@ -160,10 +290,73 @@ export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
       backgroundStyle={styles.sheetBackground}
       handleStyle={styles.sheetBackground}
       handleIndicatorStyle={{ backgroundColor: "#CCC" }}
-      animateOnMount={false}
     >
-      <BottomSheetView style={styles.container}>
-        {/* Controlled Focus Input */}
+      <BottomSheetView
+        style={[styles.container, isKeyboardCollapsed && { paddingBottom: 60 }]}
+      >
+        {/* Success badge */}
+        <Animated.View style={[styles.successBadge, animatedBadgeStyle]}>
+          <Feather name="check-circle" size={24} color={Colors.low} />
+        </Animated.View>
+
+        {/* TOP CENTER REMINDER MODAL */}
+        {isDateSelection && (
+          <View style={styles.reminderContainer}>
+            {/* Date button */}
+            <TouchableOpacity
+              style={[styles.reminderItem, { marginBottom: 10 }]}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <Fontisto name="date" size={15} color="#FFF" />
+              <Text style={styles.reminderItemText}>
+                {selectedDate?.toLocaleDateString()}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Time button */}
+            <TouchableOpacity
+              style={styles.reminderItem}
+              onPress={() => setShowTimePicker(true)}
+            >
+              <Fontisto name="clock" size={15} color="#FFF" />
+              <Text style={styles.reminderItemText}>
+                {selectedDate?.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </Text>
+            </TouchableOpacity>
+
+            <View style={styles.reminderActionButtonContainer}>
+              <TouchableOpacity
+                style={[styles.reminderActionButton, { width: "49%" }]}
+                onPress={() => {
+                  setSelectedDate(null);
+                  setIsDateSelection(false);
+                  setShowDatePicker(false);
+                  setShowTimePicker(false);
+                }}
+              >
+                <MaterialIcons name="delete" size={18} color="#FFF" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.reminderActionButton,
+                  {
+                    width: "49.5%",
+                    backgroundColor: "#28a745",
+                    marginLeft: "1%",
+                  },
+                ]}
+                onPress={() => setIsDateSelection(false)}
+              >
+                <MaterialIcons name="done" size={18} color="#FFF" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
         <BottomSheetTextInput
           ref={inputRef}
           value={todoName}
@@ -174,62 +367,105 @@ export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
           style={[styles.input, { padding: 15 }]}
           spellCheck={false}
           autoCorrect={false}
-          // autoFocus removed here to prevent automatic focus on initial screen load
         />
 
-        {/* Priority Selector Fieldset */}
-        <View style={styles.fieldset}>
-          <Text style={styles.fieldsetLabel}>Priority</Text>
-          <View style={styles.priorityBtnsContainer}>
-            {PriorityLevels.map((item) => (
-              <PriorityButton
-                key={item.level}
-                item={item}
-                isSelected={item.level === priorityLevel}
-                onPress={() => setPriorityLevel(item.level)}
-                isMedium={item.level === "medium"}
-              />
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            onPress={addAndAnother}
-            disabled={isSaveBtnDisabled}
-            style={[
-              styles.saveBtn,
-              { marginBottom: 15 },
-              isSaveBtnDisabled && styles.saveBtnDisabled,
-            ]}
-          >
-            <Text
-              style={[
-                styles.saveBtnText,
-                isSaveBtnDisabled && styles.saveBtnTextDisabled,
-              ]}
+        <View style={styles.saveAreaContainer}>
+          {/* PRIORITY SELECTION WRAPPER */}
+          <View style={{ position: "relative" }}>
+            {/* Priority Button */}
+            <TouchableOpacity
+              style={styles.toolBarItem}
+              onPress={() => setIsListShow((prev) => !prev)}
             >
-              Add & Another
-            </Text>
+              <Foundation
+                name="target"
+                size={21}
+                color={GetColorByLevel(priorityLevel)}
+              />
+              <Text style={styles.toolBarText}>Priority</Text>
+            </TouchableOpacity>
+
+            {isListShow && (
+              <View style={styles.prorityList}>
+                {PriorityLevels.map((item) => {
+                  const isSelected = item.level === priorityLevel;
+                  const isMedium = item.level === "medium";
+                  return (
+                    <TouchableOpacity
+                      style={[
+                        styles.prorityListItem,
+                        isMedium && { marginVertical: 6 },
+                      ]}
+                      key={item.level}
+                      onPress={() => selectPrority(item.level)}
+                    >
+                      <Foundation
+                        name="target"
+                        size={21}
+                        color={GetColorByLevel(item.level)}
+                      />
+                      <Text
+                        style={[
+                          styles.priorityListText,
+                          isSelected && { textDecorationLine: "underline" },
+                        ]}
+                      >
+                        {CapitalizeFirstLetter(item.level)}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
+          </View>
+
+          {/* REMINDER BUTTON */}
+          <TouchableOpacity
+            style={styles.toolBarItem}
+            onPress={openReminderToolbar}
+            disabled={isDateSelection}
+          >
+            <MaterialIcons name="access-alarm" size={19} color="#FFF" />
+            <Text style={styles.toolBarText}>Reminder</Text>
+
+            {/* Time Picker */}
+            {showTimePicker && (
+              <DateTimePicker
+                value={selectedDate ? selectedDate : new Date()}
+                mode="time"
+                display="default"
+                onValueChange={handleTimeChange}
+                onDismiss={handleDismiss}
+              />
+            )}
+
+            {/* Date Picker */}
+            {showDatePicker && (
+              <DateTimePicker
+                value={selectedDate ? selectedDate : new Date()}
+                mode="date"
+                display="default"
+                minimumDate={todayDate}
+                onValueChange={handleDateChange}
+                onDismiss={handleDismiss}
+              />
+            )}
           </TouchableOpacity>
 
+          {/* SAVE BUTTON */}
           <TouchableOpacity
-            onPress={addAndClose}
+            onPress={addTodo}
+            disabled={isSaveBtnDisabled}
             style={[
               styles.saveBtn,
-              { backgroundColor: "#34C759" },
               isSaveBtnDisabled && styles.saveBtnDisabled,
             ]}
-            disabled={isSaveBtnDisabled}
           >
-            <Text
-              style={[
-                styles.saveBtnText,
-                isSaveBtnDisabled && styles.saveBtnTextDisabled,
-              ]}
-            >
-              Add & Close
-            </Text>
+            <AntDesign
+              name="plus-circle"
+              size={22}
+              color={isSaveBtnDisabled ? "gray" : "#FFF"}
+            />
           </TouchableOpacity>
         </View>
       </BottomSheetView>
@@ -246,7 +482,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 20,
+    paddingBottom: 15,
     backgroundColor: "#242424",
+    position: "relative",
   },
   input: {
     fontFamily: "Inter-Regular",
@@ -257,81 +495,103 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontSize: 16,
   },
-  fieldset: {
-    marginTop: 20,
-    marginBottom: 25,
-    borderWidth: 1,
-    borderColor: "#444",
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-  },
-  fieldsetLabel: {
-    position: "absolute",
-    top: -10,
-    left: 12,
-    backgroundColor: "#242424",
-    paddingHorizontal: 4,
-    color: "#FFF",
-    fontSize: 13,
-  },
-  priorityBtnsContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 8,
-  },
-  priorityBtn: {
-    flex: 1,
-    borderWidth: 1.5,
-    paddingVertical: 10,
-    borderRadius: 10,
-  },
-  btnContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-    position: "relative",
-  },
-  priorityBtnText: {
-    fontFamily: "Inter-Bold",
-    fontSize: 13,
-    textAlign: "center",
-  },
-  glowContainer: {
-    position: "absolute",
-    right: 14,
-    width: 12,
-    height: 12,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  buttonContainer: {
-    width: "100%",
-    flexDirection: "column",
-    marginBottom: 10,
-  },
   saveBtn: {
-    backgroundColor: "#2C2C2E",
-    width: "100%",
-    height: 45,
+    backgroundColor: Colors.high,
+    width: 55,
+    height: 55,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#303030",
+    alignSelf: "flex-end",
+    borderRadius: 25,
   },
   saveBtnDisabled: {
     backgroundColor: "#101010",
-    pointerEvents: "none",
   },
-  saveBtnTextDisabled: {
+  toolBarItem: {
+    backgroundColor: "#1F2937",
+    flexDirection: "row",
+    padding: 8,
+    borderRadius: 8,
+    position: "relative",
+  },
+  toolBarText: {
+    color: "#FFFFFF",
     fontFamily: "Inter-Regular",
-    color: "#a0a0a0",
+    marginLeft: 6,
+    fontSize: 14,
   },
-  saveBtnText: {
-    fontFamily: "Inter-SemiBold",
+  prorityList: {
+    backgroundColor: "#001111",
+    position: "absolute",
+    top: -20,
+    zIndex: 999,
+    padding: 5,
+    borderRadius: 5,
+  },
+  prorityListItem: {
+    backgroundColor: "#152226",
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 4,
+    borderRadius: 3,
+  },
+  priorityListText: {
+    fontSize: 14,
+    fontFamily: "Inter-Bold",
     color: "#FFF",
+    marginLeft: 5,
+  },
+  saveAreaContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingLeft: 15,
+  },
+  successBadge: {
+    position: "absolute",
+    top: 15,
+    right: 30,
+    zIndex: 999,
+  },
+  reminderContainer: {
+    backgroundColor: "#001111",
+    position: "absolute",
+    top: 10,
+    left: 20,
+    right: 20,
+    alignSelf: "center",
+    zIndex: 999,
+    padding: 10,
+    borderRadius: 8,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  reminderItem: {
+    backgroundColor: "#312424",
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 6,
+    borderRadius: 3,
+  },
+  reminderItemText: {
+    fontSize: 14,
+    fontFamily: "Inter-Bold",
+    color: "#FFF",
+    marginLeft: 5,
+  },
+  reminderActionButtonContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  reminderActionButton: {
+    padding: 8,
+    borderRadius: 3,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "red",
   },
 });

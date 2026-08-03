@@ -24,7 +24,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import NoteItem from "./NoteItem";
-import NoteSearchBar from "./SearchBar";
+import NoteSearchBar from "./NoteSearchBar";
 
 export default function NotesContainer() {
   // ZUSTAND STORES

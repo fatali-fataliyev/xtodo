@@ -24,12 +24,14 @@ export default function TodoSearchBar() {
   const executeSearch = useTodoStore((state) => state.executeSearch);
   const isSearchMode = useTodoStore((state) => state.isSearchMode);
   const setIsSearchMode = useTodoStore((state) => state.setIsSearchMode);
+
   const updateSearchTextLen = useTodoStore(
     (state) => state.updateSearchTextLen,
   );
 
   // LOCAL STATES
   const [searchText, setSearchText] = useState<string>("");
+  const [isInputFocused, setIsInputFocused] = useState<boolean>(false);
   const inputRef = useRef<TextInput>(null);
   const [isFilterModalVisible, setIsFilterModalVisible] =
     useState<boolean>(false);
@@ -50,6 +52,19 @@ export default function TodoSearchBar() {
       Keyboard.dismiss();
     }
   }, [isSearchMode]);
+
+  if (!isInputFocused) {
+    inputRef.current?.blur();
+  }
+
+  useEffect(() => {
+    const hideListener = Keyboard.addListener("keyboardDidHide", () => {
+      setIsInputFocused(false);
+    });
+    return () => {
+      hideListener.remove();
+    };
+  }, [isInputFocused]);
 
   const handleTextChange = (text: string) => {
     setSearchText(text);
@@ -108,6 +123,7 @@ export default function TodoSearchBar() {
           spellCheck={false}
           autoCorrect={false}
           autoCapitalize="none"
+          onTouchStart={() => setIsInputFocused(true)}
         />
 
         <Animated.View

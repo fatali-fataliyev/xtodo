@@ -28,6 +28,7 @@ export default function NoteSearchBar() {
 
   // LOCAL STATES
   const [searchText, setSearchText] = useState<string>("");
+  const [isInputFocused, setIsInputFocused] = useState<boolean>(false);
   const inputRef = useRef<TextInput>(null);
 
   // REANIMATED SHARED VALUE
@@ -46,6 +47,19 @@ export default function NoteSearchBar() {
       Keyboard.dismiss();
     }
   }, [isSearchMode]);
+
+  if (!isInputFocused) {
+    inputRef.current?.blur();
+  }
+
+  useEffect(() => {
+    const hideListener = Keyboard.addListener("keyboardDidHide", () => {
+      setIsInputFocused(false);
+    });
+    return () => {
+      hideListener.remove();
+    };
+  }, [isInputFocused]);
 
   const handleTextChange = (text: string) => {
     setSearchText(text);
@@ -99,6 +113,7 @@ export default function NoteSearchBar() {
           spellCheck={false}
           autoCorrect={false}
           autoCapitalize="none"
+          onTouchStart={() => setIsInputFocused(true)}
         />
 
         <Animated.View
@@ -127,7 +142,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 10,
     backgroundColor: "#1A1818",
-    marginTop: 3,
   },
   searchBox: {
     backgroundColor: "#242424",

@@ -1,3 +1,4 @@
+import DateTimePicker from "@expo/ui/community/datetime-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react"; // Added useEffect
 import { Button, Text, TextInput } from "react-native";
@@ -5,7 +6,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import {
   getStoredBackgroundColor,
   getStoredFontSize,
-  getStoredItemBg,
   getStoredTodos,
   SaveTodos,
 } from "../../widget/storage";
@@ -46,12 +46,10 @@ export default function Edit() {
 
     const fontSize = getStoredFontSize();
     const listBg = getStoredBackgroundColor();
-    const itemBg = getStoredItemBg();
 
     updateTodoListWidget({
       Todos: todos,
       FontSize: fontSize,
-      ItemBg: itemBg,
       ListBg: listBg,
     });
 
@@ -60,10 +58,47 @@ export default function Edit() {
     }
   };
 
+  const [date, setDate] = useState(new Date());
+  // 1. Control picker visibility
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  // 2. Handle date change & dismiss
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    // Hide picker when action completes (OK, Cancel, or backdrop tap)
+    setShowDatePicker(false);
+
+    // If user clicked OK / selected a date (selectedDate is defined)
+    if (selectedDate) {
+      setDate(selectedDate);
+    }
+  };
+
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent:"center", alignItems:"center" }}
+      style={{
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
     >
+      <Text>DATETIME PICKING:: </Text>
+      {/* Button to open the picker */}
+      <Button
+        title={`Select Date: ${date.toLocaleDateString()}`}
+        onPress={() => setShowDatePicker(true)}
+      />
+
+      {/* Render picker conditionally */}
+      {showDatePicker && (
+        <DateTimePicker
+          value={date}
+          onValueChange={handleDateChange}
+          mode="time"
+        />
+      )}
+
+      <Text>---------------------------------------</Text>
       <Text>EDITING ID: {todoId}</Text>
       <TextInput
         value={newName}

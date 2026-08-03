@@ -48,20 +48,25 @@ export default function TodoContainer() {
 
   // LOCAL STATES
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [isTestModalShow, setIsTestModalShow] = useState<boolean>(false);
-  const isAddButtonHidden =
-    isSelectionMode || isEditModalOpen || isTestModalShow;
-  const clickPlayer = useAudioPlayer(getClickSound(clickSound));
+  const [editTodoID, setEditTodoID] = useState<string | null>(null);
+  const [bulkDeleteTodoIDs, setBulkDeleteTodoIDs] = useState<Set<string>>(
+    new Set(),
+  );
+
+  const shouldAddButtonHide =
+    isSelectionMode || isEditModalOpen || isAddModalOpen;
+
+  const clickSoundSrc = useMemo(() => getClickSound(clickSound), [clickSound]);
+  const clickPlayer = useAudioPlayer(clickSoundSrc);
 
   const handlePlaySound = useCallback(() => {
     clickPlayer.seekTo(0);
     clickPlayer.play();
   }, [clickPlayer]);
 
-  const activeTodos = useMemo(() => {
+  const undoneTodos = useMemo(() => {
     if (isSearchMode && searchTextLen > 0) {
       return searchResults;
     }
@@ -78,11 +83,8 @@ export default function TodoContainer() {
     todos,
   ]);
 
-  const isSelectAll =
-    activeTodos.length > 0 && selectedIds.size === activeTodos.length;
-
-  const toggleSelection = useCallback((id: string) => {
-    setSelectedIds((prevSelected) => {
+  const toggleTodoIDSelection = useCallback((id: string) => {
+    setBulkDeleteTodoIDs((prevSelected) => {
       const newSelected = new Set(prevSelected);
       if (newSelected.has(id)) {
         newSelected.delete(id);
@@ -93,31 +95,32 @@ export default function TodoContainer() {
     });
   }, []);
 
-  const displayData = useMemo(() => {
-    if (isFilterMode) {
-      return filterResults;
-    }
-    if (isSearchMode && searchTextLen > 0) {
-      return searchResults;
-    }
-    return todos.filter((todo) => todo.isDone !== true);
-  }, [
-    isFilterMode,
-    filterResults,
-    isSearchMode,
-    searchTextLen,
-    searchResults,
-    todos,
-  ]);
-
-  const displayDoneData = useMemo(() => {
+  const doneTodos = useMemo(() => {
     return todos.filter((todo) => todo.isDone === true);
   }, [todos]);
 
   const cancelSelection = () => {
-    setSelectedIds(new Set());
+    setBulkDeleteTodoIDs(new Set());
     setIsSelectionMode(false);
   };
+
+  const allVisibleTodos = useMemo(() => {
+    if (isSearchMode && searchTextLen > 0) return searchResults;
+    if (isFilterMode) return filterResults;
+    return [...undoneTodos, ...doneTodos];
+  }, [
+    isSearchMode,
+    searchTextLen,
+    searchResults,
+    isFilterMode,
+    filterResults,
+    undoneTodos,
+    doneTodos,
+  ]);
+
+  const isDeleteAll =
+    allVisibleTodos.length > 0 &&
+    bulkDeleteTodoIDs.size === allVisibleTodos.length;
 
   useEffect(() => {
     const backAction = () => {
@@ -142,39 +145,53 @@ export default function TodoContainer() {
     return () => backHandler.remove();
   }, [isSelectionMode, isSearchMode, setIsSearchMode]);
 
+  useEffect(() => {
+    if (doneTodos.length === 0) {
+      listExpansion.value = 0;
+      arrowRotation.value = 0;
+    }
+  }, [doneTodos.length]);
+
   const handleLongPress = useCallback(() => {
     setIsSelectionMode(true);
   }, []);
 
-  const handleEditPressCall = useCallback((id: string) => {
-    setSelectedTodoId(id);
+  const openEditModalCB = useCallback((id: string) => {
+    setEditTodoID(id);
     setIsEditModalOpen(true);
   }, []);
 
   const closeToggleMenu = () => {
-    setSelectedIds(new Set());
+    setBulkDeleteTodoIDs(new Set());
     setIsSelectionMode(false);
-    setSelectedTodoId(null);
+    setEditTodoID(null);
   };
 
   const handleSelectAll = () => {
-    if (isSelectAll) {
-      setSelectedIds(new Set());
+    if (isDeleteAll) {
+      setBulkDeleteTodoIDs(new Set());
     } else {
-      const allIds = activeTodos.map((todo) => todo.id);
-      setSelectedIds(new Set(allIds));
+      const allIds = allVisibleTodos.map((todo) => todo.id);
+      setBulkDeleteTodoIDs(new Set(allIds));
     }
   };
 
+  const handleClearAllDoneTodos = () => {
+    listExpansion.value = withTiming(0, { duration: 200 });
+    arrowRotation.value = withTiming(0, { duration: 200 });
+
+    clearAllDoneTodos();
+  };
+
   const deleteSelectedTodos = () => {
-    if (!isSearchMode && selectedIds.size === todos.length) {
+    if (!isSearchMode && bulkDeleteTodoIDs.size === todos.length) {
       deleteAllTodo();
       setIsSearchMode(false);
       closeToggleMenu();
       return;
     }
 
-    for (let id of selectedIds) {
+    for (let id of bulkDeleteTodoIDs) {
       deleteTodoByID(id);
     }
 
@@ -186,116 +203,13 @@ export default function TodoContainer() {
     closeToggleMenu();
   };
 
-  // ANIMATIONS
-  const animatedValue = useSharedValue(0);
-  const selectionAnim = useSharedValue(0);
-  const searchAnim = useSharedValue(0);
-  const addBtnAnim = useSharedValue(1);
-  const closeButtonAnim = useSharedValue(0);
-  const clearBtnAni = useSharedValue(displayDoneData.length > 0 ? 1 : 0);
+  const doneHeaderOpacity = useSharedValue(1);
   const arrowRotation = useSharedValue(0);
   const listExpansion = useSharedValue(0);
-  const doneHeaderOpacity = useSharedValue(0);
-
-  const hasDone = displayDoneData.length > 0;
-
-  useEffect(() => {
-    animatedValue.value = withTiming(isSelectionMode ? 1 : 0, {
-      duration: 200,
-    });
-    selectionAnim.value = withTiming(isSelectionMode ? 1 : 0, {
-      duration: 250,
-    });
-  }, [isSelectionMode]);
-
-  useEffect(() => {
-    searchAnim.value = withTiming(isSearchMode ? 1 : 0, { duration: 250 });
-    closeButtonAnim.value = withTiming(isSearchMode ? 1 : 0, { duration: 250 });
-  }, [isSearchMode]);
-
-  useEffect(() => {
-    clearBtnAni.value = withTiming(hasDone ? 1 : 0, { duration: 250 });
-    doneHeaderOpacity.value = withTiming(hasDone ? 1 : 0, { duration: 400 });
-
-    if (!hasDone) {
-      listExpansion.value = withTiming(0, { duration: 200 });
-      arrowRotation.value = withTiming(0, { duration: 200 });
-    }
-  }, [hasDone]);
-
-  useEffect(() => {
-    addBtnAnim.value = withTiming(isAddButtonHidden ? 0 : 1, { duration: 250 });
-  }, [isAddButtonHidden]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: animatedValue.value,
-    height: interpolate(
-      animatedValue.value,
-      [0, 1],
-      [0, 55],
-      Extrapolation.CLAMP,
-    ),
-    marginTop: interpolate(
-      animatedValue.value,
-      [0, 1],
-      [0, 6],
-      Extrapolation.CLAMP,
-    ),
-  }));
-
-  const floatingButtonsStyles = useAnimatedStyle(() => ({
-    opacity: selectionAnim.value,
-    transform: [
-      {
-        scale: interpolate(
-          selectionAnim.value,
-          [0, 1],
-          [0.85, 1],
-          Extrapolation.CLAMP,
-        ),
-      },
-    ],
-  }));
-
-  const closeSearchButton = useAnimatedStyle(() => ({
-    opacity: closeButtonAnim.value,
-    transform: [
-      {
-        scale: interpolate(
-          closeButtonAnim.value,
-          [0, 1],
-          [0.85, 1],
-          Extrapolation.CLAMP,
-        ),
-      },
-    ],
-  }));
-
-  const addBtnAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: addBtnAnim.value,
-    transform: [
-      {
-        scale: interpolate(
-          addBtnAnim.value,
-          [0, 1],
-          [0.85, 1],
-          Extrapolation.CLAMP,
-        ),
-      },
-    ],
-  }));
-
-  const headerSearchStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      animatedValue.value,
-      [0, 1],
-      [1, 0],
-      Extrapolation.CLAMP,
-    ),
-  }));
+  const hasDone = doneTodos.length > 0;
 
   const arrowAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `-${arrowRotation.value}deg` }],
+    transform: [{ rotate: `${arrowRotation.value}deg` }],
   }));
 
   const doneListAnimatedStyle = useAnimatedStyle(() => ({
@@ -310,26 +224,12 @@ export default function TodoContainer() {
   }));
 
   const doneListHeaderAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: doneHeaderOpacity.value, // <--- Directly reference the clean shared value
-  }));
-
-  const clearBtnAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: clearBtnAni.value,
-    transform: [
-      {
-        scale: interpolate(
-          clearBtnAni.value,
-          [0, 1],
-          [0.8, 1],
-          Extrapolation.CLAMP,
-        ),
-      },
-    ],
+    opacity: doneHeaderOpacity.value,
   }));
 
   const toggleDoneTodos = () => {
     const nextState = listExpansion.value === 0;
-    arrowRotation.value = withTiming(nextState ? 180 : 0, { duration: 800 });
+    arrowRotation.value = withTiming(nextState ? 180 : 0, { duration: 300 });
     listExpansion.value = withTiming(nextState ? 1 : 0, { duration: 300 });
   };
 
@@ -338,23 +238,24 @@ export default function TodoContainer() {
       <TodoItem
         id={item.id}
         task={item.task}
+        remindAt={item.remindAt}
         priority={item.priority}
         isDone={item.isDone}
         indexes={item.indexes}
         isSelectionMode={isSelectionMode}
-        isSelected={selectedIds.has(item.id)}
+        isSelected={bulkDeleteTodoIDs.has(item.id)}
         onLongPress={handleLongPress}
-        onSelect={toggleSelection}
-        onEdit={handleEditPressCall}
+        onSelect={toggleTodoIDSelection}
+        onEdit={openEditModalCB}
         onClickPlaySound={handlePlaySound}
       />
     ),
     [
       isSelectionMode,
-      selectedIds,
+      bulkDeleteTodoIDs,
       handleLongPress,
-      toggleSelection,
-      handleEditPressCall,
+      toggleTodoIDSelection,
+      openEditModalCB,
       handlePlaySound,
     ],
   );
@@ -382,7 +283,7 @@ export default function TodoContainer() {
   return (
     <View style={styles.container}>
       <Animated.FlatList
-        data={displayData}
+        data={undoneTodos}
         style={[styles.listStyle, { flex: 1 }]}
         renderItem={renderTodoItem}
         initialNumToRender={15}
@@ -391,34 +292,39 @@ export default function TodoContainer() {
         removeClippedSubviews={true}
         itemLayoutAnimation={LinearTransition}
         keyExtractor={(item) => item.id}
-        extraData={selectedIds}
+        extraData={bulkDeleteTodoIDs}
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
-          <Animated.View
-            style={headerSearchStyle}
-            pointerEvents={isSelectionMode ? "none" : "auto"}
-          >
+          !isSelectionMode ? (
             <TodoSearchBar />
-          </Animated.View>
+          ) : (
+            <Animated.View style={styles.selectCounter} pointerEvents="auto">
+              <Text style={styles.counterText}>
+                {bulkDeleteTodoIDs.size === 0
+                  ? "Select a todo"
+                  : `${bulkDeleteTodoIDs.size} ${bulkDeleteTodoIDs.size === 1 ? "todo" : "todos"} selected`}
+              </Text>
+            </Animated.View>
+          )
         }
         ListEmptyComponent={<EmptyState isSearchMode={isSearchMode} />}
         contentContainerStyle={{ paddingBottom: 40, paddingTop: 5 }}
       />
 
-      {/* Conditional rendering wrapper ensuring the layout adjusts instantly when items change */}
       {hasDone && (
         <>
           <Animated.View style={doneListHeaderAnimatedStyle}>
             <TouchableOpacity
               style={styles.completedTodosContainer}
               onPress={toggleDoneTodos}
+              activeOpacity={0.7}
             >
               <View style={styles.divider} />
               <View style={styles.completedTodosToggleMenu}>
                 <View style={styles.doneTodosTextContainer}>
                   <Text style={styles.completedTodosText}>
-                    Done {displayDoneData.length}
+                    Done ({doneTodos.length})
                   </Text>
                   <Animated.View style={arrowAnimatedStyle}>
                     <AntDesign name="arrow-down" size={14} color="#454545" />
@@ -431,20 +337,19 @@ export default function TodoContainer() {
 
           <Animated.View style={doneListAnimatedStyle}>
             <Animated.FlatList
-              data={displayDoneData}
+              data={doneTodos}
               style={styles.listStyle}
               renderItem={renderTodoItem}
               initialNumToRender={15}
               maxToRenderPerBatch={10}
               ListHeaderComponent={
                 <Animated.View
-                  style={clearBtnAnimatedStyle}
-                  pointerEvents={displayDoneData.length === 0 ? "none" : "auto"}
+                  pointerEvents={doneTodos.length === 0 ? "none" : "auto"}
                 >
                   <TouchableOpacity
                     style={styles.clearDoneTodosBtn}
                     activeOpacity={0.8}
-                    onPress={clearAllDoneTodos}
+                    onPress={handleClearAllDoneTodos}
                   >
                     <Fontisto name="trash" size={16} color="#FF4D4D" />
                   </TouchableOpacity>
@@ -454,7 +359,7 @@ export default function TodoContainer() {
               removeClippedSubviews={true}
               itemLayoutAnimation={LinearTransition}
               keyExtractor={(item) => item.id}
-              extraData={selectedIds}
+              extraData={bulkDeleteTodoIDs}
               keyboardDismissMode="on-drag"
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={{ paddingBottom: 40, paddingTop: 5 }}
@@ -463,76 +368,75 @@ export default function TodoContainer() {
         </>
       )}
 
-      {/* Floating Action Elements unchanged */}
-      <Animated.View
-        style={[styles.floatingActionContainer, floatingButtonsStyles]}
-        pointerEvents={isSelectionMode ? "auto" : "none"}
-      >
-        <TouchableOpacity
-          style={styles.selectionCancelBtn}
-          activeOpacity={0.8}
-          onPress={closeToggleMenu}
+      {/* Floating Action Elements */}
+      {isSelectionMode && (
+        <Animated.View
+          style={styles.floatingActionContainer}
+          pointerEvents="auto"
         >
-          <Fontisto name="close-a" size={18} color="#E0E0E0" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.selectionCheckAllBtn}
-          activeOpacity={0.8}
-          onPress={handleSelectAll}
+          <TouchableOpacity
+            style={styles.selectionCancelBtn}
+            activeOpacity={0.8}
+            onPress={closeToggleMenu}
+          >
+            <Fontisto name="close-a" size={18} color="#E0E0E0" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.selectionCheckAllBtn}
+            activeOpacity={0.8}
+            onPress={handleSelectAll}
+          >
+            <MaterialIcons
+              name={isDeleteAll ? "blur-off" : "done-all"}
+              size={22}
+              color="#FFF"
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.selectionDelBtn}
+            activeOpacity={0.8}
+            onPress={deleteSelectedTodos}
+          >
+            <Fontisto name="trash" size={20} color="#FF4D4D" />
+          </TouchableOpacity>
+        </Animated.View>
+      )}
+
+      {/* Floating Close Search Button */}
+      {isSearchMode && (
+        <Animated.View
+          style={styles.closeSearchFloatingContainer}
+          pointerEvents="auto"
         >
-          <MaterialIcons
-            name={isSelectAll ? "blur-off" : "done-all"}
-            size={22}
-            color="#FFF"
-          />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.selectionDelBtn}
-          activeOpacity={0.8}
-          onPress={deleteSelectedTodos}
-        >
-          <Fontisto name="trash" size={20} color="#FF4D4D" />
-        </TouchableOpacity>
-      </Animated.View>
+          <TouchableOpacity
+            style={styles.closeSearchActionBtn}
+            onPress={() => {
+              Keyboard.dismiss();
+              setIsSearchMode(false);
+              resetSearchTextLen();
+              clearSearchTodos();
+            }}
+          >
+            <MaterialIcons name="search-off" size={24} color="#FFF" />
+          </TouchableOpacity>
+        </Animated.View>
+      )}
 
-      <Animated.View
-        style={[styles.closeSearchFloatingContainer, closeSearchButton]}
-        pointerEvents={isSearchMode ? "auto" : "none"}
-      >
-        <TouchableOpacity
-          style={styles.closeSearchActionBtn}
-          onPress={() => {
-            Keyboard.dismiss();
-            setIsSearchMode(false);
-            resetSearchTextLen();
-            clearSearchTodos();
-          }}
-        >
-          <MaterialIcons name="search-off" size={24} color="#FFF" />
-        </TouchableOpacity>
-      </Animated.View>
+      {/* Floating Add Button*/}
+      {!shouldAddButtonHide && (
+        <Animated.View pointerEvents="auto">
+          <AddTodo onPress={() => setIsAddModalOpen(true)} />
+        </Animated.View>
+      )}
 
-      <Animated.View style={[styles.toggleMenu, animatedStyle]}>
-        <Text style={styles.counterText}>
-          {selectedIds.size === 0
-            ? "Select a todo"
-            : `${selectedIds.size} ${selectedIds.size === 1 ? "todo" : "todos"} selected`}
-        </Text>
-      </Animated.View>
-
-      <Animated.View
-        style={addBtnAnimatedStyle}
-        pointerEvents={isAddButtonHidden ? "none" : "auto"}
-      >
-        <AddTodo onPress={() => setIsTestModalShow(true)} />
-      </Animated.View>
-
+      {/* EDIT MODAL */}
       <EditTodoModal
         isOpen={isEditModalOpen}
         setIsOpen={setIsEditModalOpen}
-        todoIdx={selectedTodoId ?? ""}
+        todoIdx={editTodoID ?? ""}
       />
-      <AddTodoModal isOpen={isTestModalShow} setIsOpen={setIsTestModalShow} />
+
+      <AddTodoModal isOpen={isAddModalOpen} setIsOpen={setIsAddModalOpen} />
     </View>
   );
 }
@@ -545,18 +449,16 @@ const styles = StyleSheet.create({
   listStyle: {
     width: "100%",
   },
-  toggleMenu: {
-    position: "absolute",
-    top: -5,
-    zIndex: 10,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
+  selectCounter: {
+    backgroundColor: "rgba(0, 0, 0, 0.9)",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     width: "80%",
-    height: 50,
+    height: 45,
     alignSelf: "center",
     borderRadius: 30,
+    overflow: "hidden",
   },
   floatingActionContainer: {
     position: "absolute",
