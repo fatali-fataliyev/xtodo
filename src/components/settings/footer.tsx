@@ -102,7 +102,9 @@ export default function Footer() {
           <View style={styles.iconWrapper}>
             <FontAwesome name="github" size={24} color="#FFF" />
           </View>
-          <Text style={styles.linkText}>View on GitHub</Text>
+          <Text style={styles.linkText} allowFontScaling={false}>
+            View on GitHub
+          </Text>
         </TouchableOpacity>
 
         {/* SHARE */}
@@ -114,7 +116,9 @@ export default function Footer() {
           <View style={styles.iconWrapper}>
             <FontAwesome name="share-alt" size={24} color="#FFF" />
           </View>
-          <Text style={styles.linkText}>Tap to share app</Text>
+          <Text style={styles.linkText} allowFontScaling={false}>
+            Tap to share app
+          </Text>
         </TouchableOpacity>
 
         {/* PIXABAY */}
@@ -126,7 +130,9 @@ export default function Footer() {
           <View style={styles.iconWrapper}>
             <MaterialIcons name="library-music" size={24} color="#FFF" />
           </View>
-          <Text style={styles.linkText}>Sounds from Pixabay</Text>
+          <Text style={styles.linkText} allowFontScaling={false}>
+            Sounds from Pixabay
+          </Text>
         </TouchableOpacity>
 
         {/* ABOUT ACCORDION */}
@@ -135,7 +141,9 @@ export default function Footer() {
             <View style={styles.iconWrapper}>
               <FontAwesome name="question-circle" size={24} color="#FFF" />
             </View>
-            <Text style={styles.linkText}>About XTodo</Text>
+            <Text style={styles.linkText} allowFontScaling={false}>
+              About XTodo
+            </Text>
 
             <Animated.View style={animatedChevronStyle}>
               <FontAwesome
@@ -148,10 +156,10 @@ export default function Footer() {
           </TouchableOpacity>
 
           <Animated.View style={[styles.aboutContent, animatedContentStyle]}>
-            <Text style={styles.aboutText}>
-              XTodo is a powerful task & note manager designed to keep you organized.
-              Rank tasks by priority and take notes with peace of mind,
-              everything is fully secured with strong encryption.
+            <Text style={styles.aboutText} allowFontScaling={false}>
+              XTodo is a powerful task & note manager designed to keep you
+              organized. Rank tasks by priority and take notes with peace of
+              mind, everything is fully secured with strong encryption.
             </Text>
 
             <View style={styles.developerContainer}>
@@ -161,17 +169,23 @@ export default function Footer() {
                 color="#888"
                 style={styles.developerIcon}
               />
-              <Text style={styles.developerText}>
+              <Text style={styles.developerText} allowFontScaling={false}>
                 Developer:{" "}
-                <Text style={styles.developerName}>Fatali Fataliyev</Text>
+                <Text style={styles.developerName} allowFontScaling={false}>
+                  Fatali Fataliyev
+                </Text>
               </Text>
             </View>
           </Animated.View>
         </View>
       </View>
 
-      <Text style={styles.thankText}>Thank you for using XTodo 🤍</Text>
-      <Text style={styles.versionText}>v{appVersion}</Text>
+      <Text style={styles.thankText} allowFontScaling={false}>
+        Thank you for using XTodo 🤍
+      </Text>
+      <Text style={styles.versionText} allowFontScaling={false}>
+        v{appVersion}
+      </Text>
     </View>
   );
 }

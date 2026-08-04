@@ -130,6 +130,7 @@ export default function SettingsContainer() {
   const selectedAddBtnType = useSettingsStore((state) => state.addBtnType);
   const currentAddBtnType = getAddBtnBySettingsName(selectedAddBtnType)?.name;
   const currentClickSound = getSoundByMapName(selectedClickSound).name;
+  const currentHourFormat = useSettingsStore((state) => state.hourFormat);
   const currentCustomAddBtnBg = useSettingsStore(
     (state) => state.customAddBtnBg,
   );
@@ -143,6 +144,7 @@ export default function SettingsContainer() {
   const updateTodoDoneTextStyle = useSettingsStore(
     (state) => state.updateDoneTextStyle,
   );
+  const updateHourFormat = useSettingsStore((state) => state.updateHourFormat);
   const updateClickSound = useSettingsStore(
     (state) => state.updateTodoClickSound,
   );
@@ -200,6 +202,11 @@ export default function SettingsContainer() {
   const toggleSoundDropdown = () => setIsSoundOpen(!isSoundOpen);
   const toggleBtnDropdown = () => setIsBtnOpen(!isBtnOpen);
 
+  const handleHourFormatUpdate = (format: string) => {
+    let parsedFormat: number = Number(format);
+    updateHourFormat(parsedFormat);
+  };
+
   // ANIMATIONS FOR SOUND DROPDOWN
   const soundExpanded = useDerivedValue(() => {
     return isSoundOpen
@@ -212,11 +219,16 @@ export default function SettingsContainer() {
     return { transform: [{ rotate: `-${rotate}deg` }] };
   });
 
+  const ITEM_HEIGHT = 50;
+  const soundDropdownHeight = SOUNDS_DATA.length * ITEM_HEIGHT;
+  const addDropdownHeight = ADD_BUTTON_TYPES.length * ITEM_HEIGHT;
+
   const soundDropdownStyle = useAnimatedStyle(() => {
     return {
-      height: withTiming(isSoundOpen ? 405 : 0, { duration: 250 }),
+      height: withTiming(isSoundOpen ? soundDropdownHeight : 0, {
+        duration: 250,
+      }),
       opacity: withTiming(isSoundOpen ? 1 : 0, { duration: 200 }),
-      overflow: "hidden",
     };
   }, [isSoundOpen]);
 
@@ -234,9 +246,8 @@ export default function SettingsContainer() {
 
   const btnDropdownStyle = useAnimatedStyle(() => {
     return {
-      height: withTiming(isBtnOpen ? 120 : 0, { duration: 250 }),
+      height: withTiming(isBtnOpen ? addDropdownHeight : 0, { duration: 250 }),
       opacity: withTiming(isBtnOpen ? 1 : 0, { duration: 200 }),
-      overflow: "hidden",
     };
   }, [isBtnOpen]);
 
@@ -265,6 +276,21 @@ export default function SettingsContainer() {
             style={{ flex: 1, marginLeft: 15 }}
           />
         </View>
+
+        {/* HOUR FORMAT */}
+        <View style={styles.menuItem}>
+          <Text style={styles.menuItemTitle}>Hour format</Text>
+          <AnimatedSelector
+            options={[
+              { label: "24", value: "24" },
+              { label: "12", value: "12" },
+            ]}
+            selected={currentHourFormat.toString()}
+            onSelect={handleHourFormatUpdate}
+            style={{ flex: 1, marginLeft: 15 }}
+          />
+        </View>
+
         {/* COMPLETED TODO STYLE */}
         <View style={[styles.menuItem, styles.menuItemMultiLine]}>
           <Text style={[styles.menuItemTitle, { marginBottom: 10 }]}>
@@ -310,17 +336,19 @@ export default function SettingsContainer() {
                     }}
                   >
                     <Text style={styles.itemText}>{item.name}</Text>
-                    <TouchableOpacity
-                      style={styles.demoPlayBtn}
-                      onPress={() => {
-                        setDemoTrigger({
-                          mapName: item.mapName,
-                          timestamp: Date.now(),
-                        });
-                      }}
-                    >
-                      <FontAwesome name="play" size={20} color="#FFF" />
-                    </TouchableOpacity>
+                    {item.mapName !== "none" && (
+                      <TouchableOpacity
+                        style={styles.demoPlayBtn}
+                        onPress={() => {
+                          setDemoTrigger({
+                            mapName: item.mapName,
+                            timestamp: Date.now(),
+                          });
+                        }}
+                      >
+                        <FontAwesome name="play" size={20} color="#FFF" />
+                      </TouchableOpacity>
+                    )}
                   </TouchableOpacity>
                 )}
                 scrollEnabled={false}
@@ -382,10 +410,10 @@ export default function SettingsContainer() {
                 <Text
                   style={[
                     styles.colorPickerToggleBtnText,
-                    { color: showBGColorPicker ? "#38BDF8" : "#A1A1AA" },
+                    { color: showBGColorPicker ? "#38BDF8" : "#FFF" },
                   ]}
                 >
-                  {showBGColorPicker ? "CLOSE AND SAVE" : "SET BUTTON COLOR"}
+                  {showBGColorPicker ? "Save" : "Set Button Color"}
                 </Text>
               </TouchableOpacity>
 
@@ -447,10 +475,10 @@ export default function SettingsContainer() {
                 <Text
                   style={[
                     styles.colorPickerToggleBtnText,
-                    { color: showIconColorPicker ? "#38BDF8" : "#A1A1AA" },
+                    { color: showIconColorPicker ? "#38BDF8" : "#FFF" },
                   ]}
                 >
-                  {showIconColorPicker ? "CLOSE AND SAVE" : "SET ICON COLOR"}
+                  {showIconColorPicker ? "Save" : "Set Icon Color"}
                 </Text>
               </TouchableOpacity>
 
@@ -589,7 +617,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#000",
   },
   item: {
-    padding: 14,
+    paddingHorizontal: 14,
+    height: 50,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "#ccc",
     flexDirection: "row",

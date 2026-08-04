@@ -58,6 +58,7 @@ export default function TodoContainer() {
   const shouldAddButtonHide =
     isSelectionMode || isEditModalOpen || isAddModalOpen;
 
+  const isClickSoundNone = clickSound === "none";
   const clickSoundSrc = useMemo(() => getClickSound(clickSound), [clickSound]);
   const clickPlayer = useAudioPlayer(clickSoundSrc);
 
@@ -248,6 +249,7 @@ export default function TodoContainer() {
         onSelect={toggleTodoIDSelection}
         onEdit={openEditModalCB}
         onClickPlaySound={handlePlaySound}
+        isClickSoundNone={isClickSoundNone}
       />
     ),
     [

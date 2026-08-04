@@ -34,6 +34,7 @@ type Props = {
   onLongPress: (id: string) => void;
   onSelect: (id: string) => void;
   onClickPlaySound: () => void;
+  isClickSoundNone: boolean;
   isSelected: boolean;
   isSelectionMode: boolean;
 };
@@ -51,6 +52,7 @@ function TodoItem({
   isSelected,
   isSelectionMode,
   onClickPlaySound,
+  isClickSoundNone
 }: Props) {
   // ZUSTAND STATES
   const deleteTodoByID = useTodoStore((state) => state.deleteByID);
@@ -80,7 +82,7 @@ function TodoItem({
   const handlePress = () => {
     if (isCompleting) return;
 
-    if (!isDone && !isSelectionMode) onClickPlaySound();
+    if (!isDone && !isSelectionMode && !isClickSoundNone) onClickPlaySound();
 
     if (isSelectionMode) {
       onSelect(id);

@@ -1,6 +1,5 @@
 import { useSettingsStore } from "@/store/useSettingsStore";
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import Animated, { FadeIn, FadeOutDown } from "react-native-reanimated";
@@ -34,8 +33,8 @@ export default function ExampleTodoItem({ task, isDone }: Props) {
           ]}
         >
           <View style={styles.mainAreaContainer}>
-            <Ionicons
-              name={"checkbox"}
+            <MaterialCommunityIcons
+              name={"checkbox-marked"}
               size={21}
               color={"#8E8E93"}
               style={{ borderRadius: 4 }}
@@ -57,7 +56,11 @@ export default function ExampleTodoItem({ task, isDone }: Props) {
               pressed && { opacity: 0.5 },
             ]}
           >
-            <FontAwesome6 name="edit" size={20} color="#B3B3B3" />
+            <MaterialCommunityIcons
+              name="square-edit-outline"
+              size={20}
+              color="#B3B3B3"
+            />
           </Pressable>
         </Pressable>
       </Swipeable>

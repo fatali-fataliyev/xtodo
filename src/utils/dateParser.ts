@@ -1,10 +1,11 @@
+import { useSettingsStore } from "@/store/useSettingsStore";
 import { monthNames } from "../constants/monthNames";
 
 const separator = " • ";
 
-let dateFormat = 24;
-
 export function parseDate(dateInput: string | Date | undefined | null): string {
+  let dateFormat = useSettingsStore((state) => state.hourFormat);
+
   const date = resolveDate(dateInput);
   if (!date) return "";
 

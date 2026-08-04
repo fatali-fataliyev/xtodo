@@ -6,15 +6,14 @@ interface SettingsState {
   rootPage: string;
   addBtnType: string;
   customAddBtnBg: string;
+  hourFormat: number;
   customAddBtnIconColor: string;
   doneTodoTextStyle:
-    | "none"
-    | "line-through"
-    | "underline"
-    | "underline line-through";
+    "none" | "line-through" | "underline" | "underline line-through";
   todoClickSound: string;
   updateRootPage: (page: string) => void;
   updateAddBtnType: (type: string) => void;
+  updateHourFormat: (format: number) => void;
   updateDoneTextStyle: (style: SettingsState["doneTodoTextStyle"]) => void;
   updateTodoClickSound: (soundName: string) => void;
   updateCustomAddBtnBg: (style: string) => void;
@@ -26,6 +25,7 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       rootPage: "todos",
       addBtnType: "default",
+      hourFormat: 24,
       doneTodoTextStyle: "underline",
       todoClickSound: "dwLine1Default",
       customAddBtnBg: "#000000",
@@ -38,6 +38,8 @@ export const useSettingsStore = create<SettingsState>()(
       updateDoneTextStyle: (style) => set(() => ({ doneTodoTextStyle: style })),
 
       updateCustomAddBtnBg: (style) => set(() => ({ customAddBtnBg: style })),
+
+      updateHourFormat: (format) => set(() => ({ hourFormat: format })),
 
       updateCustomAddBtnIconColor: (style) =>
         set(() => ({ customAddBtnIconColor: style })),
