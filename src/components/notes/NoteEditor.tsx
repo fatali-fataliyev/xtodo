@@ -1,4 +1,6 @@
 import { Note, useNoteStore } from "@/store/useNoteStore";
+import { parseDate } from "@/utils/dateParser";
+import { Ionicons } from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -9,9 +11,9 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   BackHandler,
-  ColorValue,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -23,22 +25,7 @@ import {
   EnrichedTextInputInstance,
   OnChangeStateEvent,
 } from "react-native-enriched-html";
-
-interface customTextEditorStyle {
-  h1?: { fontSize?: number; bold?: boolean };
-  h2?: { bold?: boolean };
-  codeblock?: {
-    color?: ColorValue;
-    borderRadius?: number;
-    backgroundColor?: ColorValue;
-  };
-}
-
-const textEditorStyles: customTextEditorStyle = {
-  h1: { fontSize: 28, bold: true },
-  h2: { bold: true },
-  codeblock: { backgroundColor: "#000", borderRadius: 3, color: "#33FF00" },
-};
+import { textEditorStyles } from "./EditorItemSettings";
 
 export default function NoteEditorScreen() {
   const router = useRouter();
@@ -58,9 +45,9 @@ export default function NoteEditorScreen() {
 
   const editorRef = useRef<EnrichedTextInputInstance>(null);
   const titleRef = useRef(title);
-  const [stylesState, setStylesState] = useState<OnChangeStateEvent | null>(
-    null,
-  );
+  const [stylesState, setStylesState] = useState<
+    OnChangeStateEvent | any | null
+  >(null);
 
   const isNewNote = id === "new";
 
@@ -179,158 +166,224 @@ export default function NoteEditorScreen() {
       </View>
 
       {/* Toolbar */}
-      <View style={styles.stickyToolbar}>
-        {/* H1 */}
-        <TouchableOpacity
-          style={[
-            styles.toolbarButton,
-            stylesState?.h1?.isActive && styles.toolbarButtonActive,
-          ]}
-          onPress={() => editorRef.current?.toggleH1()}
+      <View style={styles.stickyToolbarContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.toolbarScrollContent}
         >
-          <View style={styles.headingIconContainer}>
-            <Octicons
-              name="heading"
-              size={14}
-              color={stylesState?.h1?.isActive ? "#eab308" : "#9ca3af"}
+          {/* H1 */}
+          <TouchableOpacity
+            style={[
+              styles.toolbarButton,
+              stylesState?.h1?.isActive && styles.toolbarButtonActive,
+            ]}
+            onPress={() => editorRef.current?.toggleH1()}
+          >
+            <View style={styles.headingIconContainer}>
+              <Octicons
+                name="heading"
+                size={14}
+                color={stylesState?.h1?.isActive ? "#eab308" : "#9ca3af"}
+              />
+              <Text
+                style={[
+                  styles.headingSubText,
+                  { color: stylesState?.h1?.isActive ? "#eab308" : "#9ca3af" },
+                ]}
+              >
+                1
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* H2 */}
+          <TouchableOpacity
+            style={[
+              styles.toolbarButton,
+              stylesState?.h2?.isActive && styles.toolbarButtonActive,
+            ]}
+            onPress={() => editorRef.current?.toggleH2()}
+          >
+            <View style={styles.headingIconContainer}>
+              <Octicons
+                name="heading"
+                size={14}
+                color={stylesState?.h2?.isActive ? "#eab308" : "#9ca3af"}
+              />
+              <Text
+                style={[
+                  styles.headingSubText,
+                  { color: stylesState?.h2?.isActive ? "#eab308" : "#9ca3af" },
+                ]}
+              >
+                2
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* H3 */}
+          <TouchableOpacity
+            style={[
+              styles.toolbarButton,
+              stylesState?.h3?.isActive && styles.toolbarButtonActive,
+            ]}
+            onPress={() => editorRef.current?.toggleH3()}
+          >
+            <View style={styles.headingIconContainer}>
+              <Octicons
+                name="heading"
+                size={14}
+                color={stylesState?.h3?.isActive ? "#eab308" : "#9ca3af"}
+              />
+              <Text
+                style={[
+                  styles.headingSubText,
+                  { color: stylesState?.h3?.isActive ? "#eab308" : "#9ca3af" },
+                ]}
+              >
+                3
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* BOLD */}
+          <TouchableOpacity
+            style={[
+              styles.toolbarButton,
+              stylesState?.bold?.isActive && styles.toolbarButtonActive,
+            ]}
+            onPress={() => editorRef.current?.toggleBold()}
+          >
+            <MaterialIcons
+              name="format-bold"
+              size={20}
+              color={stylesState?.bold?.isActive ? "#eab308" : "#9ca3af"}
             />
-            <Text
-              style={[
-                styles.headingSubText,
-                { color: stylesState?.h1?.isActive ? "#eab308" : "#9ca3af" },
-              ]}
-            >
-              1
-            </Text>
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
 
-        {/* H2 */}
-        <TouchableOpacity
-          style={[
-            styles.toolbarButton,
-            stylesState?.h2?.isActive && styles.toolbarButtonActive,
-          ]}
-          onPress={() => editorRef.current?.toggleH2()}
-        >
-          <View style={styles.headingIconContainer}>
-            <Octicons
-              name="heading"
-              size={14}
-              color={stylesState?.h2?.isActive ? "#eab308" : "#9ca3af"}
+          {/* UNDERLINE */}
+          <TouchableOpacity
+            style={[
+              styles.toolbarButton,
+              stylesState?.underline?.isActive && styles.toolbarButtonActive,
+            ]}
+            onPress={() => editorRef.current?.toggleUnderline()}
+          >
+            <MaterialIcons
+              name="format-underline"
+              size={20}
+              color={stylesState?.underline?.isActive ? "#eab308" : "#9ca3af"}
             />
-            <Text
-              style={[
-                styles.headingSubText,
-                { color: stylesState?.h2?.isActive ? "#eab308" : "#9ca3af" },
-              ]}
-            >
-              2
-            </Text>
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
 
-        {/* BOLD */}
-        <TouchableOpacity
-          style={[
-            styles.toolbarButton,
-            stylesState?.bold?.isActive && styles.toolbarButtonActive,
-          ]}
-          onPress={() => editorRef.current?.toggleBold()}
-        >
-          <MaterialIcons
-            name="format-bold"
-            size={20}
-            color={stylesState?.bold?.isActive ? "#eab308" : "#9ca3af"}
-          />
-        </TouchableOpacity>
+          {/* ITALIC */}
+          <TouchableOpacity
+            style={[
+              styles.toolbarButton,
+              stylesState?.italic?.isActive && styles.toolbarButtonActive,
+            ]}
+            onPress={() => editorRef.current?.toggleItalic()}
+          >
+            <MaterialIcons
+              name="format-italic"
+              size={20}
+              color={stylesState?.italic?.isActive ? "#eab308" : "#9ca3af"}
+            />
+          </TouchableOpacity>
 
-        {/* UNDERLINE */}
-        <TouchableOpacity
-          style={[
-            styles.toolbarButton,
-            stylesState?.underline?.isActive && styles.toolbarButtonActive,
-          ]}
-          onPress={() => editorRef.current?.toggleUnderline()}
-        >
-          <MaterialIcons
-            name="format-underline"
-            size={20}
-            color={stylesState?.underline?.isActive ? "#eab308" : "#9ca3af"}
-          />
-        </TouchableOpacity>
+          {/* ORDERED LIST */}
+          <TouchableOpacity
+            style={[
+              styles.toolbarButton,
+              stylesState?.orderedList?.isActive && styles.toolbarButtonActive,
+            ]}
+            onPress={() => editorRef.current?.toggleOrderedList()}
+          >
+            <AntDesign
+              name="ordered-list"
+              size={20}
+              color={stylesState?.orderedList?.isActive ? "#eab308" : "#9ca3af"}
+            />
+          </TouchableOpacity>
 
-        {/* ITALIC */}
-        <TouchableOpacity
-          style={[
-            styles.toolbarButton,
-            stylesState?.italic?.isActive && styles.toolbarButtonActive,
-          ]}
-          onPress={() => editorRef.current?.toggleItalic()}
-        >
-          <MaterialIcons
-            name="format-italic"
-            size={20}
-            color={stylesState?.italic?.isActive ? "#eab308" : "#9ca3af"}
-          />
-        </TouchableOpacity>
+          {/* UNORDERED LIST */}
+          <TouchableOpacity
+            style={[
+              styles.toolbarButton,
+              stylesState?.unorderedList?.isActive &&
+                styles.toolbarButtonActive,
+            ]}
+            onPress={() => editorRef.current?.toggleUnorderedList()}
+          >
+            <AntDesign
+              name="unordered-list"
+              size={20}
+              color={
+                stylesState?.unorderedList?.isActive ? "#eab308" : "#9ca3af"
+              }
+            />
+          </TouchableOpacity>
 
-        {/* ORDERED LIST */}
-        <TouchableOpacity
-          style={[
-            styles.toolbarButton,
-            stylesState?.orderedList?.isActive && styles.toolbarButtonActive,
-          ]}
-          onPress={() => editorRef.current?.toggleOrderedList()}
-        >
-          <AntDesign
-            name="ordered-list"
-            size={20}
-            color={stylesState?.orderedList?.isActive ? "#eab308" : "#9ca3af"}
-          />
-        </TouchableOpacity>
+          {/* CHECKBOX */}
+          <TouchableOpacity
+            style={[
+              styles.toolbarButton,
+              stylesState?.checkboxList?.isActive && styles.toolbarButtonActive,
+            ]}
+            onPress={() => editorRef.current?.toggleCheckboxList(false)}
+          >
+            <Ionicons
+              name="checkbox-outline"
+              size={20}
+              color={
+                stylesState?.checkboxList?.isActive ? "#eab308" : "#9ca3af"
+              }
+            />
+          </TouchableOpacity>
 
-        {/* CODE BLOCK */}
-        <TouchableOpacity
-          style={[
-            styles.toolbarButton,
-            stylesState?.codeBlock?.isActive && styles.toolbarButtonActive,
-          ]}
-          onPress={() => editorRef.current?.toggleCodeBlock()}
-        >
-          <Entypo
-            name="code"
-            size={20}
-            color={stylesState?.codeBlock?.isActive ? "#eab308" : "#9ca3af"}
-          />
-        </TouchableOpacity>
+          {/* CODE INLINE */}
+          <TouchableOpacity
+            style={[
+              styles.toolbarButton,
+              stylesState?.inlineCode?.isActive && styles.toolbarButtonActive,
+            ]}
+            onPress={() => editorRef.current?.toggleInlineCode()}
+          >
+            <Entypo
+              name="code"
+              size={20}
+              color={stylesState?.inlineCode?.isActive ? "#eab308" : "#9ca3af"}
+            />
+          </TouchableOpacity>
 
-        {/* CLEAR TEXT INPUT */}
-        <TouchableOpacity
-          style={[styles.toolbarButton]}
-          onPress={() => editorRef.current?.setValue("")}
-        >
-          <MaterialCommunityIcons name="broom" size={20} color={"#9ca3af"} />
-        </TouchableOpacity>
+          {/* CODE BLOCK */}
+          <TouchableOpacity
+            style={[
+              styles.toolbarButton,
+              stylesState?.codeBlock?.isActive && styles.toolbarButtonActive,
+            ]}
+            onPress={() => editorRef.current?.toggleCodeBlock()}
+          >
+            <MaterialCommunityIcons
+              name="code-json"
+              size={18}
+              color={stylesState?.codeBlock?.isActive ? "#eab308" : "#9ca3af"}
+            />
+          </TouchableOpacity>
+
+          {/* CLEAR TEXT INPUT */}
+          <TouchableOpacity
+            style={[styles.toolbarButton]}
+            onPress={() => editorRef.current?.setValue("")}
+          >
+            <MaterialCommunityIcons name="broom" size={20} color={"#9ca3af"} />
+          </TouchableOpacity>
+        </ScrollView>
       </View>
     </KeyboardAvoidingView>
   );
 }
-
-const parseDate = (dateParam: Date | string | undefined): string => {
-  if (!dateParam) return "Unknown date";
-
-  const date = dateParam instanceof Date ? dateParam : new Date(dateParam);
-
-  if (isNaN(date.getTime())) return "Unknown date";
-
-  const monthName = date.toLocaleString("en-US", { month: "long" });
-  const day = date.getDate();
-  const hours = date.getHours().toString().padStart(2, "0");
-  const minutes = date.getMinutes().toString().padStart(2, "0");
-
-  return `${monthName} ${day}, ${hours}:${minutes}`;
-};
 
 const isHtmlEmpty = (html: string | undefined | null): boolean => {
   if (!html) return true;
@@ -400,16 +453,18 @@ const styles = StyleSheet.create({
     fontFamily: "Inter-Regular",
     paddingHorizontal: 8,
   },
-  stickyToolbar: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
+  stickyToolbarContainer: {
     backgroundColor: "#1e1e1e",
-    paddingHorizontal: 10,
-    paddingVertical: 8,
     borderTopWidth: 1,
     borderColor: "#2d2d2d",
     width: "100%",
+  },
+  toolbarScrollContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 5,
   },
   toolbarButton: {
     width: 36,

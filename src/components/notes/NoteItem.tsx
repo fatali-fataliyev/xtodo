@@ -1,6 +1,7 @@
 import { Colors } from "@/constants/colors";
 import { useNoteStore } from "@/store/useNoteStore";
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import { parseDate } from "@/utils/dateParser";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useRef } from "react";
 import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
@@ -18,6 +19,7 @@ import Animated, {
   SharedValue,
   useAnimatedStyle,
 } from "react-native-reanimated";
+import { textEditorStyles } from "./EditorItemSettings";
 
 type Props = {
   id: string;
@@ -33,6 +35,8 @@ type Props = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+const ICON_SIZE = 20;
 
 function NoteItem({
   id,
@@ -92,7 +96,11 @@ function NoteItem({
           onPress={() => deleteByID(id)}
         >
           <Animated.View style={animatedIconStyles}>
-            <FontAwesome6 name="trash" size={20} color="#FFF" />
+            <MaterialCommunityIcons
+              name="delete"
+              size={ICON_SIZE}
+              color="#FFF"
+            />
           </Animated.View>
         </Pressable>
       </View>
@@ -165,13 +173,19 @@ function NoteItem({
                 </Text>
               )}
 
-              <EnrichedText style={styles.contentText} numberOfLines={1}>
+              <EnrichedText
+                style={styles.contentText}
+                htmlStyle={textEditorStyles}
+                numberOfLines={1}
+              >
                 {content}
               </EnrichedText>
 
               <View style={styles.infoContainer}>
-                <FontAwesome6 name="clock" size={12} color="#CCC" />
-                <Text style={styles.createdAtText}>{parseDate(createdAt)}</Text>
+                <MaterialIcons name="access-time" size={13} color="#CCC" />
+                <Text allowFontScaling={false} style={styles.createdAtText}>
+                  {parseDate(createdAt)}
+                </Text>
               </View>
             </View>
           </View>
@@ -217,46 +231,6 @@ const getHighlightedText = (
   );
 };
 
-const parseDate = (dateInput: Date | string): string => {
-  const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
-
-  if (!date || isNaN(date.getTime())) {
-    return "Unknown date";
-  }
-
-  const now = new Date();
-
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
-
-  const hour = date.getHours().toString().padStart(2, "0");
-  const mins = date.getMinutes().toString().padStart(2, "0");
-
-  const isSameDay = (d1: Date, d2: Date): boolean => {
-    return (
-      d1.getDate() === d2.getDate() &&
-      d1.getMonth() === d2.getMonth() &&
-      d1.getFullYear() === d2.getFullYear()
-    );
-  };
-
-  let result: string = "";
-
-  if (isSameDay(date, now)) {
-    result = `${hour}:${mins} • Today`;
-  } else if (isSameDay(date, yesterday)) {
-    result = `${hour}:${mins} • Yesterday`;
-  } else {
-    const day = date.getDate().toString().padStart(2, "0");
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const yearFormatted = date.getFullYear().toString().slice(-2);
-
-    result = `${hour}:${mins} • ${day}.${month}.${yearFormatted}`;
-  }
-
-  return result;
-};
-
 const styles = StyleSheet.create({
   swipeableContainer: {
     width: "95%",
@@ -268,7 +242,7 @@ const styles = StyleSheet.create({
   },
   container: {
     width: "100%",
-    height: 80,
+    height: 75,
     backgroundColor: "#242424",
     flexDirection: "row",
     justifyContent: "space-between",

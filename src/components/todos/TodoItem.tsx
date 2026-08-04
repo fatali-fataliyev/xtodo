@@ -52,7 +52,7 @@ function TodoItem({
   isSelected,
   isSelectionMode,
   onClickPlaySound,
-  isClickSoundNone
+  isClickSoundNone,
 }: Props) {
   // ZUSTAND STATES
   const deleteTodoByID = useTodoStore((state) => state.deleteByID);
@@ -204,6 +204,7 @@ function TodoItem({
                 color={isDone ? "gray" : "#CCC"}
               />
               <Text
+                allowFontScaling={false}
                 style={[styles.reminderBoxText, isDone && { color: "gray" }]}
               >
                 {parseDate(remindAt)}
@@ -321,7 +322,7 @@ const styles = StyleSheet.create({
   },
   container: {
     width: "100%",
-    height: 70,
+    height: 75,
     backgroundColor: "#242424",
     flexDirection: "row",
     justifyContent: "space-between",
@@ -385,14 +386,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    bottom: 0,
+    bottom: 3,
     zIndex: 999,
   },
   reminderBoxText: {
     color: "#CCC",
     marginLeft: 5,
     fontFamily: "Inter-Regular",
-    marginBottom: 1,
     fontSize: 12,
   },
 });
