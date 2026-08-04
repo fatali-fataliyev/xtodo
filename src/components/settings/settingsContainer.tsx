@@ -8,6 +8,7 @@ import {
   SOUNDS_DATA,
 } from "@/constants/clickSounds";
 
+import { GetColorByLevel } from "@/constants/colors";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
@@ -31,6 +32,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ColorPicker, { Panel1, Swatches } from "reanimated-color-picker";
+import { GlowCircle } from "../todos/GlowCircle";
 import { GlowProvider } from "../todos/GlowContext";
 import ExampleTodoItem from "./exampleTodoItem";
 import Footer from "./footer";
@@ -131,6 +133,9 @@ export default function SettingsContainer() {
   const currentAddBtnType = getAddBtnBySettingsName(selectedAddBtnType)?.name;
   const currentClickSound = getSoundByMapName(selectedClickSound).name;
   const currentHourFormat = useSettingsStore((state) => state.hourFormat);
+  const currentGlowCircleStyle = useSettingsStore(
+    (state) => state.glowCircleStyle,
+  );
   const currentCustomAddBtnBg = useSettingsStore(
     (state) => state.customAddBtnBg,
   );
@@ -141,10 +146,17 @@ export default function SettingsContainer() {
     (state) => state.doneTodoTextStyle,
   );
   const updateRootPage = useSettingsStore((state) => state.updateRootPage);
+
   const updateTodoDoneTextStyle = useSettingsStore(
     (state) => state.updateDoneTextStyle,
   );
+
   const updateHourFormat = useSettingsStore((state) => state.updateHourFormat);
+
+  const updateGlowCircleStyle = useSettingsStore(
+    (state) => state.updateGlowCircleStyle,
+  );
+
   const updateClickSound = useSettingsStore(
     (state) => state.updateTodoClickSound,
   );
@@ -521,6 +533,25 @@ export default function SettingsContainer() {
             </View>
           )}
         </Animated.View>
+
+        {/* Priority indicator */}
+
+        <View style={styles.menuItem}>
+          <Text style={styles.menuItemTitle}>Indicator style</Text>
+          <AnimatedSelector
+            options={[
+              { label: "glow", value: "glow" },
+              { label: "static", value: "static" },
+            ]}
+            selected={currentGlowCircleStyle}
+            onSelect={updateGlowCircleStyle}
+            style={{ flex: 1, marginHorizontal: 8 }}
+          />
+
+          <GlowProvider>
+            <GlowCircle color={GetColorByLevel("high")} />
+          </GlowProvider>
+        </View>
 
         {/* _FOOTER */}
         <Footer />

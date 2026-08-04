@@ -1,3 +1,4 @@
+import { useSettingsStore } from "@/store/useSettingsStore";
 import React from "react";
 import { View } from "react-native";
 import Animated, {
@@ -18,6 +19,8 @@ export const GlowCircle: React.FC<GlowCircleProps> = ({
   size = "normal",
 }) => {
   const glowProgress = useGlowContext();
+  const circleStyle = useSettingsStore((state) => state.glowCircleStyle);
+  const isStatic = circleStyle === "static";
 
   const animatedGlowStyle = useAnimatedStyle(() => {
     return {
@@ -30,14 +33,26 @@ export const GlowCircle: React.FC<GlowCircleProps> = ({
 
   return (
     <View style={currentStyles.container}>
-      <Animated.View
-        style={[
-          currentStyles.outerCircle,
-          { backgroundColor: color },
-          animatedGlowStyle,
-        ]}
-      />
-      <View style={[currentStyles.innerCircle, { backgroundColor: color }]} />
+      {!isStatic ? (
+        <>
+          <Animated.View
+            style={[
+              currentStyles.outerCircle,
+              { backgroundColor: color },
+              animatedGlowStyle,
+            ]}
+          />
+          <View
+            style={[currentStyles.innerCircle, { backgroundColor: color }]}
+          />
+        </>
+      ) : (
+        <>
+          <View
+            style={[currentStyles.innerCircle, { backgroundColor: color }]}
+          />
+        </>
+      )}
     </View>
   );
 };
