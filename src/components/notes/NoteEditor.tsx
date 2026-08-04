@@ -292,6 +292,24 @@ export default function NoteEditorScreen() {
             />
           </TouchableOpacity>
 
+          {/* STRIKE Through */}
+          <TouchableOpacity
+            style={[
+              styles.toolbarButton,
+              stylesState?.strikeThrough?.isActive &&
+                styles.toolbarButtonActive,
+            ]}
+            onPress={() => editorRef.current?.toggleStrikeThrough()}
+          >
+            <MaterialIcons
+              name="format-strikethrough"
+              size={20}
+              color={
+                stylesState?.strikeThrough?.isActive ? "#eab308" : "#9ca3af"
+              }
+            />
+          </TouchableOpacity>
+
           {/* ORDERED LIST */}
           <TouchableOpacity
             style={[
