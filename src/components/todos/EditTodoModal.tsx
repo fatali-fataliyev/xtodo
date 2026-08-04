@@ -34,6 +34,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { Colors } from "../../../widget/TodoWidget";
+import { checkNotificationAccess } from "./requestNotificationAccess";
 
 type Props = {
   isOpen: boolean;
@@ -169,7 +170,8 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
     }
   }, []);
 
-  const openReminderToolbar = () => {
+  const openReminderToolbar = async () => {
+    await checkNotificationAccess();
     if (!selectedDate && !todo?.remindAt) {
       setShowTimePicker(true);
     }

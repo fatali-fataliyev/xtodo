@@ -9,18 +9,20 @@ import {
   useFonts,
 } from "@expo-google-fonts/inter";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useRef, useState } from "react";
-import { AppState, AppStateStatus, Platform } from "react-native";
+import { AppState, AppStateStatus } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { KeyboardProvider, KeyboardController } from "react-native-keyboard-controller";
+import {
+  KeyboardController,
+  KeyboardProvider,
+} from "react-native-keyboard-controller";
 import { useTodoStore } from "../store/useTodoStore";
 import { initializeStorage } from "../utils/secureStorage";
 
-KeyboardController.preload()
+KeyboardController.preload();
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -30,42 +32,6 @@ Notifications.setNotificationHandler({
     shouldSetBadge: false,
   }),
 });
-
-async function requestNotificationAccess() {
-  if (!Device.isDevice) {
-    console.warn(
-      "Must use physical device for push/local notification testing",
-    );
-  }
-
-  if (Platform.OS === "android") {
-    await Notifications.setNotificationChannelAsync("reminders", {
-      name: "Task Reminders",
-      importance: Notifications.AndroidImportance.MAX,
-      sound: "reminder",
-      vibrationPattern: [0, 250, 250, 250],
-      lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
-      lightColor: "#FF231F7C",
-      enableVibrate: true,
-      showBadge: true,
-    });
-  }
-
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
-
-  if (existingStatus !== "granted") {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-  }
-
-  if (finalStatus !== "granted") {
-    console.warn("failed to get notification permission!");
-    return false;
-  }
-
-  return true;
-}
 
 SplashScreen.preventAutoHideAsync();
 
@@ -94,10 +60,29 @@ export default function RootLayout() {
       },
     );
 
+    const notificationSubscription =
+      Notifications.addNotificationResponseReceivedListener(
+        async (response) => {
+          const actionId = response.actionIdentifier;
+          const taskId = response.notification.request.content.data?.taskId;
+
+          const notificationId = response.notification.request.identifier;
+
+          if (!taskId) return;
+
+          if (actionId === "ACTION_COMPLETE") {
+            if (typeof notificationId === "string") {
+              await Notifications.dismissNotificationAsync(notificationId);
+            }
+            if (typeof taskId === "string") {
+              useTodoStore.getState().markTodoDone(taskId);
+            }
+          }
+        },
+      );
+
     async function prepareApp() {
       try {
-        await requestNotificationAccess();
-
         const isStorageReady = await initializeStorage();
         if (isStorageReady) {
           await Promise.all([
@@ -116,6 +101,7 @@ export default function RootLayout() {
 
     return () => {
       subscription.remove();
+      notificationSubscription.remove();
     };
   }, []);
 
