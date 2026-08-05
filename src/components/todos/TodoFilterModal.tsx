@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   checkboxLabel: {
     fontSize: 16,
     marginLeft: 12,
-    fontFamily: "Inter-Bold",
+    fontFamily: "Inter-SemiBold",
   },
   closeBtn: {
     justifyContent: "center",
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
   filterApplyBtnText: {
-    fontFamily: "Inter-Bold",
+    fontFamily: "Inter-SemiBold",
     fontSize: 16,
     color: "#121212",
   },

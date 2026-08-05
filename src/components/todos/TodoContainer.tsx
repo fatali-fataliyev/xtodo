@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
   },
   counterText: {
     color: "white",
-    fontFamily: "Inter-Bold",
+    fontFamily: "Inter-SemiBold",
     fontSize: 16,
     textAlign: "center",
   },
@@ -554,7 +554,7 @@ const styles = StyleSheet.create({
   },
   completedTodosText: {
     color: "#CCC",
-    fontFamily: "Inter-Bold",
+    fontFamily: "Inter-SemiBold",
     marginRight: 5,
     fontSize: 14,
   },

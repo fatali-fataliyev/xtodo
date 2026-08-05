@@ -691,7 +691,7 @@ const styles = StyleSheet.create({
   },
   colorPickerToggleBtnText: {
     alignSelf: "center",
-    fontFamily: "Inter-Bold",
+    fontFamily: "Inter-SemiBold",
     color: "#FFF",
   },
 });

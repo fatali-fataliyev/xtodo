@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
   },
   priorityListText: {
     fontSize: 14,
-    fontFamily: "Inter-Bold",
+    fontFamily: "Inter-SemiBold",
     color: "#FFF",
     marginLeft: 5,
   },
@@ -619,7 +619,7 @@ const styles = StyleSheet.create({
   },
   reminderItemText: {
     fontSize: 14,
-    fontFamily: "Inter-Bold",
+    fontFamily: "Inter-SemiBold",
     color: "#FFF",
     marginLeft: 5,
   },

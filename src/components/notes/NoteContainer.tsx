@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
   },
   counterText: {
     color: "white",
-    fontFamily: "Inter-Bold",
+    fontFamily: "Inter-SemiBold",
     fontSize: 16,
     textAlign: "center",
   },

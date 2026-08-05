@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   },
   versionText: {
     color: "#E9EDEF",
-    fontFamily: "Inter-Bold",
+    fontFamily: "Inter-SemiBold",
     textAlign: "center",
     fontSize: 9,
   },
@@ -278,6 +278,6 @@ const styles = StyleSheet.create({
   },
   developerName: {
     color: "#FFF",
-    fontFamily: "Inter-Medium",
+    fontFamily: "Inter-SemiBold",
   },
 });

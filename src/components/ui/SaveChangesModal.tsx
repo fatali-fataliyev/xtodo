@@ -138,12 +138,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 16,
     color: "#FFF",
-    fontFamily: "Inter-Bold",
+    fontFamily: "Inter-SemiBold",
     paddingLeft: 10,
   },
   body: {
     color: "#FFF",
-    fontFamily: "Inter-Bold",
+    fontFamily: "Inter-SemiBold",
     paddingLeft: 10,
   },
   buttonContainer: {
@@ -156,6 +156,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#FFF",
-    fontFamily: "Inter-Bold",
+    fontFamily: "Inter-SemiBold",
   },
 });
