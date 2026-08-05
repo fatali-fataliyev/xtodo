@@ -8,12 +8,15 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        lazy: false,
         tabBarStyle: {
           backgroundColor: "#000000",
-          borderTopColor: "#1A1A1A",
+          borderTopColor: "#000000",
         },
         tabBarActiveTintColor: Colors.medium,
         tabBarInactiveTintColor: "#8E8E93",
+        animation: "shift",
+        
       }}
     >
       {/* 1. Notes Tab */}
