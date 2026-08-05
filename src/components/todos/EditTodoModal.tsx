@@ -1,6 +1,7 @@
 import { GetColorByLevel } from "@/constants/colors";
 import CapitalizeFirstLetter from "@/constants/firstLetterCapitalizer";
 import { PriorityLevels } from "@/constants/priorityLevels";
+import { useSettingsStore } from "@/store/useSettingsStore";
 import { EditPayload, useTodoStore } from "@/store/useTodoStore";
 import { resolveDate } from "@/utils/dateParser";
 import DateTimePicker, {
@@ -34,6 +35,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { Colors } from "../../../widget/TodoWidget";
+import SaveChangesModal from "../ui/SaveChangesModal";
+import { remindAtParseDate } from "./RemindAtDateParser";
 import { checkNotificationAccess } from "./requestNotificationAccess";
 
 type Props = {
@@ -47,13 +50,15 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
   const todo = useTodoStore((state) =>
     state.todos.find((t) => t.id === todoIdx),
   );
-
   const updateTodo = useTodoStore((state) => state.updateTodo);
+  const hourFormat = useSettingsStore((state) => state.hourFormat);
 
   // LOCAL STATES
   const [newTodoName, setNewTodoName] = useState<string>("");
   const [newPriorityLevel, setNewPriorityLevel] = useState<string>("high");
   const [isListShow, setIsListShow] = useState<boolean>(false);
+  const [isSaveChangesModalShow, setIsSaveChangesModalShow] =
+    useState<boolean>(false);
   const [isDateSelection, setIsDateSelection] = useState<boolean>(false);
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const [showTimePicker, setShowTimePicker] = useState<boolean>(false);
@@ -72,16 +77,6 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
   const appStateRef = useRef(AppState.currentState);
   const sheetRef = useRef<any>(null);
   const inputRef = useRef<any>(null);
-
-  const closeModal = useCallback(() => {
-    inputRef.current?.blur();
-    sheetRef.current?.close();
-    setIsOpen(false);
-    setIsListShow(false);
-    setIsDateSelection(false);
-    setSelectedDate(null);
-    resetInputs();
-  }, [setIsOpen]);
 
   const resetInputs = () => {
     setNewTodoName("");
@@ -115,7 +110,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
       opacity.value = withTiming(0, { duration: 300 });
 
       setTimeout(() => {
-        closeModal();
+        forceCloseModal();
       }, 300);
     }, 1000);
   };
@@ -134,7 +129,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
 
       const now = new Date();
       if (newDate < now) {
-        alert("Cannot set a reminder for the past");
+        setSelectedDate(now)
       } else {
         setSelectedDate(newDate);
       }
@@ -150,7 +145,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
 
       const now = new Date();
       if (newDate < now) {
-        alert("Cannot set a reminder for the past");
+        setSelectedDate(now);
       } else {
         setSelectedDate(newDate);
       }
@@ -164,7 +159,11 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
 
   const handleSheetChanges = useCallback((index: number) => {
     if (index >= 0) {
-      inputRef.current?.focus();
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 50);
+      });
     } else {
       inputRef.current?.blur();
     }
@@ -172,10 +171,6 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
 
   const openReminderToolbar = async () => {
     await checkNotificationAccess();
-    if (!selectedDate && !todo?.remindAt) {
-      setShowTimePicker(true);
-    }
-
     if (selectedDate) {
       setIsDateSelection(true);
       return;
@@ -184,6 +179,29 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
     setIsDateSelection(true);
     setShowTimePicker(true);
   };
+
+  // MODAL CLOSING
+  const forceCloseModal = useCallback(() => {
+    inputRef.current?.blur();
+    sheetRef.current?.close();
+    setIsSaveChangesModalShow(false);
+    setTimeout(() => {
+      setIsOpen(false);
+      setIsListShow(false);
+      setIsDateSelection(false);
+      setSelectedDate(null);
+      resetInputs();
+    }, 150);
+  }, [setIsOpen]);
+
+  const closeModal = useCallback(() => {
+    if (hasChanged) {
+      setIsSaveChangesModalShow(true);
+      return;
+    }
+
+    forceCloseModal();
+  }, [hasChanged, forceCloseModal]);
 
   useEffect(() => {
     if (isOpen && todo) {
@@ -202,7 +220,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
         !showDatePicker &&
         !showTimePicker
       ) {
-        if (appStateRef.current === "active") {
+        if (appStateRef.current === "active" && !hasChanged) {
           closeModal();
         }
       }
@@ -216,7 +234,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
       hideListener.remove();
       showListener.remove();
     };
-  }, [isOpen, closeModal, showDatePicker, showTimePicker]);
+  }, [isOpen, closeModal, showDatePicker, showTimePicker, hasChanged]);
 
   useEffect(() => {
     const onBackPress = () => {
@@ -266,17 +284,27 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
     return () => subscription.remove();
   }, []);
 
+  const handleBackdropPress = useCallback(() => {
+    if (hasChanged) {
+      setIsSaveChangesModalShow(true);
+      return;
+    } else {
+      forceCloseModal();
+    }
+  }, [hasChanged, forceCloseModal]);
+
   // Styling & Animations
   const renderBackdrop = useCallback(
     (props: any) => (
       <BottomSheetBackdrop
         {...props}
+        onPress={handleBackdropPress}
+        pressBehavior="collapse"
         disappearsOnIndex={-1}
         appearsOnIndex={0}
-        pressBehavior="close"
       />
     ),
-    [],
+    [handleBackdropPress],
   );
 
   const opacity = useSharedValue(0);
@@ -292,7 +320,6 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
       enableDynamicSizing={true}
       backdropComponent={renderBackdrop}
       onChange={handleSheetChanges}
-      onClose={closeModal}
       enablePanDownToClose={true}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
@@ -318,7 +345,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
             >
               <Fontisto name="date" size={15} color="#FFF" />
               <Text style={styles.reminderItemText}>
-                {selectedDate?.toLocaleDateString()}
+                {remindAtParseDate(selectedDate, hourFormat, true)}
               </Text>
             </TouchableOpacity>
 
@@ -329,10 +356,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
             >
               <Fontisto name="clock" size={15} color="#FFF" />
               <Text style={styles.reminderItemText}>
-                {selectedDate?.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                {remindAtParseDate(selectedDate, hourFormat, false)}
               </Text>
             </TouchableOpacity>
 
@@ -477,6 +501,15 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
           </TouchableOpacity>
         </View>
       </BottomSheetView>
+      {isSaveChangesModalShow && (
+        <SaveChangesModal
+          body="Any changes made will be lost."
+          title="Discard changes?"
+          isVisible={isSaveChangesModalShow}
+          onDiscard={forceCloseModal}
+          onCancel={() => setIsSaveChangesModalShow(false)}
+        />
+      )}
     </BottomSheet>
   );
 };

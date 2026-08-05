@@ -65,6 +65,7 @@ function TodoItem({
   const doneTodoTextStyle = useSettingsStore(
     (state) => state.doneTodoTextStyle,
   );
+  const hourFormat = useSettingsStore((state) => state.hourFormat);
 
   // LOCAL STATE FOR ANIMATION
   const [isCompleting, setIsCompleting] = useState(false);
@@ -207,7 +208,7 @@ function TodoItem({
                 allowFontScaling={false}
                 style={[styles.reminderBoxText, isDone && { color: "gray" }]}
               >
-                {parseDate(remindAt)}
+                {parseDate(remindAt, hourFormat)}
               </Text>
             </Animated.View>
           )}

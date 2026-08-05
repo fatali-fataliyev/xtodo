@@ -1,15 +1,15 @@
-import { useSettingsStore } from "@/store/useSettingsStore";
 import { monthNames } from "../constants/monthNames";
 
 const separator = " • ";
 
-export function parseDate(dateInput: string | Date | undefined | null): string {
-  let dateFormat = useSettingsStore((state) => state.hourFormat);
-
+export function parseDate(
+  dateInput: string | Date | undefined | null,
+  hourFormat: number = 12,
+): string {
   const date = resolveDate(dateInput);
   if (!date) return "";
 
-  let is12HourFormat: boolean = dateFormat === 12;
+  let is12HourFormat: boolean = hourFormat === 12;
 
   const timeStr = date.toLocaleTimeString("en-US", {
     hour: "numeric",

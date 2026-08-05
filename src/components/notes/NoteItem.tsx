@@ -1,5 +1,6 @@
 import { Colors } from "@/constants/colors";
 import { useNoteStore } from "@/store/useNoteStore";
+import { useSettingsStore } from "@/store/useSettingsStore";
 import { parseDate } from "@/utils/dateParser";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -57,6 +58,7 @@ function NoteItem({
   const isSearchMode = useNoteStore((state) => state.isSearchMode);
   const setIsSearchMode = useNoteStore((state) => state.setIsSearchMode);
   const deleteByID = useNoteStore((state) => state.deleteByID);
+  const hourFormat = useSettingsStore((state) => state.hourFormat);
 
   // ANIMATIONS
   const swipeableRef = useRef<SwipeableMethods>(null);
@@ -184,7 +186,7 @@ function NoteItem({
               <View style={styles.infoContainer}>
                 <MaterialIcons name="access-time" size={13} color="#CCC" />
                 <Text allowFontScaling={false} style={styles.createdAtText}>
-                  {parseDate(createdAt)}
+                  {parseDate(createdAt, hourFormat)}
                 </Text>
               </View>
             </View>

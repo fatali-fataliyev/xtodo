@@ -96,7 +96,7 @@ export default function TodoFilterModal({ isVisible, onClose }: Props) {
     <Modal
       transparent
       visible={showModal}
-      animationType="none"
+      animationType="fade"
       onRequestClose={clearAndClose}
     >
       <Animated.View style={[styles.backdrop, backdropStyle]}>
