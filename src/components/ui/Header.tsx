@@ -1,20 +1,12 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-type Props = {
-  label: string;
-};
-
-export default function Header({ label }: Props) {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
-    </View>
-  );
+export default function Header() {
+  return <View style={styles.container}></View>;
 }
 
 const styles = StyleSheet.create({
   container: {
-    height: 40,
+    height: 5,
     justifyContent: "space-between",
     alignItems: "center",
     flexDirection: "row",

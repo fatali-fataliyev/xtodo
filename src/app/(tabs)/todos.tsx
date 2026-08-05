@@ -8,7 +8,7 @@ export default function TodosScreen() {
     <View style={styles.container}>
       {/* Header */}
       <SafeAreaView edges={["top"]} style={styles.headerSafeArea}>
-        <Header label="Todos" />
+        <Header />
       </SafeAreaView>
 
       {/* Section */}

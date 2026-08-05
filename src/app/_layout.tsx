@@ -4,8 +4,6 @@ import { useNoteStore } from "@/store/useNoteStore";
 import {
   Inter_400Regular,
   Inter_600SemiBold,
-  Inter_700Bold,
-  Inter_900Black,
   useFonts,
 } from "@expo-google-fonts/inter";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
@@ -15,14 +13,9 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useRef, useState } from "react";
 import { AppState, AppStateStatus } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import {
-  KeyboardController,
-  KeyboardProvider,
-} from "react-native-keyboard-controller";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { useTodoStore } from "../store/useTodoStore";
 import { initializeStorage } from "../utils/secureStorage";
-
-KeyboardController.preload();
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -42,8 +35,6 @@ export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     "Inter-Regular": Inter_400Regular,
     "Inter-SemiBold": Inter_600SemiBold,
-    "Inter-Bold": Inter_700Bold,
-    "Inter-Black": Inter_900Black,
   });
 
   useEffect(() => {
@@ -91,7 +82,7 @@ export default function RootLayout() {
           ]);
         }
       } catch (error) {
-        console.warn(`Initialization error: ${error}`);
+        alert(`Failed to initialization storage: ${error}`);
       } finally {
         setAppIsReady(true);
       }
@@ -107,7 +98,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     if ((fontsLoaded || fontError) && appIsReady) {
-      SplashScreen.hideAsync();
+      SplashScreen.hide();
     }
   }, [fontsLoaded, fontError, appIsReady]);
 

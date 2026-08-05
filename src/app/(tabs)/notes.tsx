@@ -8,7 +8,7 @@ export default function NotesScreen() {
     <View style={styles.container}>
       {/* Header */}
       <SafeAreaView edges={["top"]} style={styles.headerSafeArea}>
-        <Header label="Notes" />
+        <Header />
       </SafeAreaView>
 
       {/* Section */}
