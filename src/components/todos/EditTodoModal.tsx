@@ -90,7 +90,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
 
     let payload: EditPayload;
 
-    if (selectedDate) {
+    if (selectedDate && !todo?.isDone) {
       payload = {
         newTask: newTodoName.trim(),
         newPriority: newPriorityLevel.trim(),
@@ -129,7 +129,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
 
       const now = new Date();
       if (newDate < now) {
-        setSelectedDate(now)
+        setSelectedDate(now);
       } else {
         setSelectedDate(newDate);
       }
