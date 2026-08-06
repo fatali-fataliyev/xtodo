@@ -71,7 +71,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
     newPriorityLevel !== (todo?.priority ?? "high") ||
     selectedDate?.getTime() !== resolveDate(todo?.remindAt)?.getTime();
 
-  const isSaveBtnDisabled = !newTodoName.trim() || !hasChanged;
+  const isSaveBtnDisabled = !newTodoName.trim() || !hasChanged || todo?.isDone;
   const todayDate = new Date();
 
   const appStateRef = useRef(AppState.currentState);
@@ -86,7 +86,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
   };
 
   const saveChanges = () => {
-    if (isSaveBtnDisabled) return;
+    if (isSaveBtnDisabled || todo?.isDone) return;
 
     let payload: EditPayload;
 

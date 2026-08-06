@@ -147,23 +147,35 @@ export const useTodoStore = create<TodoState>()(
 
         updateTodo: async (id, payload) => {
           const todo = useTodoStore.getState().todos.find((t) => t.id === id);
+          const hasFieldsChanged =
+            payload.newTask !== todo?.task ||
+            payload.newPriority !== todo?.priority;
+          const hasDateChanged = payload.newRemindAt !== todo?.remindAt;
 
-          if (
-            todo &&
-            (payload.newTask !== todo.task ||
-              payload.newRemindAt !== todo.remindAt) &&
-            todo.notificationID
-          ) {
-            await cancelTaskReminder(todo.notificationID);
-            todo.notificationID = undefined;
-
-            if (payload.newRemindAt) {
-              todo.notificationID =
-                (await scheduleTaskReminder(
+          if (todo) {
+            if (hasFieldsChanged || hasDateChanged) {
+              if (!todo?.remindAt && payload.newRemindAt) {
+                todo.remindAt = payload.newRemindAt;
+                todo.notificationID = await scheduleTaskReminder(
                   id,
                   payload.newTask,
                   payload.newRemindAt,
-                )) ?? undefined;
+                );
+              } else {
+                if (todo && hasDateChanged && todo.notificationID) {
+                  await cancelTaskReminder(todo.notificationID);
+                  todo.notificationID = undefined;
+
+                  if (payload.newRemindAt) {
+                    todo.notificationID =
+                      (await scheduleTaskReminder(
+                        id,
+                        payload.newTask,
+                        payload.newRemindAt,
+                      )) ?? undefined;
+                  }
+                }
+              }
             }
           }
 
