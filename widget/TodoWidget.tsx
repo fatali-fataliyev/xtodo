@@ -1,5 +1,6 @@
 "use no memo";
 import { Todo } from "@/store/useTodoStore";
+import { parseDate } from "@/utils/dateParser";
 import type { ColorProp } from "react-native-android-widget";
 import {
   FlexWidget,
@@ -83,42 +84,76 @@ function TodoList({ Todos, ListBg, FontSize }: TodoWidgetProps) {
                 style={{
                   flex: 1,
                   backgroundColor: "#374151",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: 4,
+                  flexDirection: "column",
+                  padding: 5,
                   marginVertical: 4,
                   borderRadius: 8,
                 }}
               >
-                <FlexWidget style={{ flex: 10 }}>
-                  <TextWidget
-                    text={
-                      todo.isDone ? makeStrikethrough(todo.task) : todo.task
-                    }
+                <FlexWidget
+                  style={{
+                    width: "match_parent",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <FlexWidget style={{ flex: 10 }}>
+                    <TextWidget
+                      text={
+                        todo.isDone ? makeStrikethrough(todo.task) : todo.task
+                      }
+                      style={{
+                        fontSize: FontSize,
+                        color: todo.isDone ? "#808080" : "#ffffff",
+                        fontWeight: "500",
+                        fontFamily: "Roboto",
+                      }}
+                      maxLines={1}
+                      truncate="END"
+                    />
+                  </FlexWidget>
+
+                  {/* PRIORITY */}
+
+                  <FlexWidget
                     style={{
-                      fontSize: FontSize,
-                      color: todo.isDone ? "#808080" : "#ffffff",
-                      fontWeight: "500",
-                      fontFamily: "Roboto",
+                      width: 10,
+                      height: 10,
+                      borderRadius: 10,
+                      backgroundColor: todo.isDone
+                        ? getProrityCircleColor("done")
+                        : getProrityCircleColor(todo.priority),
                     }}
-                    maxLines={1}
-                    truncate="END"
                   />
                 </FlexWidget>
 
-                {/* PRIORITY */}
-
-                <FlexWidget
-                  style={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: 10,
-                    backgroundColor: todo.isDone
-                      ? getProrityCircleColor("done")
-                      : getProrityCircleColor(todo.priority),
-                  }}
-                />
+                {todo.remindAt && (
+                  <FlexWidget
+                    style={{
+                      marginTop: 3,
+                      flexDirection: "row",
+                      justifyContent: "flex-end",
+                      alignItems: "center",
+                      width: "match_parent",
+                    }}
+                  >
+                    <ImageWidget
+                      imageWidth={8}
+                      imageHeight={8}
+                      image={require("../assets/images/widget/alarm.png")}
+                      style={{ marginRight: 5 }}
+                    />
+                    <TextWidget
+                      text={parseDate(todo.remindAt)}
+                      style={{
+                        color: "#FFF",
+                        fontWeight: "bold",
+                        fontSize: 9,
+                      }}
+                    />
+                  </FlexWidget>
+                )}
               </FlexWidget>
             </FlexWidget>
 
