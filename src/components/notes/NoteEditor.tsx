@@ -1,4 +1,5 @@
 import { Note, useNoteStore } from "@/store/useNoteStore";
+import { useSettingsStore } from "@/store/useSettingsStore";
 import { parseDate } from "@/utils/dateParser";
 import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons";
 import MaterialIcons from "@react-native-vector-icons/material-icons";
@@ -32,6 +33,7 @@ export default function NoteEditorScreen() {
   const notes = useNoteStore((state) => state.notes);
   const addNote = useNoteStore((state) => state.addNote);
   const updateNote = useNoteStore((state) => state.updateNote);
+  const hourFormat = useSettingsStore((state) => state.hourFormat);
 
   // LOCAL STATES
   const found = notes.find((noteItem) => noteItem.id === id);
@@ -150,7 +152,9 @@ export default function NoteEditorScreen() {
       />
 
       <View style={styles.infoContainer}>
-        <Text style={styles.infoText}>{parseDate(createdDate)}</Text>
+        <Text style={styles.infoText}>
+          {parseDate(createdDate, hourFormat)}
+        </Text>
       </View>
 
       {/* Rich Text Editor Body */}
