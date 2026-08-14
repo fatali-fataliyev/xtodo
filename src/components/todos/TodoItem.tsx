@@ -1,7 +1,7 @@
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useTodoStore } from "@/store/useTodoStore";
 import { parseDate } from "@/utils/dateParser";
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import MaterialDesignIcons from "@react-native-vector-icons/material-design-icons";
 import React, { useRef, useState } from "react";
 import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
 import Swipeable, {
@@ -138,10 +138,10 @@ function TodoItem({
           onPress={deleteTodoItem}
         >
           <Animated.View style={animatedIconStyles}>
-            <MaterialCommunityIcons
-              name="delete"
+            <MaterialDesignIcons
+              name={"delete"}
               size={ICON_SIZE}
-              color="#FFF"
+              color={"#FFF"}
             />
           </Animated.View>
         </Pressable>
@@ -199,8 +199,8 @@ function TodoItem({
               entering={FadeInDown.duration(300)}
               exiting={FadeOutUp.duration(200)}
             >
-              <MaterialIcons
-                name="access-alarm"
+              <MaterialDesignIcons
+                name={"alarm"}
                 size={13}
                 color={isDone ? "gray" : "#CCC"}
               />
@@ -214,21 +214,21 @@ function TodoItem({
           )}
           <View style={styles.mainAreaContainer}>
             {isSelectionMode ? (
-              <MaterialCommunityIcons
+              <MaterialDesignIcons
                 name={
-                  isSelected ? "checkbox-outline" : "square-rounded-outline"
+                  isSelected ? "checkbox-outline" : "checkbox-blank-outline"
                 }
-                size={ICON_SIZE + 1}
+                size={ICON_SIZE}
                 color={Colors.medium}
               />
             ) : (
-              <MaterialCommunityIcons
+              <MaterialDesignIcons
                 name={
-                  isDone || isCompleting
-                    ? "checkbox-marked"
-                    : "square-rounded-outline"
+                  isSelected || isCompleting || isDone
+                    ? "checkbox-outline"
+                    : "checkbox-blank-outline"
                 }
-                size={ICON_SIZE + 1}
+                size={ICON_SIZE}
                 color={"#8E8E93"}
               />
             )}
@@ -264,10 +264,10 @@ function TodoItem({
             ]}
             onPress={() => onEdit?.(id)}
           >
-            <MaterialCommunityIcons
-              name="square-edit-outline"
+            <MaterialDesignIcons
+              name={"square-edit-outline"}
               size={ICON_SIZE}
-              color="#B3B3B3"
+              color={"#B3B3B3"}
             />
           </Pressable>
         </Pressable>

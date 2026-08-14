@@ -1,18 +1,12 @@
 import { Note, useNoteStore } from "@/store/useNoteStore";
 import { parseDate } from "@/utils/dateParser";
-import { Ionicons } from "@expo/vector-icons";
-import AntDesign from "@expo/vector-icons/AntDesign";
-import Entypo from "@expo/vector-icons/Entypo";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import Octicons from "@expo/vector-icons/Octicons";
+import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons";
+import MaterialIcons from "@react-native-vector-icons/material-icons";
 import * as crypto from "expo-crypto";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   BackHandler,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -25,7 +19,10 @@ import {
   EnrichedTextInputInstance,
   OnChangeStateEvent,
 } from "react-native-enriched-html";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { textEditorStyles } from "./EditorItemSettings";
+
+const TOOLBAR_ITEM_SIZE = 20;
 
 export default function NoteEditorScreen() {
   const router = useRouter();
@@ -107,6 +104,13 @@ export default function NoteEditorScreen() {
     handleSaveRef.current = handleSave;
   }, [handleSave]);
 
+  const handleTitleInputPress = () => {
+    const titleText: string = titleRef.current.valueOf().trim().toLowerCase();
+    if (titleText === "untitled") {
+      setTitle("");
+    }
+  };
+
   useEffect(() => {
     const onBackPress = () => {
       handleSaveRef.current();
@@ -122,14 +126,11 @@ export default function NoteEditorScreen() {
   }, []);
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-    >
+    <KeyboardAvoidingView behavior="padding" style={styles.container}>
       {/* Header Bar */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={handleSave}>
-          <MaterialIcons name="arrow-back-ios" size={22} color="#fff" />
+          <MaterialIcons name={"arrow-back-ios-new"} color={"#FFF"} size={22} />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
@@ -145,6 +146,7 @@ export default function NoteEditorScreen() {
         value={title}
         onChangeText={setTitle}
         selectionColor="#eab308"
+        onPress={handleTitleInputPress}
       />
 
       <View style={styles.infoContainer}>
@@ -180,21 +182,11 @@ export default function NoteEditorScreen() {
             ]}
             onPress={() => editorRef.current?.toggleH1()}
           >
-            <View style={styles.headingIconContainer}>
-              <Octicons
-                name="heading"
-                size={14}
-                color={stylesState?.h1?.isActive ? "#eab308" : "#9ca3af"}
-              />
-              <Text
-                style={[
-                  styles.headingSubText,
-                  { color: stylesState?.h1?.isActive ? "#eab308" : "#9ca3af" },
-                ]}
-              >
-                1
-              </Text>
-            </View>
+            <MaterialDesignIcons
+              name="format-header-1"
+              size={TOOLBAR_ITEM_SIZE}
+              color={stylesState?.h1?.isActive ? "#eab308" : "#9ca3af"}
+            />
           </TouchableOpacity>
 
           {/* H2 */}
@@ -205,21 +197,11 @@ export default function NoteEditorScreen() {
             ]}
             onPress={() => editorRef.current?.toggleH2()}
           >
-            <View style={styles.headingIconContainer}>
-              <Octicons
-                name="heading"
-                size={14}
-                color={stylesState?.h2?.isActive ? "#eab308" : "#9ca3af"}
-              />
-              <Text
-                style={[
-                  styles.headingSubText,
-                  { color: stylesState?.h2?.isActive ? "#eab308" : "#9ca3af" },
-                ]}
-              >
-                2
-              </Text>
-            </View>
+            <MaterialDesignIcons
+              name="format-header-2"
+              size={TOOLBAR_ITEM_SIZE}
+              color={stylesState?.h2?.isActive ? "#eab308" : "#9ca3af"}
+            />
           </TouchableOpacity>
 
           {/* H3 */}
@@ -230,21 +212,11 @@ export default function NoteEditorScreen() {
             ]}
             onPress={() => editorRef.current?.toggleH3()}
           >
-            <View style={styles.headingIconContainer}>
-              <Octicons
-                name="heading"
-                size={14}
-                color={stylesState?.h3?.isActive ? "#eab308" : "#9ca3af"}
-              />
-              <Text
-                style={[
-                  styles.headingSubText,
-                  { color: stylesState?.h3?.isActive ? "#eab308" : "#9ca3af" },
-                ]}
-              >
-                3
-              </Text>
-            </View>
+            <MaterialDesignIcons
+              name="format-header-3"
+              size={TOOLBAR_ITEM_SIZE}
+              color={stylesState?.h3?.isActive ? "#eab308" : "#9ca3af"}
+            />
           </TouchableOpacity>
 
           {/* BOLD */}
@@ -255,9 +227,9 @@ export default function NoteEditorScreen() {
             ]}
             onPress={() => editorRef.current?.toggleBold()}
           >
-            <MaterialIcons
+            <MaterialDesignIcons
               name="format-bold"
-              size={20}
+              size={TOOLBAR_ITEM_SIZE}
               color={stylesState?.bold?.isActive ? "#eab308" : "#9ca3af"}
             />
           </TouchableOpacity>
@@ -270,9 +242,9 @@ export default function NoteEditorScreen() {
             ]}
             onPress={() => editorRef.current?.toggleUnderline()}
           >
-            <MaterialIcons
+            <MaterialDesignIcons
               name="format-underline"
-              size={20}
+              size={TOOLBAR_ITEM_SIZE}
               color={stylesState?.underline?.isActive ? "#eab308" : "#9ca3af"}
             />
           </TouchableOpacity>
@@ -285,9 +257,9 @@ export default function NoteEditorScreen() {
             ]}
             onPress={() => editorRef.current?.toggleItalic()}
           >
-            <MaterialIcons
+            <MaterialDesignIcons
               name="format-italic"
-              size={20}
+              size={TOOLBAR_ITEM_SIZE}
               color={stylesState?.italic?.isActive ? "#eab308" : "#9ca3af"}
             />
           </TouchableOpacity>
@@ -301,9 +273,9 @@ export default function NoteEditorScreen() {
             ]}
             onPress={() => editorRef.current?.toggleStrikeThrough()}
           >
-            <MaterialIcons
+            <MaterialDesignIcons
               name="format-strikethrough"
-              size={20}
+              size={TOOLBAR_ITEM_SIZE}
               color={
                 stylesState?.strikeThrough?.isActive ? "#eab308" : "#9ca3af"
               }
@@ -318,9 +290,9 @@ export default function NoteEditorScreen() {
             ]}
             onPress={() => editorRef.current?.toggleOrderedList()}
           >
-            <AntDesign
-              name="ordered-list"
-              size={20}
+            <MaterialDesignIcons
+              name="format-list-numbered"
+              size={TOOLBAR_ITEM_SIZE}
               color={stylesState?.orderedList?.isActive ? "#eab308" : "#9ca3af"}
             />
           </TouchableOpacity>
@@ -334,9 +306,9 @@ export default function NoteEditorScreen() {
             ]}
             onPress={() => editorRef.current?.toggleUnorderedList()}
           >
-            <AntDesign
-              name="unordered-list"
-              size={20}
+            <MaterialDesignIcons
+              name="format-list-bulleted"
+              size={TOOLBAR_ITEM_SIZE}
               color={
                 stylesState?.unorderedList?.isActive ? "#eab308" : "#9ca3af"
               }
@@ -351,9 +323,9 @@ export default function NoteEditorScreen() {
             ]}
             onPress={() => editorRef.current?.toggleCheckboxList(false)}
           >
-            <Ionicons
-              name="checkbox-outline"
-              size={20}
+            <MaterialDesignIcons
+              name="checkbox-multiple-marked-outline"
+              size={TOOLBAR_ITEM_SIZE}
               color={
                 stylesState?.checkboxList?.isActive ? "#eab308" : "#9ca3af"
               }
@@ -368,9 +340,9 @@ export default function NoteEditorScreen() {
             ]}
             onPress={() => editorRef.current?.toggleInlineCode()}
           >
-            <Entypo
-              name="code"
-              size={20}
+            <MaterialDesignIcons
+              name="code-tags"
+              size={TOOLBAR_ITEM_SIZE}
               color={stylesState?.inlineCode?.isActive ? "#eab308" : "#9ca3af"}
             />
           </TouchableOpacity>
@@ -383,9 +355,9 @@ export default function NoteEditorScreen() {
             ]}
             onPress={() => editorRef.current?.toggleCodeBlock()}
           >
-            <MaterialCommunityIcons
+            <MaterialDesignIcons
               name="code-json"
-              size={18}
+              size={TOOLBAR_ITEM_SIZE - 2}
               color={stylesState?.codeBlock?.isActive ? "#eab308" : "#9ca3af"}
             />
           </TouchableOpacity>
@@ -395,7 +367,11 @@ export default function NoteEditorScreen() {
             style={[styles.toolbarButton]}
             onPress={() => editorRef.current?.setValue("")}
           >
-            <MaterialCommunityIcons name="broom" size={20} color={"#9ca3af"} />
+            <MaterialDesignIcons
+              name="broom"
+              size={TOOLBAR_ITEM_SIZE}
+              color={"#9ca3af"}
+            />
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -493,15 +469,5 @@ const styles = StyleSheet.create({
   },
   toolbarButtonActive: {
     backgroundColor: "#2a2a2a",
-  },
-  headingIconContainer: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    justifyContent: "center",
-  },
-  headingSubText: {
-    fontSize: 11,
-    fontWeight: "700",
-    marginLeft: 1,
   },
 });

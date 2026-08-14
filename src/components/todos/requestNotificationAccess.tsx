@@ -7,7 +7,7 @@ export async function checkNotificationAccess() {
   await requestNotificationAccess();
 }
 
-export async function requestNotificationAccess() {
+async function requestNotificationAccess() {
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("reminders", {
       name: "Task Reminders",

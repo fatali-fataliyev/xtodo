@@ -1,7 +1,7 @@
 // app/(tabs)/_layout.tsx
-import { Colors } from "@/constants/colors";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@react-native-vector-icons/material-icons";
 import { Tabs } from "expo-router";
+import { Colors } from "../../../widget/TodoWidget";
 
 export default function TabsLayout() {
   return (
@@ -16,7 +16,6 @@ export default function TabsLayout() {
         tabBarActiveTintColor: Colors.medium,
         tabBarInactiveTintColor: "#8E8E93",
         animation: "shift",
-        
       }}
     >
       {/* 1. Notes Tab */}
@@ -25,7 +24,7 @@ export default function TabsLayout() {
         options={{
           title: "Notes",
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="description" size={size} color={color} />
+            <MaterialIcons name="description" color={color} size={size} />
           ),
         }}
       />
@@ -36,7 +35,11 @@ export default function TabsLayout() {
         options={{
           title: "Todos",
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="check-box" size={size} color={color} />
+            <MaterialIcons
+              name="check-circle-outline"
+              color={color}
+              size={size}
+            />
           ),
         }}
       />
@@ -47,7 +50,7 @@ export default function TabsLayout() {
         options={{
           title: "Settings",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-sharp" size={size} color={color} />
+            <MaterialIcons name="settings" color={color} size={size} />
           ),
         }}
       />

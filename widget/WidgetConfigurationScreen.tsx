@@ -1,6 +1,6 @@
+import { Image } from "expo-image";
 import { useState } from "react";
 import {
-  Image,
   ScrollView,
   StyleSheet,
   Text,

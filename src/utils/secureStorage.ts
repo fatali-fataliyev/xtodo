@@ -10,7 +10,7 @@ const generateAES128Key = (): string => {
     .join("");
 };
 
-export let mmkvInstance: MMKV | null = null;
+let mmkvInstance: MMKV | null = null;
 
 export const initializeStorage = async (): Promise<boolean> => {
   if (mmkvInstance) return true;

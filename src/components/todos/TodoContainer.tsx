@@ -1,11 +1,8 @@
 import { getClickSound } from "@/constants/clickSounds";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useTodoStore } from "@/store/useTodoStore";
-import AntDesign from "@expo/vector-icons/AntDesign";
-import Fontisto from "@expo/vector-icons/Fontisto";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import MaterialDesignIcons from "@react-native-vector-icons/material-design-icons";
+import MaterialIcons from "@react-native-vector-icons/material-icons";
 import { useAudioPlayer } from "expo-audio";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -119,7 +116,7 @@ export default function TodoContainer() {
     doneTodos,
   ]);
 
-  const isDeleteAll =
+  const isSelectAll =
     allVisibleTodos.length > 0 &&
     bulkDeleteTodoIDs.size === allVisibleTodos.length;
 
@@ -169,7 +166,7 @@ export default function TodoContainer() {
   };
 
   const handleSelectAll = () => {
-    if (isDeleteAll) {
+    if (isSelectAll) {
       setBulkDeleteTodoIDs(new Set());
     } else {
       const allIds = allVisibleTodos.map((todo) => todo.id);
@@ -266,15 +263,19 @@ export default function TodoContainer() {
     <View style={styles.listEmptyComponent}>
       {isSearchMode ? (
         <>
-          <Ionicons name="telescope" size={20} color="#c1c1c1" />
+          <MaterialDesignIcons
+            name="feature-search-outline"
+            color={"#C1C1C1"}
+            size={20}
+          />
           <Text style={styles.emptyText}>No todos found</Text>
         </>
       ) : (
         <>
-          <MaterialCommunityIcons
-            name="clipboard-check-multiple-outline"
+          <MaterialDesignIcons
+            name="checkbox-multiple-blank-outline"
+            color={"#C1C1C1"}
             size={20}
-            color="#c1c1c1"
           />
           <Text style={styles.emptyText}>No todos here yet</Text>
         </>
@@ -326,10 +327,14 @@ export default function TodoContainer() {
               <View style={styles.completedTodosToggleMenu}>
                 <View style={styles.doneTodosTextContainer}>
                   <Text style={styles.completedTodosText}>
-                    Done ({doneTodos.length})
+                    Done ( {doneTodos.length} )
                   </Text>
                   <Animated.View style={arrowAnimatedStyle}>
-                    <AntDesign name="arrow-down" size={14} color="#454545" />
+                    <MaterialDesignIcons
+                      name="chevron-down"
+                      color={"#C1C1C1"}
+                      size={18}
+                    />
                   </Animated.View>
                 </View>
               </View>
@@ -353,7 +358,11 @@ export default function TodoContainer() {
                     activeOpacity={0.8}
                     onPress={handleClearAllDoneTodos}
                   >
-                    <Fontisto name="trash" size={16} color="#FF4D4D" />
+                    <MaterialDesignIcons
+                      name="delete"
+                      color={"#FF4D4D"}
+                      size={16}
+                    />
                   </TouchableOpacity>
                 </Animated.View>
               }
@@ -381,7 +390,7 @@ export default function TodoContainer() {
             activeOpacity={0.8}
             onPress={closeToggleMenu}
           >
-            <Fontisto name="close-a" size={18} color="#E0E0E0" />
+            <MaterialIcons name="close" color={"#E0E0E0"} size={20} />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.selectionCheckAllBtn}
@@ -389,9 +398,9 @@ export default function TodoContainer() {
             onPress={handleSelectAll}
           >
             <MaterialIcons
-              name={isDeleteAll ? "blur-off" : "done-all"}
-              size={22}
-              color="#FFF"
+              name={isSelectAll ? "remove-done" : "done-all"}
+              color={"#FFF"}
+              size={20}
             />
           </TouchableOpacity>
           <TouchableOpacity
@@ -399,7 +408,7 @@ export default function TodoContainer() {
             activeOpacity={0.8}
             onPress={deleteSelectedTodos}
           >
-            <Fontisto name="trash" size={20} color="#FF4D4D" />
+            <MaterialIcons name={"delete"} color={"#FF4D4D"} size={20} />
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -419,7 +428,7 @@ export default function TodoContainer() {
               clearSearchTodos();
             }}
           >
-            <MaterialIcons name="search-off" size={24} color="#FFF" />
+            <MaterialIcons name={"search-off"} color={"#FFF"} size={20} />
           </TouchableOpacity>
         </Animated.View>
       )}

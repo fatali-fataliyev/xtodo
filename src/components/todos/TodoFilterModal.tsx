@@ -1,6 +1,7 @@
 import CapitalizeFirstLetter from "@/constants/firstLetterCapitalizer";
 import { useTodoStore } from "@/store/useTodoStore";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import MaterialDesignIcons from "@react-native-vector-icons/material-design-icons";
+import MaterialIcons from "@react-native-vector-icons/material-icons";
 import { useEffect, useState } from "react";
 import {
   Modal,
@@ -18,19 +19,22 @@ import Animated, {
 import { scheduleOnRN } from "react-native-worklets";
 import { GetColorByLevel } from "../../constants/colors";
 import { PriorityLevels } from "../../constants/priorityLevels";
-
 type Props = {
   isVisible: boolean;
+  setHasAnyFilter: (status: boolean) => void;
   onClose: () => void;
 };
 
 const FILTER_LEVELS = [...PriorityLevels, { level: "completed" }];
 
-export default function TodoFilterModal({ isVisible, onClose }: Props) {
+export default function TodoFilterModal({
+  isVisible,
+  setHasAnyFilter,
+  onClose,
+}: Props) {
   // ZUSTAND STATES
   const setFilteres = useTodoStore((state) => state.applyFilters);
   const setIsFilterMode = useTodoStore((state) => state.setIsFilterMode);
-  const clearFilterResults = useTodoStore((state) => state.clearFilterResults);
 
   // LOCAL STATES
   const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
@@ -42,6 +46,8 @@ export default function TodoFilterModal({ isVisible, onClose }: Props) {
 
   // ANIMATION SYNC
   useEffect(() => {
+    setSelectedPriorities([]);
+
     if (isVisible) {
       setShowModal(true);
       opacity.value = withTiming(1, { duration: 150 });
@@ -74,22 +80,13 @@ export default function TodoFilterModal({ isVisible, onClose }: Props) {
   };
 
   const applyFilters = () => {
+    if (selectedPriorities) {
+      setHasAnyFilter(true);
+    }
     onClose();
 
-    setTimeout(() => {
-      setFilteres(selectedPriorities);
-      setIsFilterMode(true);
-    }, 150);
-  };
-
-  const clearAndClose = () => {
-    onClose();
-
-    setTimeout(() => {
-      setSelectedPriorities([]);
-      setIsFilterMode(false);
-      clearFilterResults();
-    }, 150);
+    setFilteres(selectedPriorities);
+    setIsFilterMode(true);
   };
 
   return (
@@ -97,10 +94,10 @@ export default function TodoFilterModal({ isVisible, onClose }: Props) {
       transparent
       visible={showModal}
       animationType="fade"
-      onRequestClose={clearAndClose}
+      onLayout={() => console.log("modal mounted!")}
     >
       <Animated.View style={[styles.backdrop, backdropStyle]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={clearAndClose} />
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
       </Animated.View>
 
       <View style={styles.modalContainer} pointerEvents="box-none">
@@ -110,8 +107,8 @@ export default function TodoFilterModal({ isVisible, onClose }: Props) {
         >
           <View style={styles.modalCardHeader}>
             <Text style={styles.title}>Filter by Priority</Text>
-            <TouchableOpacity style={styles.closeBtn} onPress={clearAndClose}>
-              <Ionicons name="close-circle-sharp" size={25} color="#FFF" />
+            <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
+              <MaterialIcons name={"close"} color={"#FFF"} size={20} />
             </TouchableOpacity>
           </View>
 
@@ -127,9 +124,13 @@ export default function TodoFilterModal({ isVisible, onClose }: Props) {
                 >
                   {priority.level === "completed" ? (
                     <>
-                      <Ionicons
-                        name={isChecked ? "checkbox" : "square-outline"}
-                        size={24}
+                      <MaterialDesignIcons
+                        name={
+                          isChecked
+                            ? "checkbox-outline"
+                            : "checkbox-blank-outline"
+                        }
+                        size={20}
                         color={isChecked ? "#454545" : "#FFF"}
                       />
                       <Text style={[styles.checkboxLabel, { color: "#FFF" }]}>
@@ -138,9 +139,13 @@ export default function TodoFilterModal({ isVisible, onClose }: Props) {
                     </>
                   ) : (
                     <>
-                      <Ionicons
-                        name={isChecked ? "checkbox" : "square-outline"}
-                        size={24}
+                      <MaterialDesignIcons
+                        name={
+                          isChecked
+                            ? "checkbox-outline"
+                            : "checkbox-blank-outline"
+                        }
+                        size={20}
                         color={
                           isChecked ? GetColorByLevel(priority.level) : "#FFF"
                         }

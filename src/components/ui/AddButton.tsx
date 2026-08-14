@@ -1,5 +1,5 @@
 import { useSettingsStore } from "@/store/useSettingsStore";
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import MaterialIcons from "@react-native-vector-icons/material-icons";
 import React from "react";
 import { Image, Pressable, StyleSheet, TouchableOpacity } from "react-native";
 
@@ -43,7 +43,7 @@ function AddCustomBtn({ onPress }: { onPress: () => void }): React.JSX.Element {
       style={[styles.customBtn, { backgroundColor: bgColor }]}
       onPress={onPress}
     >
-      <FontAwesome6 name="add" size={26} color={iconColor} />
+      <MaterialIcons name="add" size={30} color={iconColor} />
     </TouchableOpacity>
   );
 }

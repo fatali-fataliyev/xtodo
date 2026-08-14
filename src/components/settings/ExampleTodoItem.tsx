@@ -1,9 +1,10 @@
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import Animated, { FadeIn, FadeOutDown } from "react-native-reanimated";
 import { GlowCircle } from "../todos/GlowCircle";
+
+import MaterialDesignIcons from "@react-native-vector-icons/material-design-icons";
 
 type Props = {
   task: string;
@@ -33,11 +34,10 @@ export default function ExampleTodoItem({ task, isDone }: Props) {
           ]}
         >
           <View style={styles.mainAreaContainer}>
-            <MaterialCommunityIcons
-              name={"checkbox-marked"}
+            <MaterialDesignIcons
+              name={"checkbox-outline"}
               size={21}
               color={"#8E8E93"}
-              style={{ borderRadius: 4 }}
             />
             <Text
               style={[styles.taskText, { textDecorationLine: doneTextStyle }]}
@@ -56,10 +56,10 @@ export default function ExampleTodoItem({ task, isDone }: Props) {
               pressed && { opacity: 0.5 },
             ]}
           >
-            <MaterialCommunityIcons
-              name="square-edit-outline"
-              size={20}
-              color="#B3B3B3"
+            <MaterialDesignIcons
+              name={"square-edit-outline"}
+              size={21}
+              color={"#B3B3B3"}
             />
           </Pressable>
         </Pressable>

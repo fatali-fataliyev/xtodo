@@ -10,13 +10,13 @@ import {
 
 import { GetColorByLevel } from "@/constants/colors";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import AntDesign from "@expo/vector-icons/AntDesign";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+
+import MaterialDesignIcons from "@react-native-vector-icons/material-design-icons";
 import { useAudioPlayer } from "expo-audio";
+import { Image } from "expo-image";
 import { useEffect, useState } from "react";
 import {
   FlatList,
-  Image,
   LayoutChangeEvent,
   Pressable,
   StyleSheet,
@@ -34,9 +34,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import ColorPicker, { Panel1, Swatches } from "reanimated-color-picker";
 import { GlowCircle } from "../todos/GlowCircle";
 import { GlowProvider } from "../todos/GlowContext";
-import ExampleTodoItem from "./exampleTodoItem";
-import Footer from "./footer";
-import Header from "./header";
+import ExampleTodoItem from "./ExampleTodoItem";
+import Footer from "./Footer";
+import Header from "./Header";
 
 interface SelectorOption<T> {
   label: string;
@@ -330,7 +330,11 @@ export default function SettingsContainer() {
           <TouchableOpacity style={styles.header} onPress={toggleSoundDropdown}>
             <Text style={styles.headerText}>{currentClickSound}</Text>
             <Animated.View style={soundArrowStyle}>
-              <AntDesign name="down" size={12} color="#FFF" />
+              <MaterialDesignIcons
+                name="chevron-down"
+                color={"#FFF"}
+                size={18}
+              />
             </Animated.View>
           </TouchableOpacity>
 
@@ -358,7 +362,11 @@ export default function SettingsContainer() {
                           });
                         }}
                       >
-                        <FontAwesome name="play" size={20} color="#FFF" />
+                        <MaterialDesignIcons
+                          name="play"
+                          color={"#FFF"}
+                          size={20}
+                        />
                       </TouchableOpacity>
                     )}
                   </TouchableOpacity>
@@ -376,7 +384,11 @@ export default function SettingsContainer() {
           <TouchableOpacity style={styles.header} onPress={toggleBtnDropdown}>
             <Text style={styles.headerText}>{currentAddBtnType}</Text>
             <Animated.View style={btnArrowStyle}>
-              <AntDesign name="down" size={12} color="#FFF" />
+              <MaterialDesignIcons
+                name="chevron-down"
+                color={"#FFF"}
+                size={18}
+              />
             </Animated.View>
           </TouchableOpacity>
 
@@ -570,8 +582,9 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   headerSafeArea: {
-    paddingHorizontal: 20,
     backgroundColor: "#000000",
+    zIndex: 10,
+    elevation: 10,
   },
   menuItem: {
     borderRadius: 10,
@@ -609,7 +622,7 @@ const styles = StyleSheet.create({
     top: 3,
     bottom: 3,
     left: 3,
-    backgroundColor: "#2F2F30",
+    backgroundColor: "#00B7FE",
     borderRadius: 6,
   },
   optionButton: {
@@ -620,7 +633,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   optionText: {
-    color: "#8E8E93",
+    color: "#FFF",
     fontSize: 12,
     fontWeight: "600",
   },

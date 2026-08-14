@@ -7,18 +7,12 @@ import { resolveDate } from "@/utils/dateParser";
 import DateTimePicker, {
   DateTimePickerChangeEvent,
 } from "@expo/ui/community/datetime-picker";
-import {
-  AntDesign,
-  Feather,
-  Fontisto,
-  Foundation,
-  MaterialIcons,
-} from "@expo/vector-icons";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetTextInput,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
+import MaterialDesignIcons from "@react-native-vector-icons/material-design-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AppState,
@@ -195,7 +189,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
   }, [setIsOpen]);
 
   const closeModal = useCallback(() => {
-    if (hasChanged) {
+    if (hasChanged && !todo?.isDone) {
       setIsSaveChangesModalShow(true);
       return;
     }
@@ -285,7 +279,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
   }, []);
 
   const handleBackdropPress = useCallback(() => {
-    if (hasChanged) {
+    if (hasChanged && !todo?.isDone) {
       setIsSaveChangesModalShow(true);
       return;
     } else {
@@ -320,7 +314,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
       enableDynamicSizing={true}
       backdropComponent={renderBackdrop}
       onChange={handleSheetChanges}
-      enablePanDownToClose={true}
+      enablePanDownToClose={!hasChanged}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
       backgroundStyle={styles.sheetBackground}
@@ -332,7 +326,11 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
       >
         {/* Success badge */}
         <Animated.View style={[styles.successBadge, animatedBadgeStyle]}>
-          <Feather name="check-circle" size={24} color={Colors.low} />
+          <MaterialDesignIcons
+            name="check-circle"
+            size={24}
+            color={Colors.low}
+          />
         </Animated.View>
 
         {/* TOP CENTER REMINDER MODAL */}
@@ -343,7 +341,12 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
               style={[styles.reminderItem, { marginBottom: 10 }]}
               onPress={() => setShowDatePicker(true)}
             >
-              <Fontisto name="date" size={15} color="#FFF" />
+              <MaterialDesignIcons
+                name="calendar-month-outline"
+                size={15}
+                color={"#FFF"}
+              />
+
               <Text style={styles.reminderItemText}>
                 {remindAtParseDate(selectedDate, hourFormat, true)}
               </Text>
@@ -354,7 +357,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
               style={styles.reminderItem}
               onPress={() => setShowTimePicker(true)}
             >
-              <Fontisto name="clock" size={15} color="#FFF" />
+              <MaterialDesignIcons name="alarm" size={15} color={"#FFF"} />
               <Text style={styles.reminderItemText}>
                 {remindAtParseDate(selectedDate, hourFormat, false)}
               </Text>
@@ -370,7 +373,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
                   setShowTimePicker(false);
                 }}
               >
-                <MaterialIcons name="delete" size={18} color="#FFF" />
+                <MaterialDesignIcons name="delete" size={16} color={"#FFF"} />
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -384,7 +387,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
                 ]}
                 onPress={() => setIsDateSelection(false)}
               >
-                <MaterialIcons name="done" size={18} color="#FFF" />
+                <MaterialDesignIcons name="check" size={16} color={"#FFF"} />
               </TouchableOpacity>
             </View>
           </View>
@@ -409,9 +412,9 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
               style={styles.toolBarItem}
               onPress={() => setIsListShow((prev) => !prev)}
             >
-              <Foundation
-                name="target"
-                size={21}
+              <MaterialDesignIcons
+                name="bullseye"
+                size={15}
                 color={GetColorByLevel(newPriorityLevel)}
               />
               <Text style={styles.toolBarText}>Priority</Text>
@@ -431,9 +434,9 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
                       key={item.level}
                       onPress={() => selectPrority(item.level)}
                     >
-                      <Foundation
-                        name="target"
-                        size={21}
+                      <MaterialDesignIcons
+                        name="bullseye"
+                        size={15}
                         color={GetColorByLevel(item.level)}
                       />
                       <Text
@@ -457,7 +460,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
             onPress={openReminderToolbar}
             disabled={isDateSelection}
           >
-            <MaterialIcons name="access-alarm" size={19} color="#FFF" />
+            <MaterialDesignIcons name="alarm" size={15} color={"#FFF"} />
             <Text style={styles.toolBarText}>Reminder</Text>
 
             {/* Time Picker */}
@@ -493,8 +496,8 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
               isSaveBtnDisabled && styles.saveBtnDisabled,
             ]}
           >
-            <AntDesign
-              name="check-circle"
+            <MaterialDesignIcons
+              name="checkbox-marked-circle-outline"
               size={22}
               color={isSaveBtnDisabled ? "gray" : "#FFF"}
             />

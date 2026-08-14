@@ -1,5 +1,5 @@
 const exampleImgDefault = require("../../assets/images/add_neum.png");
-const exampleImgCustom = require("../../assets/images/circle_and_colorpicker.png");
+const exampleImgCustom = require("../../assets/images/color_picker.webp");
 
 export const ADD_BUTTON_TYPES = [
   {

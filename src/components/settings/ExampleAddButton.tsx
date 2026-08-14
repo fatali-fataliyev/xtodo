@@ -1,4 +1,4 @@
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import MaterialIcons from "@react-native-vector-icons/material-icons";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import Animated, {
   SharedValue,
@@ -29,13 +29,13 @@ export default function ExampleAddCustomBtn({ bgColor, iconColor }: Props) {
   return (
     <View style={styles.buttonWrapper}>
       <AnimatedTouchableOpacity style={[styles.customBtn, animatedBtnStyle]}>
-        <AnimatedFontAwesome6 name="add" size={26} style={animatedIconStyle} />
+        <AnimatedMaterialIcons name="add" size={30} style={animatedIconStyle} />
       </AnimatedTouchableOpacity>
     </View>
   );
 }
 
-const AnimatedFontAwesome6 = Animated.createAnimatedComponent(FontAwesome6);
+const AnimatedMaterialIcons = Animated.createAnimatedComponent(MaterialIcons);
 
 const styles = StyleSheet.create({
   buttonWrapper: {

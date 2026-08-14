@@ -1,6 +1,4 @@
-import { monthNames } from "../../constants/monthNames";
-
-const separator = " • ";
+import { resolveDate } from "@/utils/dateParser";
 
 export function remindAtParseDate(
   dateInput: string | Date | undefined | null,
@@ -38,12 +36,4 @@ export function remindAtParseDate(
   }
 
   return `${timeStr}`;
-}
-
-export function resolveDate(
-  date: string | Date | undefined | null,
-): Date | null {
-  if (!date) return null;
-  const d = new Date(date);
-  return isNaN(d.getTime()) ? null : d;
 }

@@ -9,10 +9,8 @@ import {
 
 import AddButton from "@/components/ui/AddButton";
 import { useNoteStore } from "@/store/useNoteStore";
-import Fontisto from "@expo/vector-icons/Fontisto";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import MaterialDesignIcons from "@react-native-vector-icons/material-design-icons";
+import { MaterialIcons } from "@react-native-vector-icons/material-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Animated, { LinearTransition } from "react-native-reanimated";
@@ -137,15 +135,20 @@ export default function NotesContainer() {
     <View style={styles.listEmptyComponent}>
       {isSearchMode ? (
         <>
-          <Ionicons name="telescope" size={20} color="#c1c1c1" />
+          <MaterialDesignIcons
+            name="file-search-outline"
+            color={"#C1C1C1"}
+            size={20}
+          />
+
           <Text style={styles.emptyText}>No notes found</Text>
         </>
       ) : (
         <>
-          <MaterialCommunityIcons
+          <MaterialDesignIcons
             name="note-multiple-outline"
+            color={"#C1C1C1"}
             size={20}
-            color="#c1c1c1"
           />
           <Text style={styles.emptyText}>No notes here yet</Text>
         </>
@@ -221,7 +224,7 @@ export default function NotesContainer() {
             activeOpacity={0.8}
             onPress={closeSelectionMenu}
           >
-            <Fontisto name="close-a" size={18} color="#E0E0E0" />
+            <MaterialIcons name="close" color={"#E0E0E0"} size={20} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -230,9 +233,9 @@ export default function NotesContainer() {
             onPress={handleSelectAll}
           >
             <MaterialIcons
-              name={isSelectAll ? "blur-off" : "done-all"}
-              size={22}
-              color="#FFF"
+              name={isSelectAll ? "remove-done" : "done-all"}
+              color={"#FFF"}
+              size={20}
             />
           </TouchableOpacity>
 
@@ -241,7 +244,7 @@ export default function NotesContainer() {
             activeOpacity={0.8}
             onPress={deleteSelectedNotes}
           >
-            <Fontisto name="trash" size={20} color="#FF4D4D" />
+            <MaterialIcons name={"delete"} color={"#FF4D4D"} size={20} />
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -261,7 +264,7 @@ export default function NotesContainer() {
               clearSearchResults();
             }}
           >
-            <MaterialIcons name="search-off" size={24} color="#FFF" />
+            <MaterialIcons name={"search-off"} color={"#FFF"} size={20} />
           </TouchableOpacity>
         </Animated.View>
       )}

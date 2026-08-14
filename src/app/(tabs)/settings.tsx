@@ -1,5 +1,5 @@
 import { StyleSheet, View } from "react-native";
-import SettingsContainer from "@/components/settings/settingsContainer";
+import SettingsContainer from "@/components/settings/SettingsContainer";
 
 export default function SettingsScreen() {
   return (

@@ -1,6 +1,4 @@
 import { useNoteStore } from "@/store/useNoteStore";
-import Fontisto from "@expo/vector-icons/Fontisto";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useEffect, useRef, useState } from "react";
 import {
   Keyboard,
@@ -17,6 +15,9 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import MaterialDesignIcons from "@react-native-vector-icons/material-design-icons";
+import MaterialIcons from "@react-native-vector-icons/material-icons";
+
 export default function NoteSearchBar() {
   // ZUSTAND STATES
   const executeSearch = useNoteStore((state) => state.executeSearch);
@@ -28,7 +29,6 @@ export default function NoteSearchBar() {
 
   // LOCAL STATES
   const [searchText, setSearchText] = useState<string>("");
-  const [isInputFocused, setIsInputFocused] = useState<boolean>(false);
   const inputRef = useRef<TextInput>(null);
 
   // REANIMATED SHARED VALUE
@@ -48,18 +48,14 @@ export default function NoteSearchBar() {
     }
   }, [isSearchMode]);
 
-  if (!isInputFocused) {
-    inputRef.current?.blur();
-  }
-
   useEffect(() => {
     const hideListener = Keyboard.addListener("keyboardDidHide", () => {
-      setIsInputFocused(false);
+      inputRef.current?.blur();
     });
     return () => {
       hideListener.remove();
     };
-  }, [isInputFocused]);
+  }, []);
 
   const handleTextChange = (text: string) => {
     setSearchText(text);
@@ -101,7 +97,7 @@ export default function NoteSearchBar() {
   return (
     <View style={styles.searchBar}>
       <View style={styles.searchBox}>
-        <Fontisto name="search" size={15} color="#5D5D5D" />
+        <MaterialIcons name={"search"} size={20} color={"#5D5D5D"} />
         <TextInput
           ref={inputRef}
           onChangeText={handleTextChange}
@@ -113,7 +109,6 @@ export default function NoteSearchBar() {
           spellCheck={false}
           autoCorrect={false}
           autoCapitalize="none"
-          onTouchStart={() => setIsInputFocused(true)}
         />
 
         <Animated.View
@@ -125,7 +120,11 @@ export default function NoteSearchBar() {
             style={styles.clearButton}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <MaterialIcons name="cancel" size={18} color="#7A7A7A" />
+            <MaterialDesignIcons
+              name="close-circle-outline"
+              size={18}
+              color={"#7A7A7A"}
+            />
           </TouchableOpacity>
         </Animated.View>
       </View>

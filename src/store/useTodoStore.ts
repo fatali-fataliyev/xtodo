@@ -17,7 +17,7 @@ export interface Todo {
   isDone: boolean;
 }
 
-export interface TodoSearchResult {
+interface TodoSearchResult {
   id: string;
   notificationID?: string;
   task: string;

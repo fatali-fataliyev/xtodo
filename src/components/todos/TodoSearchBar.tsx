@@ -1,7 +1,6 @@
 import { useTodoStore } from "@/store/useTodoStore";
-import Fontisto from "@expo/vector-icons/Fontisto";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import MaterialDesignIcons from "@react-native-vector-icons/material-design-icons";
+import MaterialIcons from "@react-native-vector-icons/material-icons";
 import { useEffect, useRef, useState } from "react";
 import {
   Keyboard,
@@ -24,6 +23,8 @@ export default function TodoSearchBar() {
   const executeSearch = useTodoStore((state) => state.executeSearch);
   const isSearchMode = useTodoStore((state) => state.isSearchMode);
   const setIsSearchMode = useTodoStore((state) => state.setIsSearchMode);
+  const setIsFilterMode = useTodoStore((state) => state.setIsFilterMode);
+  const clearFilterResults = useTodoStore((state) => state.clearFilterResults);
 
   const updateSearchTextLen = useTodoStore(
     (state) => state.updateSearchTextLen,
@@ -31,8 +32,8 @@ export default function TodoSearchBar() {
 
   // LOCAL STATES
   const [searchText, setSearchText] = useState<string>("");
-  const [isInputFocused, setIsInputFocused] = useState<boolean>(false);
   const inputRef = useRef<TextInput>(null);
+  const [hasAnyFilter, setHasAnyFilter] = useState<boolean>(false);
   const [isFilterModalVisible, setIsFilterModalVisible] =
     useState<boolean>(false);
 
@@ -53,18 +54,14 @@ export default function TodoSearchBar() {
     }
   }, [isSearchMode]);
 
-  if (!isInputFocused) {
-    inputRef.current?.blur();
-  }
-
   useEffect(() => {
     const hideListener = Keyboard.addListener("keyboardDidHide", () => {
-      setIsInputFocused(false);
+      inputRef.current?.blur();
     });
     return () => {
       hideListener.remove();
     };
-  }, [isInputFocused]);
+  }, []);
 
   const handleTextChange = (text: string) => {
     setSearchText(text);
@@ -84,6 +81,16 @@ export default function TodoSearchBar() {
     setSearchText("");
     updateSearchTextLen(0);
     executeSearch("");
+  };
+
+  const handleFiltering = () => {
+    if (hasAnyFilter) {
+      setIsFilterMode(false);
+      clearFilterResults();
+      setHasAnyFilter(false);
+    } else {
+      setIsFilterModalVisible(true);
+    }
   };
 
   // REANIMATED ANIMATED STYLE
@@ -107,11 +114,12 @@ export default function TodoSearchBar() {
     <View style={styles.searchAndFilterBar}>
       <TodoFilterModal
         isVisible={isFilterModalVisible}
+        setHasAnyFilter={setHasAnyFilter}
         onClose={() => setIsFilterModalVisible(false)}
       />
 
       <View style={styles.searchBox}>
-        <Fontisto name="search" size={15} color="#5D5D5D" />
+        <MaterialIcons name={"search"} size={20} color={"#5D5D5D"} />
         <TextInput
           ref={inputRef}
           onChangeText={handleTextChange}
@@ -123,7 +131,6 @@ export default function TodoSearchBar() {
           spellCheck={false}
           autoCorrect={false}
           autoCapitalize="none"
-          onTouchStart={() => setIsInputFocused(true)}
         />
 
         <Animated.View
@@ -135,17 +142,21 @@ export default function TodoSearchBar() {
             style={styles.clearButton}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <MaterialIcons name="cancel" size={18} color="#7A7A7A" />
+            <MaterialDesignIcons
+              name="close-circle-outline"
+              size={18}
+              color={"#7A7A7A"}
+            />
           </TouchableOpacity>
         </Animated.View>
       </View>
 
-      <TouchableOpacity
-        style={styles.filterBtn}
-        activeOpacity={0.8}
-        onPress={() => setIsFilterModalVisible(true)}
-      >
-        <Ionicons name="filter" size={24} color="white" />
+      <TouchableOpacity style={styles.filterBtn} onPress={handleFiltering}>
+        <MaterialIcons
+          name={hasAnyFilter ? "filter-list-off" : "filter-list"}
+          size={28}
+          color={"#FFF"}
+        />
       </TouchableOpacity>
     </View>
   );

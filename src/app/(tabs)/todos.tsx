@@ -1,6 +1,6 @@
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import TaskContainer from "../../components/todos/TodoContainer";
+import TodoContainer from "../../components/todos/TodoContainer";
 import Header from "../../components/ui/Header";
 
 export default function TodosScreen() {
@@ -13,7 +13,7 @@ export default function TodosScreen() {
 
       {/* Section */}
       <View style={styles.section}>
-        <TaskContainer />
+        <TodoContainer />
       </View>
     </View>
   );

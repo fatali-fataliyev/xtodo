@@ -6,13 +6,13 @@ import { ColorProp } from "react-native-android-widget";
 
 export let mmkvStorage: MMKV | null = null;
 
-export const TODO_LIST_KEY = "todos";
-export const SS_AES_KEY = "aes_key"; // SS = Secure Storage
+const TODO_LIST_KEY = "todos";
+const SS_AES_KEY = "aes_key"; // SS = Secure Storage
 
 export const TODO_LIST_BG_KEY = "bgColor";
 export const TODO_TEXT_FONTSIZE_KEY = "fontSize";
 
-export function initMMKVStorage() {
+function initMMKVStorage() {
   if (mmkvStorage) return;
 
   let key = SecureStore.getItem(SS_AES_KEY);
@@ -63,7 +63,7 @@ export function getStoredBackgroundColor(): ColorProp {
   return result;
 }
 
-export function SaveTodo(todo: Todo) {
+function SaveTodo(todo: Todo) {
   initMMKVStorage();
   if (!mmkvStorage) return;
 
@@ -96,7 +96,6 @@ export function getStoredFontSize(): number {
   return Number(mmkvStorage.getString(TODO_TEXT_FONTSIZE_KEY)) || 10;
 }
 
-
 export function SaveTodos(todos: Todo[]) {
   initMMKVStorage();
   const sortedTodos = sortTodos(todos);
@@ -112,7 +111,7 @@ export function SaveTodos(todos: Todo[]) {
   mmkvStorage.set(TODO_LIST_KEY, JSON.stringify(zustandFormat));
 }
 
-export function sortTodos(Todos: Todo[]): Todo[] {
+function sortTodos(Todos: Todo[]): Todo[] {
   const priorityWeights: Record<string, number> = {
     high: 1,
     medium: 2,
@@ -130,7 +129,6 @@ export function sortTodos(Todos: Todo[]): Todo[] {
     return weightA - weightB;
   });
 }
-
 
 export function UpdateWidgetData(latestTodos: Todo[]) {
   const sortedTodos = sortTodos(latestTodos);

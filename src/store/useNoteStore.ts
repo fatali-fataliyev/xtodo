@@ -10,7 +10,7 @@ export interface Note {
   updatedAt: Date;
 }
 
-export interface NoteSearchResult {
+interface NoteSearchResult {
   id: string;
   title: string;
   content: string;

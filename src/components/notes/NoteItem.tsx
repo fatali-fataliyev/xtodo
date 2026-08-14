@@ -2,8 +2,6 @@ import { Colors } from "@/constants/colors";
 import { useNoteStore } from "@/store/useNoteStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { parseDate } from "@/utils/dateParser";
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useRef } from "react";
 import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
 import { EnrichedText } from "react-native-enriched-html";
@@ -21,6 +19,8 @@ import Animated, {
   useAnimatedStyle,
 } from "react-native-reanimated";
 import { textEditorStyles } from "./EditorItemSettings";
+
+import MaterialDesignIcons from "@react-native-vector-icons/material-design-icons";
 
 type Props = {
   id: string;
@@ -98,10 +98,10 @@ function NoteItem({
           onPress={() => deleteByID(id)}
         >
           <Animated.View style={animatedIconStyles}>
-            <MaterialCommunityIcons
+            <MaterialDesignIcons
               name="delete"
               size={ICON_SIZE}
-              color="#FFF"
+              color={"#FFF"}
             />
           </Animated.View>
         </Pressable>
@@ -153,11 +153,15 @@ function NoteItem({
                 exiting={FadeOutLeft.duration(200)}
                 style={{ marginRight: 4 }}
               >
-                <Ionicons
-                  name={isSelected ? "checkbox" : "square-outline"}
-                  size={21}
+                <MaterialDesignIcons
+                  name={
+                    isSelected
+                      // checkbox-blank-outline
+                      ? "checkbox-outline"
+                      : "checkbox-blank-outline"
+                  }
+                  size={ICON_SIZE}
                   color={Colors.medium}
-                  style={{ borderRadius: 4 }}
                 />
               </Animated.View>
             )}
@@ -184,7 +188,11 @@ function NoteItem({
               </EnrichedText>
 
               <View style={styles.infoContainer}>
-                <MaterialIcons name="access-time" size={13} color="#CCC" />
+                <MaterialDesignIcons
+                  name={"clock-outline"}
+                  size={12}
+                  color={"#CCC"}
+                />
                 <Text allowFontScaling={false} style={styles.createdAtText}>
                   {parseDate(createdAt, hourFormat)}
                 </Text>

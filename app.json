@@ -4,7 +4,7 @@
     "slug": "XTodo",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "xtodo",
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -15,9 +15,9 @@
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "backgroundColor": "#000000",
-        "foregroundImage": "./assets/images/logo.png",
-        "backgroundImage": "./assets/images/logo.png",
-        "monochromeImage": "./assets/images/logo.png"
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundImage": "./assets/images/icon.png",
+        "monochromeImage": "./assets/images/icon.png"
       },
       "predictiveBackGestureEnabled": false,
       "permissions": [
@@ -33,7 +33,7 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/logo.png"
+      "favicon": "./assets/images/icon.png"
     },
     "plugins": [
       "expo-router",
@@ -41,7 +41,6 @@
         "expo-notifications",
         {
           "icon": "./assets/images/notification_icon.png",
-          "color": "#000000",
           "sounds": ["./assets/sounds/reminder.wav"]
         }
       ],
@@ -50,7 +49,7 @@
         {
           "backgroundColor": "#000000",
           "android": {
-            "image": "./assets/images/logo.png",
+            "image": "./assets/images/icon_transparent.png",
             "imageWidth": 180
           }
         }
@@ -71,7 +70,7 @@
               "targetCellWidth": 4,
               "targetCellHeight": 4,
               "description": "List of todos and more",
-              "previewImage": "./assets/images/widget/preview.png",
+              "previewImage": "./assets/images/widget/preview.webp",
               "widgetFeatures": "reconfigurable",
               "resizeMode": "horizontal|vertical"
             },

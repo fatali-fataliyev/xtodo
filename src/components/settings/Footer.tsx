@@ -1,9 +1,8 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import MaterialDesignIcons from "@react-native-vector-icons/material-design-icons";
 import Constants from "expo-constants";
+import { Image } from "expo-image";
 import { useState } from "react";
 import {
-  Image,
   Linking,
   Share,
   StyleSheet,
@@ -15,7 +14,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from "react-native-reanimated";
-import Divider from "./divider";
+import Divider from "./Divider";
 
 const logo = require("../../../assets/images/xtodo_clear.png");
 
@@ -100,7 +99,11 @@ export default function Footer() {
           accessibilityRole="link"
         >
           <View style={styles.iconWrapper}>
-            <FontAwesome name="github" size={24} color="#FFF" />
+            <Image
+              source={require("@/assets/images/github.svg")}
+              style={{ width: 22, height: 22 }}
+              tintColor={"#FFF"}
+            />
           </View>
           <Text style={styles.linkText} allowFontScaling={false}>
             View on GitHub
@@ -114,7 +117,11 @@ export default function Footer() {
           accessibilityRole="link"
         >
           <View style={styles.iconWrapper}>
-            <FontAwesome name="share-alt" size={24} color="#FFF" />
+            <MaterialDesignIcons
+              name="share-variant"
+              size={22}
+              color={"#FFF"}
+            />
           </View>
           <Text style={styles.linkText} allowFontScaling={false}>
             Tap to share app
@@ -128,7 +135,11 @@ export default function Footer() {
           accessibilityRole="link"
         >
           <View style={styles.iconWrapper}>
-            <MaterialIcons name="library-music" size={24} color="#FFF" />
+            <MaterialDesignIcons
+              name="music-box-multiple-outline"
+              size={22}
+              color={"#FFF"}
+            />
           </View>
           <Text style={styles.linkText} allowFontScaling={false}>
             Sounds from Pixabay
@@ -139,18 +150,21 @@ export default function Footer() {
         <View style={styles.accordionContainer}>
           <TouchableOpacity style={styles.linkItem} onPress={toggleAbout}>
             <View style={styles.iconWrapper}>
-              <FontAwesome name="question-circle" size={24} color="#FFF" />
+              <MaterialDesignIcons
+                name="information-outline"
+                size={22}
+                color={"#FFF"}
+              />
             </View>
             <Text style={styles.linkText} allowFontScaling={false}>
               About XTodo
             </Text>
 
             <Animated.View style={animatedChevronStyle}>
-              <FontAwesome
+              <MaterialDesignIcons
                 name="chevron-down"
-                size={14}
-                color="#CCC"
-                style={styles.chevron}
+                color={"#FFF"}
+                size={18}
               />
             </Animated.View>
           </TouchableOpacity>
@@ -163,17 +177,13 @@ export default function Footer() {
             </Text>
 
             <View style={styles.developerContainer}>
-              <FontAwesome
-                name="code"
-                size={14}
-                color="#888"
-                style={styles.developerIcon}
+              <Image
+                source={require("@/assets/images/dev.webp")}
+                style={{ width: 100, height: 15, marginRight: 10 }}
+                contentFit="contain"
               />
-              <Text style={styles.developerText} allowFontScaling={false}>
-                Developer:{" "}
-                <Text style={styles.developerName} allowFontScaling={false}>
-                  Fatali Fataliyev
-                </Text>
+              <Text style={styles.developerName} allowFontScaling={false}>
+                Fatali Fataliyev
               </Text>
             </View>
           </Animated.View>
@@ -222,7 +232,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   versionText: {
-    color: "#E9EDEF",
+    color: "#CCC",
     fontFamily: "Inter-SemiBold",
     textAlign: "center",
     fontSize: 9,
@@ -270,11 +280,6 @@ const styles = StyleSheet.create({
   },
   developerIcon: {
     marginRight: 8,
-  },
-  developerText: {
-    color: "#AAA",
-    fontFamily: "Inter-Regular",
-    fontSize: 13,
   },
   developerName: {
     color: "#FFF",
