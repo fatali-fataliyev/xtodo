@@ -31,7 +31,7 @@ import Animated, {
 import { Colors } from "../../../widget/TodoWidget";
 import SaveChangesModal from "../ui/SaveChangesModal";
 import { remindAtParseDate } from "./RemindAtDateParser";
-import { checkNotificationAccess } from "./requestNotificationAccess";
+import { checkNotificationAccess } from "./RequestNotificationAccess";
 
 type Props = {
   isOpen: boolean;
@@ -322,7 +322,7 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
       handleIndicatorStyle={{ backgroundColor: "#CCC" }}
     >
       <BottomSheetView
-        style={[styles.container, isKeyboardCollapsed && { paddingBottom: 60 }]}
+        style={[styles.container, isKeyboardCollapsed && { paddingBottom: 80 }]}
       >
         {/* Success badge */}
         <Animated.View style={[styles.successBadge, animatedBadgeStyle]}>

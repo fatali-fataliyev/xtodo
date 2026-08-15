@@ -141,7 +141,7 @@ export function WidgetConfigurationScreen({
                       <Image
                         source={require("../assets/images/widget/undone.png")}
                         style={{ width: 15, height: 15 }}
-                        resizeMode="contain"
+                        contentFit="contain"
                       />
                     </View>
 
@@ -169,7 +169,7 @@ export function WidgetConfigurationScreen({
                       <Image
                         source={require("../assets/images/widget/edit.png")}
                         style={{ width: 15, height: 15 }}
-                        resizeMode="contain"
+                        contentFit="contain"
                       />
                     </View>
                   </View>
