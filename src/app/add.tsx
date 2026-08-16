@@ -1,36 +1,13 @@
 import { AddTodoModal } from "@/components/todos/AddTodoModal";
-import { router } from "expo-router";
-import { useEffect } from "react";
-import { BackHandler, StyleSheet } from "react-native";
+import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Add() {
-  const closePage = () => {
-    router.back();
-    BackHandler.exitApp();
-    return null;
-  };
-
-  useEffect(() => {
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      closePage,
-    );
-
-    return () => backHandler.remove();
-  }, []);
+  const [isOpen, setIsOpen] = useState<boolean>(true);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
-      <AddTodoModal isOpen={true} setIsOpen={() => null} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#1F2122" }}>
+      <AddTodoModal isOpen={isOpen} setIsOpen={setIsOpen} isWidgetMode={true} />
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#191B1C",
-    position: "relative",
-  },
-});

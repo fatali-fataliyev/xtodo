@@ -37,9 +37,15 @@ type Props = {
   isOpen: boolean;
   setIsOpen: (val: boolean) => void;
   todoIdx: string;
+  isWidgetMode?: boolean;
 };
 
-export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
+export const EditTodoModal = ({
+  isOpen,
+  setIsOpen,
+  todoIdx,
+  isWidgetMode,
+}: Props) => {
   // ZUSTAND
   const todo = useTodoStore((state) =>
     state.todos.find((t) => t.id === todoIdx),
@@ -176,6 +182,10 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
 
   // MODAL CLOSING
   const forceCloseModal = useCallback(() => {
+    if (isWidgetMode) {
+      BackHandler.exitApp();
+    }
+
     inputRef.current?.blur();
     sheetRef.current?.close();
     setIsSaveChangesModalShow(false);
@@ -322,7 +332,16 @@ export const EditTodoModal = ({ isOpen, setIsOpen, todoIdx }: Props) => {
       handleIndicatorStyle={{ backgroundColor: "#CCC" }}
     >
       <BottomSheetView
-        style={[styles.container, isKeyboardCollapsed && { paddingBottom: 80 }]}
+        style={[
+          styles.container,
+          isKeyboardCollapsed
+            ? isWidgetMode
+              ? { paddingBottom: 100 }
+              : { paddingBottom: 50 }
+            : isWidgetMode
+              ? { paddingBottom: 50 }
+              : { paddingBottom: 15 },
+        ]}
       >
         {/* Success badge */}
         <Animated.View style={[styles.successBadge, animatedBadgeStyle]}>
@@ -526,7 +545,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingBottom: 15,
     backgroundColor: "#242424",
     position: "relative",
   },

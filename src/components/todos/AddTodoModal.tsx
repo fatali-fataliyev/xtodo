@@ -38,11 +38,12 @@ import { checkNotificationAccess } from "./RequestNotificationAccess";
 type Props = {
   isOpen: boolean;
   setIsOpen: (val: boolean) => void;
+  isWidgetMode?: boolean;
 };
 
 const addedSoundEffect = require("@/assets/sounds/todo_added.wav");
 
-export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
+export const AddTodoModal = ({ isOpen, setIsOpen, isWidgetMode }: Props) => {
   // ZUSTAND
   const saveTodo = useTodoStore((state) => state.addTodo);
   const hourFormat = useSettingsStore((state) => state.hourFormat);
@@ -179,6 +180,9 @@ export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
 
   // MODAL CLOSING
   const forceCloseModal = useCallback(() => {
+    if (isWidgetMode) {
+      BackHandler.exitApp();
+    }
     inputRef.current?.blur();
     sheetRef.current?.close();
     setIsSaveChangesModalShow(false);
@@ -317,7 +321,16 @@ export const AddTodoModal = ({ isOpen, setIsOpen }: Props) => {
       handleIndicatorStyle={{ backgroundColor: "#CCC" }}
     >
       <BottomSheetView
-        style={[styles.container, isKeyboardCollapsed && { paddingBottom: 80 }]}
+        style={[
+          styles.container,
+          isKeyboardCollapsed
+            ? isWidgetMode
+              ? { paddingBottom: 100 }
+              : { paddingBottom: 50 }
+            : isWidgetMode
+              ? { paddingBottom: 50 }
+              : { paddingBottom: 15 },
+        ]}
       >
         {/* Success badge */}
         <Animated.View style={[styles.successBadge, animatedBadgeStyle]}>
@@ -522,7 +535,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingBottom: 15,
     backgroundColor: "#242424",
     position: "relative",
   },
