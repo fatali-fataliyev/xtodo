@@ -366,7 +366,7 @@ export const EditTodoModal = ({
                 color={"#FFF"}
               />
 
-              <Text style={styles.reminderItemText}>
+              <Text style={styles.reminderItemText} allowFontScaling={false}>
                 {remindAtParseDate(selectedDate, hourFormat, true)}
               </Text>
             </TouchableOpacity>
@@ -377,7 +377,7 @@ export const EditTodoModal = ({
               onPress={() => setShowTimePicker(true)}
             >
               <MaterialDesignIcons name="alarm" size={15} color={"#FFF"} />
-              <Text style={styles.reminderItemText}>
+              <Text style={styles.reminderItemText} allowFontScaling={false}>
                 {remindAtParseDate(selectedDate, hourFormat, false)}
               </Text>
             </TouchableOpacity>
@@ -436,7 +436,9 @@ export const EditTodoModal = ({
                 size={15}
                 color={GetColorByLevel(newPriorityLevel)}
               />
-              <Text style={styles.toolBarText}>Priority</Text>
+              <Text style={styles.toolBarText} allowFontScaling={false}>
+                Priority
+              </Text>
             </TouchableOpacity>
 
             {isListShow && (
@@ -464,6 +466,7 @@ export const EditTodoModal = ({
                           isSelected && { textDecorationLine: "underline" },
                         ]}
                       >
+                        allowFontScaling={false}
                         {CapitalizeFirstLetter(item.level)}
                       </Text>
                     </TouchableOpacity>
@@ -480,7 +483,9 @@ export const EditTodoModal = ({
             disabled={isDateSelection}
           >
             <MaterialDesignIcons name="alarm" size={15} color={"#FFF"} />
-            <Text style={styles.toolBarText}>Reminder</Text>
+            <Text style={styles.toolBarText} allowFontScaling={false}>
+              Reminder
+            </Text>
 
             {/* Time Picker */}
             {showTimePicker && (

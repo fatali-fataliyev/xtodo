@@ -58,7 +58,7 @@ export function parseDate(
     return `${timeStr}${separator}${dateText}`;
   }
 
-  return `${timeStr}${separator} ${monthIndex + 1}/${yearShort}`;
+  return `${timeStr}${separator}${monthIndex + 1}/${yearShort}`;
 }
 
 export function resolveDate(
