@@ -5,6 +5,7 @@ export function updateTodoListWidget({
   Todos,
   ListBg,
   FontSize,
+  HourFormat,
 }: TodoWidgetProps) {
   requestWidgetUpdate({
     widgetName: "TodoList",
@@ -13,6 +14,7 @@ export function updateTodoListWidget({
         Todos={Todos}
         FontSize={FontSize}
         ListBg={ListBg}
+        HourFormat={HourFormat}
       />
     ),
   });

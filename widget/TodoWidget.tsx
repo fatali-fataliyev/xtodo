@@ -13,9 +13,10 @@ export interface TodoWidgetProps {
   Todos: Todo[];
   ListBg: ColorProp;
   FontSize: number;
+  HourFormat: number;
 }
 
-function TodoList({ Todos, ListBg, FontSize }: TodoWidgetProps) {
+function TodoList({ Todos, ListBg, FontSize, HourFormat }: TodoWidgetProps) {
   if (!Todos || Todos === undefined) {
     Todos = [];
   }
@@ -145,7 +146,7 @@ function TodoList({ Todos, ListBg, FontSize }: TodoWidgetProps) {
                       style={{ marginRight: 5 }}
                     />
                     <TextWidget
-                      text={parseDate(todo.remindAt)}
+                      text={parseDate(todo.remindAt, HourFormat)}
                       style={{
                         color: "#FFF",
                         fontWeight: "bold",
@@ -219,7 +220,7 @@ function makeStrikethrough(text: string): string {
     .join("");
 }
 
-export function TodoWidget({ Todos, ListBg, FontSize }: TodoWidgetProps) {
+export function TodoWidget({ Todos, ListBg, FontSize, HourFormat }: TodoWidgetProps) {
   if (!Todos || Todos === undefined) {
     Todos = [];
   }
@@ -259,7 +260,7 @@ export function TodoWidget({ Todos, ListBg, FontSize }: TodoWidgetProps) {
         />
       </FlexWidget>
 
-      <TodoList Todos={Todos} FontSize={FontSize} ListBg={ListBg} />
+      <TodoList Todos={Todos} FontSize={FontSize} ListBg={ListBg} HourFormat={HourFormat} />
     </FlexWidget>
   );
 }

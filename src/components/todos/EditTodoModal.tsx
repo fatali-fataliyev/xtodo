@@ -184,18 +184,16 @@ export const EditTodoModal = ({
   const forceCloseModal = useCallback(() => {
     if (isWidgetMode) {
       BackHandler.exitApp();
+      return;
     }
-
     inputRef.current?.blur();
     sheetRef.current?.close();
     setIsSaveChangesModalShow(false);
-    setTimeout(() => {
-      setIsOpen(false);
-      setIsListShow(false);
-      setIsDateSelection(false);
-      setSelectedDate(null);
-      resetInputs();
-    }, 150);
+    resetInputs();
+    setIsListShow(false);
+    setIsDateSelection(false);
+    setSelectedDate(null);
+    setIsOpen(false);
   }, [setIsOpen]);
 
   const closeModal = useCallback(() => {

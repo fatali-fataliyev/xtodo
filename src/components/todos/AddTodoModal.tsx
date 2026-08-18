@@ -182,17 +182,16 @@ export const AddTodoModal = ({ isOpen, setIsOpen, isWidgetMode }: Props) => {
   const forceCloseModal = useCallback(() => {
     if (isWidgetMode) {
       BackHandler.exitApp();
+      return;
     }
     inputRef.current?.blur();
     sheetRef.current?.close();
     setIsSaveChangesModalShow(false);
-    setTimeout(() => {
-      setIsOpen(false);
-      setIsListShow(false);
-      setIsDateSelection(false);
-      setSelectedDate(null);
-      resetInputs();
-    }, 150);
+    resetInputs();
+    setIsListShow(false);
+    setIsDateSelection(false);
+    setSelectedDate(null);
+    setIsOpen(false);
   }, [setIsOpen]);
 
   const closeModal = useCallback(() => {
@@ -426,7 +425,9 @@ export const AddTodoModal = ({ isOpen, setIsOpen, isWidgetMode }: Props) => {
                 size={16}
                 color={GetColorByLevel(priorityLevel)}
               />
-              <Text style={styles.toolBarText} allowFontScaling={false}>Priority</Text>
+              <Text style={styles.toolBarText} allowFontScaling={false}>
+                Priority
+              </Text>
             </TouchableOpacity>
 
             {isListShow && (
@@ -471,7 +472,9 @@ export const AddTodoModal = ({ isOpen, setIsOpen, isWidgetMode }: Props) => {
             disabled={isDateSelection}
           >
             <MaterialDesignIcons name="alarm" size={16} color={"#FFF"} />
-            <Text style={styles.toolBarText} allowFontScaling={false}>Reminder</Text>
+            <Text style={styles.toolBarText} allowFontScaling={false}>
+              Reminder
+            </Text>
 
             {/* Time Picker */}
             {showTimePicker && (

@@ -6,12 +6,14 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "xtodo",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#000000",
     "ios": {
       "icon": "./assets/expo.icon",
       "bundleIdentifier": "com.github.fatalifataliyev.xtodo"
     },
     "android": {
+      "backgroundColor": "#000000",
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "backgroundColor": "#000000",
@@ -70,7 +72,7 @@
               "targetCellWidth": 4,
               "targetCellHeight": 4,
               "description": "List of todos and more",
-              "previewImage": "./assets/images/widget/preview.webp",
+              "previewImage": "./assets/images/widget/preview.jpg",
               "widgetFeatures": "reconfigurable",
               "resizeMode": "horizontal|vertical"
             },

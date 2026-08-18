@@ -1,6 +1,6 @@
 <resources>
   <string name="app_name">XTodo</string>
-  <string name="expo_system_ui_user_interface_style" translatable="false">automatic</string>
+  <string name="expo_system_ui_user_interface_style" translatable="false">dark</string>
   <string name="widget_todolist_description" translatable="false">List of todos and more</string>
   <string name="widget_addtodo_description" translatable="false">Add todo from your home screen</string>
   <string name="expo_splash_screen_resize_mode" translatable="false">contain</string>

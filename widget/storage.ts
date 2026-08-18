@@ -5,12 +5,14 @@ import { updateTodoListWidget } from "./updateTodoWidget";
 import { ColorProp } from "react-native-android-widget";
 
 export let mmkvStorage: MMKV | null = null;
+export let settingsMMKV: MMKV | null = null;
 
 const TODO_LIST_KEY = "todos";
 const SS_AES_KEY = "aes_key"; // SS = Secure Storage
 
 export const TODO_LIST_BG_KEY = "bgColor";
 export const TODO_TEXT_FONTSIZE_KEY = "fontSize";
+export const HOUR_FORMAT_KEY = "hourFormat";
 
 function initMMKVStorage() {
   if (mmkvStorage) return;
@@ -23,6 +25,13 @@ function initMMKVStorage() {
   mmkvStorage = createMMKV({
     id: "secure-app-storage",
     encryptionKey: key,
+  });
+}
+
+function initSettingsMMKV() {
+  if (settingsMMKV) return;
+  settingsMMKV = createMMKV({
+    id: "app-settings",
   });
 }
 
@@ -63,37 +72,16 @@ export function getStoredBackgroundColor(): ColorProp {
   return result;
 }
 
-function SaveTodo(todo: Todo) {
-  initMMKVStorage();
-  if (!mmkvStorage) return;
-
-  const todos = getStoredTodos();
-
-  todos.push(todo);
-  const sortedTodos = sortTodos(todos);
-
-  const zustandFormat = {
-    state: {
-      todos: sortedTodos,
-    },
-    version: 0,
-  };
-
-  mmkvStorage.set(TODO_LIST_KEY, JSON.stringify(zustandFormat));
-
-  const listBg = getStoredBackgroundColor();
-  const fontSize = getStoredFontSize();
-  updateTodoListWidget({
-    Todos: sortedTodos,
-    ListBg: listBg,
-    FontSize: fontSize,
-  });
-}
-
 export function getStoredFontSize(): number {
   initMMKVStorage();
   if (!mmkvStorage) return 10;
   return Number(mmkvStorage.getString(TODO_TEXT_FONTSIZE_KEY)) || 10;
+}
+
+export function getStoredHourFormat(): number {
+  initSettingsMMKV();
+  if (!settingsMMKV) 24;
+  return Number(settingsMMKV?.getString(HOUR_FORMAT_KEY)) || 24;
 }
 
 export function SaveTodos(todos: Todo[]) {
@@ -134,10 +122,12 @@ export function UpdateWidgetData(latestTodos: Todo[]) {
   const sortedTodos = sortTodos(latestTodos);
   const listBg = getStoredBackgroundColor();
   const fontSize = getStoredFontSize();
+  const hourFormat = getStoredHourFormat();
 
   updateTodoListWidget({
     Todos: sortedTodos,
     ListBg: listBg,
     FontSize: fontSize,
+    HourFormat: hourFormat,
   });
 }

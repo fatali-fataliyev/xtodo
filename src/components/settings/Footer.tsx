@@ -89,7 +89,7 @@ export default function Footer() {
 
       <View style={styles.quickLinksContainer}>
         <View style={styles.header}>
-          <Image source={logo} style={styles.logo} />
+          <Image source={logo} style={styles.logo} contentFit="contain" />
         </View>
 
         {/* GIT */}
@@ -214,7 +214,6 @@ const styles = StyleSheet.create({
   logo: {
     width: 80,
     height: 40,
-    resizeMode: "contain",
   },
   header: {
     marginTop: 10,

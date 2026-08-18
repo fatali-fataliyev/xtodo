@@ -1,6 +1,8 @@
 // app/(tabs)/_layout.tsx
 import { MaterialIcons } from "@react-native-vector-icons/material-icons";
 import { Tabs } from "expo-router";
+import { BottomTabBarButtonProps } from "expo-router/build/react-navigation/bottom-tabs";
+import { Pressable } from "react-native";
 import { Colors } from "../../../widget/TodoWidget";
 
 export default function TabsLayout() {
@@ -9,6 +11,8 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         lazy: false,
+        sceneStyle: { backgroundColor: "#000000" },
+
         tabBarStyle: {
           backgroundColor: "#000000",
           borderTopColor: "#000000",
@@ -16,9 +20,18 @@ export default function TabsLayout() {
         tabBarActiveTintColor: Colors.medium,
         tabBarInactiveTintColor: "#8E8E93",
         animation: "shift",
+        tabBarButton: ({ ref, style, ...props }: BottomTabBarButtonProps) => (
+          <Pressable
+            {...props}
+            android_ripple={null}
+            style={({ pressed }) => [
+              style as any,
+              { opacity: pressed ? 0.6 : 1 },
+            ]}
+          />
+        ),
       }}
     >
-      {/* 1. Notes Tab */}
       <Tabs.Screen
         name="notes"
         options={{
@@ -29,7 +42,6 @@ export default function TabsLayout() {
         }}
       />
 
-      {/* 2. Todos Tab */}
       <Tabs.Screen
         name="todos"
         options={{
@@ -44,7 +56,6 @@ export default function TabsLayout() {
         }}
       />
 
-      {/* 3. Settings Tab */}
       <Tabs.Screen
         name="settings"
         options={{

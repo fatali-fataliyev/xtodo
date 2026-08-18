@@ -7,6 +7,7 @@ import { AddTodoWidget } from "./AddTodoWidget";
 import {
   getStoredBackgroundColor,
   getStoredFontSize,
+  getStoredHourFormat,
   getStoredTodos,
   SaveTodos,
 } from "./storage";
@@ -22,9 +23,15 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
         const todos = getStoredTodos();
         const listBg = getStoredBackgroundColor() as ColorProp;
         const fontSize = getStoredFontSize();
+        const hourFormat = getStoredHourFormat();
 
         props.renderWidget(
-          <TodoWidget Todos={todos} FontSize={fontSize} ListBg={listBg} />,
+          <TodoWidget
+            Todos={todos}
+            FontSize={fontSize}
+            ListBg={listBg}
+            HourFormat={hourFormat}
+          />,
         );
         break;
       } else {
@@ -39,9 +46,15 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
         const todos = getStoredTodos();
         const listBg = getStoredBackgroundColor() as ColorProp;
         const fontSize = getStoredFontSize();
+        const hourFormat = getStoredHourFormat();
 
         props.renderWidget(
-          <TodoWidget Todos={todos} FontSize={fontSize} ListBg={listBg} />,
+          <TodoWidget
+            Todos={todos}
+            FontSize={fontSize}
+            ListBg={listBg}
+            HourFormat={hourFormat}
+          />,
         );
       } else {
         props.renderWidget(<AddTodoWidget />);
@@ -55,9 +68,15 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
         const todos = getStoredTodos();
         const listBg = getStoredBackgroundColor() as ColorProp;
         const fontSize = getStoredFontSize();
+        const hourFormat = getStoredHourFormat();
 
         props.renderWidget(
-          <TodoWidget Todos={todos} FontSize={fontSize} ListBg={listBg} />,
+          <TodoWidget
+            Todos={todos}
+            FontSize={fontSize}
+            ListBg={listBg}
+            HourFormat={hourFormat}
+          />,
         );
       } else {
         props.renderWidget(<AddTodoWidget />);
@@ -97,10 +116,13 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
           const sortedTodos = getStoredTodos();
           const listBg = getStoredBackgroundColor() as ColorProp;
           const fontSize = getStoredFontSize();
+          const hourFormat = getStoredHourFormat();
+
           updateTodoListWidget({
             Todos: sortedTodos,
             ListBg: listBg,
             FontSize: fontSize,
+            HourFormat: hourFormat,
           });
           break;
         }

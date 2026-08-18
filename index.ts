@@ -1,3 +1,5 @@
+import "./src/notifications/notificationBGHandler";
+
 import "expo-router/entry";
 import {
   registerWidgetTaskHandler,

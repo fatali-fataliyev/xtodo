@@ -8,7 +8,7 @@ import {
 } from "@expo-google-fonts/inter";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import * as Notifications from "expo-notifications";
-import { Stack } from "expo-router";
+import { DarkTheme, Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useRef, useState } from "react";
 import { AppState, AppStateStatus } from "react-native";
@@ -50,23 +50,25 @@ export default function RootLayout() {
         appState.current = nextAppState;
       },
     );
-
     const notificationSubscription =
       Notifications.addNotificationResponseReceivedListener(
         async (response) => {
           const actionId = response.actionIdentifier;
           const taskId = response.notification.request.content.data?.taskId;
-
           const notificationId = response.notification.request.identifier;
 
           if (!taskId) return;
 
           if (actionId === "ACTION_COMPLETE") {
-            if (typeof notificationId === "string") {
-              await Notifications.dismissNotificationAsync(notificationId);
+            if (notificationId) {
+              await Notifications.dismissNotificationAsync(
+                notificationId,
+              ).catch(() => {});
             }
             if (typeof taskId === "string") {
-              useTodoStore.getState().markTodoDone(taskId);
+              setTimeout(() => {
+                useTodoStore.getState().markTodoDone(String(taskId));
+              }, 100);
             }
           }
         },
@@ -108,23 +110,30 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#000000" }}>
-      <KeyboardProvider>
-        <BottomSheetModalProvider>
-          <GlowProvider>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen
-                name="note/[id]"
-                options={{ animation: "slide_from_right" }}
-              />
+      <ThemeProvider value={DarkTheme}>
+        <KeyboardProvider>
+          <BottomSheetModalProvider>
+            <GlowProvider>
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  contentStyle: { backgroundColor: "#000000" },
+                }}
+              >
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen
+                  name="note/[id]"
+                  options={{ animation: "slide_from_right" }}
+                />
 
-              {/* Routes for deep linking from Widget*/}
-              <Stack.Screen name="add" options={{ headerShown: false }} />
-              <Stack.Screen name="edit" options={{ headerShown: false }} />
-            </Stack>
-          </GlowProvider>
-        </BottomSheetModalProvider>
-      </KeyboardProvider>
+                {/* Routes for deep linking from Widget*/}
+                <Stack.Screen name="add" options={{ headerShown: false }} />
+                <Stack.Screen name="edit" options={{ headerShown: false }} />
+              </Stack>
+            </GlowProvider>
+          </BottomSheetModalProvider>
+        </KeyboardProvider>
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 }

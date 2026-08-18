@@ -20,8 +20,8 @@ import {
 import { getProrityCircleColor } from "./TodoWidget";
 
 const COLORS = [
-  { name: "Default", value: "#1A1818" },
-  { name: "Blue Dark", value: "#1F2937" },
+  { name: "Dark", value: "#1A1818" },
+  { name: "Default", value: "#1F2937" },
   { name: "Blue Green", value: "#152226" },
   { name: "Muted Green", value: "#191B1C" },
 ];
