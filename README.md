@@ -10,8 +10,8 @@ Secure todo and note manager app.
 ## Preview
 
 
-<p><img src="./docs/previews/s1.jpg" width="32%" /> <img src="./docs/previews/s2.jpg" width="32%" /> <img src="./docs/previews/s3.jpg" width="32%" />
-<img src="./docs/previews/s4.jpg" width="32%" /> <img src="./docs/previews/s5.jpg" width="32%" /> <img src="./docs/previews/s6.jpg" width="32%" /></p>
+<p><img src="./docs/previews/1.jpg" width="32%" /> <img src="./docs/previews/2.jpg" width="32%" /> <img src="./docs/previews/3.jpg" width="32%" />
+<img src="./docs/previews/4.jpg" width="32%" /> <img src="./docs/previews/5.jpg" width="32%" /> <img src="./docs/previews/6.jpg" width="32%" /></p>
 
 
 ---
