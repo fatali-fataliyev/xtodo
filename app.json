@@ -32,7 +32,6 @@
         "RECEIVE_BOOT_COMPLETED"
       ],
       "package": "com.github.fatalifataliyev.xtodo",
-      "versionCode": 1
     },
     "web": {
       "output": "static",
