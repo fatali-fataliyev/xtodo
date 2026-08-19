@@ -31,7 +31,7 @@
         "android.permission.USE_EXACT_ALARM",
         "RECEIVE_BOOT_COMPLETED"
       ],
-      "package": "com.github.fatalifataliyev.xtodo",
+      "package": "com.github.fatalifataliyev.xtodo"
     },
     "web": {
       "output": "static",
