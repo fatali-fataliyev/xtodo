@@ -1,6 +1,6 @@
 # Privacy Policy for XTodo
 
-Last Date: August 17, 2026
+Effective Date: August 17, 2026
 
 ## 1. Overview
 XTodo ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how your information is handled when you use the XTodo mobile application (the "App").
