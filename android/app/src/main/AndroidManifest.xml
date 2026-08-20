@@ -41,7 +41,6 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="xtodo"/>
-        <data android:scheme="exp+xtodo"/>
       </intent-filter>
     </activity>
     <activity android:name=".WidgetConfigurationActivity" android:exported="true">

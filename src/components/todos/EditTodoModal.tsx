@@ -463,8 +463,8 @@ export const EditTodoModal = ({
                           styles.priorityListText,
                           isSelected && { textDecorationLine: "underline" },
                         ]}
-                      >
                         allowFontScaling={false}
+                      >
                         {CapitalizeFirstLetter(item.level)}
                       </Text>
                     </TouchableOpacity>
