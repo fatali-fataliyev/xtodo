@@ -15,6 +15,7 @@ import { AppState, AppStateStatus } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useTodoStore } from "../store/useTodoStore";
 import { initializeStorage } from "../utils/secureStorage";
+import { setupNotificationChannel } from "@/notifications/notifications";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -82,6 +83,9 @@ export default function RootLayout() {
             useNoteStore.persist.rehydrate(),
           ]);
         }
+
+        await setupNotificationChannel()
+        
       } catch (error) {
         alert(`Failed to initialization storage: ${error}`);
       } finally {
