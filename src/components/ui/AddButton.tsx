@@ -3,7 +3,7 @@ import MaterialIcons from "@react-native-vector-icons/material-icons";
 import React from "react";
 import { Image, Pressable, StyleSheet, TouchableOpacity } from "react-native";
 
-const addTodoImg = require("../../../assets/images/add_neum.png");
+const addTodoImg = require("../../../assets/images/add.png");
 
 type Props = {
   onPress: () => void;

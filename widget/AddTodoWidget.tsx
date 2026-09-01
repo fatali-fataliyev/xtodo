@@ -22,7 +22,7 @@ export function AddTodoWidget() {
         }}
       >
         <ImageWidget
-          image={require("../assets/images/add_neum.png")}
+          image={require("../assets/images/add.png")}
           imageHeight={45}
           imageWidth={45}
         />

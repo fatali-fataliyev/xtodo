@@ -1,4 +1,4 @@
-const exampleImgDefault = require("../../assets/images/add_neum.png");
+const exampleImgDefault = require("../../assets/images/add.png");
 const exampleImgCustom = require("../../assets/images/color_picker.webp");
 
 export const ADD_BUTTON_TYPES = [

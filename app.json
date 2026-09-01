@@ -79,7 +79,7 @@
               "targetCellWidth": 1,
               "targetCellHeight": 1,
               "description": "Add todo from your home screen",
-              "previewImage": "./assets/images/add_neum.png",
+              "previewImage": "./assets/images/add.png",
               "resizeMode": "none"
             }
           ]
