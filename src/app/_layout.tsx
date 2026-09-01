@@ -13,7 +13,6 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useRef, useState } from "react";
 import { AppState, AppStateStatus } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { KeyboardProvider } from "react-native-keyboard-controller";
 import { useTodoStore } from "../store/useTodoStore";
 import { initializeStorage } from "../utils/secureStorage";
 
@@ -111,7 +110,6 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#000000" }}>
       <ThemeProvider value={DarkTheme}>
-        <KeyboardProvider>
           <BottomSheetModalProvider>
             <GlowProvider>
               <Stack
@@ -132,7 +130,6 @@ export default function RootLayout() {
               </Stack>
             </GlowProvider>
           </BottomSheetModalProvider>
-        </KeyboardProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );

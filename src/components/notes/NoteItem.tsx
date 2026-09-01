@@ -18,7 +18,7 @@ import Animated, {
   SharedValue,
   useAnimatedStyle,
 } from "react-native-reanimated";
-import { textEditorStyles } from "./EditorItemSettings";
+import { textEditorStyles } from "./EditorElementsStyle";
 
 import MaterialDesignIcons from "@react-native-vector-icons/material-design-icons";
 

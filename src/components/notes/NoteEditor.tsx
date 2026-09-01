@@ -8,6 +8,8 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   BackHandler,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -20,8 +22,7 @@ import {
   EnrichedTextInputInstance,
   OnChangeStateEvent,
 } from "react-native-enriched-html";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-import { textEditorStyles } from "./EditorItemSettings";
+import { textEditorStyles } from "./EditorElementsStyle";
 
 const TOOLBAR_ITEM_SIZE = 20;
 
@@ -128,7 +129,10 @@ export default function NoteEditorScreen() {
   }, []);
 
   return (
-    <KeyboardAvoidingView behavior="padding" style={styles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
       {/* Header Bar */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={handleSave}>
