@@ -6,7 +6,7 @@ import {
   cancelAllReminders,
   cancelTaskReminder,
   scheduleTaskReminder,
-} from "@/notifications/notifications";
+} from "@/notifications/Notifications";
 
 export interface Todo {
   id: string;

@@ -1,5 +1,6 @@
 // app/_layout.tsx
 import { GlowProvider } from "@/components/todos/GlowContext";
+import { setupNotificationChannel } from "@/notifications/Notifications";
 import { useNoteStore } from "@/store/useNoteStore";
 import {
   Inter_400Regular,
@@ -15,7 +16,6 @@ import { AppState, AppStateStatus } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useTodoStore } from "../store/useTodoStore";
 import { initializeStorage } from "../utils/secureStorage";
-import { setupNotificationChannel } from "@/notifications/notifications";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -84,8 +84,7 @@ export default function RootLayout() {
           ]);
         }
 
-        await setupNotificationChannel()
-        
+        await setupNotificationChannel();
       } catch (error) {
         alert(`Failed to initialization storage: ${error}`);
       } finally {
@@ -114,26 +113,26 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#000000" }}>
       <ThemeProvider value={DarkTheme}>
-          <BottomSheetModalProvider>
-            <GlowProvider>
-              <Stack
-                screenOptions={{
-                  headerShown: false,
-                  contentStyle: { backgroundColor: "#000000" },
-                }}
-              >
-                <Stack.Screen name="(tabs)" />
-                <Stack.Screen
-                  name="note/[id]"
-                  options={{ animation: "slide_from_right" }}
-                />
+        <BottomSheetModalProvider>
+          <GlowProvider>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: "#000000" },
+              }}
+            >
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen
+                name="note/[id]"
+                options={{ animation: "slide_from_right" }}
+              />
 
-                {/* Routes for deep linking from Widget*/}
-                <Stack.Screen name="add" options={{ headerShown: false }} />
-                <Stack.Screen name="edit" options={{ headerShown: false }} />
-              </Stack>
-            </GlowProvider>
-          </BottomSheetModalProvider>
+              {/* Routes for deep linking from Widget*/}
+              <Stack.Screen name="add" options={{ headerShown: false }} />
+              <Stack.Screen name="edit" options={{ headerShown: false }} />
+            </Stack>
+          </GlowProvider>
+        </BottomSheetModalProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );
