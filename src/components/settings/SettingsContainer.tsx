@@ -274,7 +274,10 @@ export default function SettingsContainer() {
       </SafeAreaView>
 
       {/* SETTINGS SECTION */}
-      <Animated.ScrollView contentContainerStyle={styles.scrollContent}>
+      <Animated.ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* HOME PAGE */}
         <View style={styles.menuItem}>
           <Text style={styles.menuItemTitle}>Home page</Text>
@@ -622,7 +625,7 @@ const styles = StyleSheet.create({
     top: 3,
     bottom: 3,
     left: 3,
-    backgroundColor: "#00B7FE",
+    backgroundColor: "#4D4D4F",
     borderRadius: 6,
   },
   optionButton: {

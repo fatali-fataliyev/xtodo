@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import Animated, {
   useAnimatedStyle,
+  useSharedValue,
   withTiming,
 } from "react-native-reanimated";
 import Divider from "./Divider";
@@ -20,11 +21,16 @@ const logo = require("../../../assets/images/xtodo_clear.png");
 
 export default function Footer() {
   const appVersion = Constants.expoConfig?.version || "1.0.0";
+
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
+  const [aboutContentHeight, setAboutContentHeight] = useState(0);
+
+  const animatedHeight = useSharedValue(0);
 
   const handleGitRepoURL = async () => {
     const repoURL = "https://github.com/fatali-fataliyev/xtodo";
     const supported = await Linking.canOpenURL(repoURL);
+
     if (supported) {
       await Linking.openURL(repoURL);
     } else {
@@ -60,28 +66,42 @@ export default function Footer() {
   };
 
   const toggleAbout = () => {
-    setIsAboutExpanded(!isAboutExpanded);
+    const nextExpanded = !isAboutExpanded;
+    setIsAboutExpanded(nextExpanded);
+
+    animatedHeight.value = withTiming(nextExpanded ? aboutContentHeight : 0, {
+      duration: 250,
+    });
   };
 
-  const animatedContentStyle = useAnimatedStyle(() => {
-    return {
-      height: withTiming(isAboutExpanded ? 160 : 0, { duration: 250 }),
-      opacity: withTiming(isAboutExpanded ? 1 : 0, { duration: 200 }),
-      overflow: "hidden",
-    };
-  }, [isAboutExpanded]);
+  const animatedContentStyle = useAnimatedStyle(() => ({
+    height: animatedHeight.value,
+    overflow: "hidden",
+  }));
 
-  const animatedChevronStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          rotate: withTiming(isAboutExpanded ? "-180deg" : "0deg", {
-            duration: 250,
-          }),
-        },
-      ],
-    };
-  }, [isAboutExpanded]);
+  const animatedChevronStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        rotate: withTiming(isAboutExpanded ? "-180deg" : "0deg", {
+          duration: 250,
+        }),
+      },
+    ],
+  }));
+
+  const handleAboutLayout = (event: any) => {
+    const height = event.nativeEvent.layout.height;
+
+    if (height !== aboutContentHeight) {
+      setAboutContentHeight(height);
+
+      if (isAboutExpanded) {
+        animatedHeight.value = withTiming(height, {
+          duration: 250,
+        });
+      }
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -102,12 +122,11 @@ export default function Footer() {
             <Image
               source={require("@/assets/images/github.svg")}
               style={{ width: 22, height: 22 }}
-              tintColor={"#FFF"}
+              tintColor="#FFF"
             />
           </View>
-          <Text style={styles.linkText} allowFontScaling={false}>
-            View on GitHub
-          </Text>
+
+          <Text style={styles.linkText}>View on GitHub</Text>
         </TouchableOpacity>
 
         {/* SHARE */}
@@ -117,15 +136,10 @@ export default function Footer() {
           accessibilityRole="link"
         >
           <View style={styles.iconWrapper}>
-            <MaterialDesignIcons
-              name="share-variant"
-              size={22}
-              color={"#FFF"}
-            />
+            <MaterialDesignIcons name="share-variant" size={22} color="#FFF" />
           </View>
-          <Text style={styles.linkText} allowFontScaling={false}>
-            Tap to share app
-          </Text>
+
+          <Text style={styles.linkText}>Tap to share app</Text>
         </TouchableOpacity>
 
         {/* PIXABAY */}
@@ -138,64 +152,85 @@ export default function Footer() {
             <MaterialDesignIcons
               name="music-box-multiple-outline"
               size={22}
-              color={"#FFF"}
+              color="#FFF"
             />
           </View>
-          <Text style={styles.linkText} allowFontScaling={false}>
-            Sounds from Pixabay
-          </Text>
+
+          <Text style={styles.linkText}>Sounds from Pixabay</Text>
         </TouchableOpacity>
 
-        {/* ABOUT ACCORDION */}
+        {/* ABOUT */}
         <View style={styles.accordionContainer}>
           <TouchableOpacity style={styles.linkItem} onPress={toggleAbout}>
             <View style={styles.iconWrapper}>
               <MaterialDesignIcons
                 name="information-outline"
                 size={22}
-                color={"#FFF"}
+                color="#FFF"
               />
             </View>
-            <Text style={styles.linkText} allowFontScaling={false}>
-              About XTodo
-            </Text>
+
+            <Text style={styles.linkText}>About XTodo</Text>
 
             <Animated.View style={animatedChevronStyle}>
-              <MaterialDesignIcons
-                name="chevron-down"
-                color={"#FFF"}
-                size={18}
-              />
+              <MaterialDesignIcons name="chevron-down" color="#FFF" size={18} />
             </Animated.View>
           </TouchableOpacity>
 
-          <Animated.View style={[styles.aboutContent, animatedContentStyle]}>
-            <Text style={styles.aboutText} allowFontScaling={false}>
-              XTodo is a powerful task & note manager designed to keep you
-              organized. Rank tasks by priority and take notes with peace of
-              mind, everything is fully secured with strong encryption.
-            </Text>
-
-            <View style={styles.developerContainer}>
-              <Image
-                source={require("@/assets/images/dev.webp")}
-                style={{ width: 100, height: 15, marginRight: 10 }}
-                contentFit="contain"
-              />
-              <Text style={styles.developerName} allowFontScaling={false}>
-                Fatali Fataliyev
+          <View style={styles.measureContent} onLayout={handleAboutLayout}>
+            <View style={styles.aboutContent}>
+              <Text style={styles.aboutText}>
+                XTodo is a powerful task & note manager designed to keep you
+                organized. Rank tasks by priority and take notes with peace of
+                mind, everything is fully secured with strong encryption.
               </Text>
+
+              <View style={styles.developerContainer}>
+                <Image
+                  source={require("@/assets/images/dev.webp")}
+                  style={{
+                    width: 100,
+                    height: 15,
+                    marginRight: 10,
+                  }}
+                  contentFit="contain"
+                />
+
+                <Text style={styles.developerName}>Fatali Fataliyev</Text>
+              </View>
+            </View>
+          </View>
+
+          <Animated.View
+            style={[styles.aboutAnimatedContainer, animatedContentStyle]}
+          >
+            <View style={styles.aboutContent}>
+              <Text style={styles.aboutText}>
+                XTodo is a powerful task & note manager designed to keep you
+                organized. Rank tasks by priority and take notes with peace of
+                mind, everything is fully secured with strong encryption.
+              </Text>
+
+              <View style={styles.developerContainer}>
+                <Image
+                  source={require("@/assets/images/dev.webp")}
+                  style={{
+                    width: 100,
+                    height: 15,
+                    marginRight: 10,
+                  }}
+                  contentFit="contain"
+                />
+
+                <Text style={styles.developerName}>Fatali Fataliyev</Text>
+              </View>
             </View>
           </Animated.View>
         </View>
       </View>
 
-      <Text style={styles.thankText} allowFontScaling={false}>
-        Thank you for using XTodo 🤍
-      </Text>
-      <Text style={styles.versionText} allowFontScaling={false}>
-        v{appVersion}
-      </Text>
+      <Text style={styles.thankText}>Thank you for using XTodo 🤍</Text>
+      <Text style={styles.versionText}>v{appVersion}</Text>
     </View>
   );
 }
@@ -257,8 +292,15 @@ const styles = StyleSheet.create({
     marginLeft: 15,
     flex: 1,
   },
-  chevron: {
-    alignSelf: "center",
+  measureContent: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    opacity: 0,
+    zIndex: -1,
+  },
+  aboutAnimatedContainer: {
+    overflow: "hidden",
   },
   aboutContent: {
     paddingLeft: 45,
@@ -274,11 +316,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginTop: 20,
-    paddingBottom: 12,
     opacity: 0.8,
-  },
-  developerIcon: {
-    marginRight: 8,
   },
   developerName: {
     color: "#FFF",

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import {createJSONStorage,persist} from "zustand/middleware";
 import { zustandStorageEngine } from "../utils/secureStorage";
 
 export interface Note {
@@ -31,7 +31,6 @@ interface NoteState {
   isSearchMode: boolean;
   searchTextLen: number;
   addNote: (note: Note) => void;
-
   updateSearchTextLen: (len: number) => void;
   updateNote: (id: string, payload: EditPayload) => void;
   deleteByID: (id: string) => void;
@@ -45,12 +44,9 @@ interface NoteState {
 export const useNoteStore = create<NoteState>()(
   persist(
     (set) => {
-      // Keep it pure: always return an array
       const sortNotes = (notesArr: Note[]): Note[] => {
         return [...notesArr].sort((a, b) => {
-          return (
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
+          return (b.createdAt.getTime() - a.createdAt.getTime());
         });
       };
 
@@ -62,58 +58,82 @@ export const useNoteStore = create<NoteState>()(
 
         addNote: (note) =>
           set((state) => {
-            const updatedNotes = [...state.notes, note];
-            return { notes: sortNotes(updatedNotes) };
+            const updatedNotes = [
+              ...state.notes,
+              note,
+            ];
+
+            return {
+              notes: sortNotes(updatedNotes),
+            };
           }),
 
         updateNote: (id, payload) =>
           set((state) => {
-            const updatedNotes = state.notes.map((note) =>
-              note.id === id
-                ? {
-                    ...note,
-                    title: payload.title,
-                    content: payload.content,
-                    updatedAt: payload.updatedAt,
-                  }
-                : note,
-            );
-            return { notes: sortNotes(updatedNotes) };
+            const updatedNotes =
+              state.notes.map((note) =>
+                note.id === id
+                  ? {
+                      ...note,
+                      title: payload.title,
+                      content: payload.content,
+                      updatedAt: payload.updatedAt,
+                    }
+                  : note,
+              );
+
+            return {
+              notes: sortNotes(updatedNotes),
+            };
           }),
+
 
         deleteByID: (id) =>
           set((state) => {
-            const updatedNotes = state.notes.filter((note) => note.id !== id);
-            return { notes: sortNotes(updatedNotes) };
+            const updatedNotes =
+              state.notes.filter(
+                (note) => note.id !== id,
+              );
+
+            return {
+              notes: sortNotes(updatedNotes),
+            };
           }),
 
-        deleteAll: () => set({ notes: [] }),
-
-        clearSearchResults: () => set({ searchResults: [] }),
-
-        resetSearchTextLen: () => set({ searchTextLen: 0 }),
-        setIsSearchMode: (value) => set({ isSearchMode: value }),
-        updateSearchTextLen: (len: number) => set({ searchTextLen: len }),
+        deleteAll: () =>
+          set({
+            notes: [],
+          }),
 
         executeSearch: (text) =>
           set((state) => {
             if (!text.trim()) {
-              return { searchResults: [] };
+              return {
+                searchResults: [],
+              };
             }
 
-            const newSearchResults: NoteSearchResult[] = [];
+            const newSearchResults: NoteSearchResult[] =
+              [];
 
-            state.notes.forEach((note: Note) => {
-              let currentIdx = note.title
-                .toLowerCase()
-                .indexOf(text.toLowerCase());
+            state.notes.forEach((note) => {
+              let currentIdx =
+                note.title
+                  .toLowerCase()
+                  .indexOf(text.toLowerCase());
+
               const foundIndexes: number[] = [];
 
               while (currentIdx !== -1) {
                 foundIndexes.push(currentIdx);
-                currentIdx = note.title
-                  .toLowerCase()
-                  .indexOf(text.toLowerCase(), currentIdx + 1);
+
+                currentIdx =
+                  note.title
+                    .toLowerCase()
+                    .indexOf(
+                      text.toLowerCase(),
+                      currentIdx + 1,
+                    );
               }
 
               if (foundIndexes.length > 0) {
@@ -132,13 +152,54 @@ export const useNoteStore = create<NoteState>()(
               searchResults: newSearchResults,
             };
           }),
+
+        clearSearchResults: () => set({searchResults: []}),
+
+        resetSearchTextLen: () => set({ searchTextLen: 0, }),
+
+        setIsSearchMode: (value) =>set({isSearchMode: value}),
+
+        updateSearchTextLen: (len) => set({searchTextLen: len}),
       };
     },
     {
       name: "notes",
-      storage: createJSONStorage(() => zustandStorageEngine),
-      partialize: (state) => ({ notes: state.notes }),
+
+      storage: createJSONStorage(
+        () => zustandStorageEngine,
+      ),
+
+      partialize: (state) => ({
+        notes: state.notes,
+      }),
+
       skipHydration: true,
+
+      merge: (persistedState, currentState) => {
+        const persisted = persistedState as | Partial<NoteState>| undefined;
+
+        const persistedNotes = persisted?.notes ?? [];
+
+        const restoredNotes: Note[] =
+          persistedNotes.map((note) => ({
+            ...note,
+
+            createdAt: new Date(
+              note.createdAt as unknown as string,
+            ),
+
+            updatedAt: new Date(
+              note.updatedAt as unknown as string,
+            ),
+          }));
+
+        return {
+          ...currentState,
+          ...persisted,
+
+          notes: restoredNotes,
+        };
+      },
     },
   ),
 );

@@ -213,7 +213,7 @@ function TodoItem({
                 color={isDone ? "gray" : "#FFF"}
               />
               <Text
-                allowFontScaling={false}
+                
                 style={[styles.reminderBoxText, isDone && { color: "gray" }]}
               >
                 {parseDate(remindAt, hourFormat)}

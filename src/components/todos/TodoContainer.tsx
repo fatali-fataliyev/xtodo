@@ -287,6 +287,7 @@ export default function TodoContainer() {
     <View style={styles.container}>
       <Animated.FlatList
         data={undoneTodos}
+        showsVerticalScrollIndicator={false}
         style={[styles.listStyle, { flex: 1 }]}
         renderItem={renderTodoItem}
         initialNumToRender={15}

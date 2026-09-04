@@ -383,7 +383,7 @@ export const AddTodoModal = ({ isOpen, setIsOpen, isWidgetMode }: Props) => {
                 color={"#FFF"}
               />
 
-              <Text style={styles.reminderItemText} allowFontScaling={false}>
+              <Text style={styles.reminderItemText} >
                 {remindAtParseDate(selectedDate, hourFormat, true)}
               </Text>
             </TouchableOpacity>
@@ -394,7 +394,7 @@ export const AddTodoModal = ({ isOpen, setIsOpen, isWidgetMode }: Props) => {
               onPress={() => setShowTimePicker(true)}
             >
               <MaterialDesignIcons name="alarm" size={16} color={"#FFF"} />
-              <Text style={styles.reminderItemText} allowFontScaling={false}>
+              <Text style={styles.reminderItemText} >
                 {remindAtParseDate(selectedDate, hourFormat, false)}
               </Text>
             </TouchableOpacity>
@@ -454,7 +454,7 @@ export const AddTodoModal = ({ isOpen, setIsOpen, isWidgetMode }: Props) => {
                 size={16}
                 color={GetColorByLevel(priorityLevel)}
               />
-              <Text style={styles.toolBarText} allowFontScaling={false}>
+              <Text style={styles.toolBarText} >
                 Priority
               </Text>
             </TouchableOpacity>
@@ -483,7 +483,7 @@ export const AddTodoModal = ({ isOpen, setIsOpen, isWidgetMode }: Props) => {
                           styles.priorityListText,
                           isSelected && { textDecorationLine: "underline" },
                         ]}
-                        allowFontScaling={false}
+                        
                       >
                         {CapitalizeFirstLetter(item.level)}
                       </Text>
@@ -501,7 +501,7 @@ export const AddTodoModal = ({ isOpen, setIsOpen, isWidgetMode }: Props) => {
             disabled={isDateSelection}
           >
             <MaterialDesignIcons name="alarm" size={16} color={"#FFF"} />
-            <Text style={styles.toolBarText} allowFontScaling={false}>
+            <Text style={styles.toolBarText} >
               Reminder
             </Text>
 

@@ -156,8 +156,8 @@ function NoteItem({
                 <MaterialDesignIcons
                   name={
                     isSelected
-                      // checkbox-blank-outline
-                      ? "checkbox-outline"
+                      ? // checkbox-blank-outline
+                        "checkbox-outline"
                       : "checkbox-blank-outline"
                   }
                   size={ICON_SIZE}
@@ -193,7 +193,7 @@ function NoteItem({
                   size={12}
                   color={"#CCC"}
                 />
-                <Text allowFontScaling={false} style={styles.createdAtText}>
+                <Text style={styles.createdAtText}>
                   {parseDate(createdAt, hourFormat)}
                 </Text>
               </View>

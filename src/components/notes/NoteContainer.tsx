@@ -180,6 +180,7 @@ export default function NotesContainer() {
     <View style={styles.container}>
       <Animated.FlatList
         data={displayData}
+        showsVerticalScrollIndicator={false}
         style={[styles.listStyle, { flex: 1 }]}
         renderItem={renderNoteItem}
         initialNumToRender={15}
