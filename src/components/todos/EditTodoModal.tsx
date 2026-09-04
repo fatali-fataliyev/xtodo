@@ -1,9 +1,15 @@
 import { GetColorByLevel } from "@/constants/colors";
 import CapitalizeFirstLetter from "@/constants/firstLetterCapitalizer";
 import { PriorityLevels } from "@/constants/priorityLevels";
+import {
+  askForNotificationPermission,
+  canScheduleExactAlarms,
+  hasNotificationPermission,
+  openExactAlarmSettings,
+  openNotificationSettings,
+} from "@/notifications/Notifications";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { EditPayload, useTodoStore } from "@/store/useTodoStore";
-import { resolveDate } from "@/utils/dateParser";
 import DateTimePicker, {
   DateTimePickerChangeEvent,
 } from "@expo/ui/community/datetime-picker";
@@ -29,9 +35,9 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { Colors } from "../../../widget/TodoWidget";
+import PermissionModal from "../ui/PermissionModal";
 import SaveChangesModal from "../ui/SaveChangesModal";
 import { remindAtParseDate } from "./RemindAtDateParser";
-import { checkNotificationAccess } from "./RequestNotificationAccess";
 
 type Props = {
   isOpen: boolean;
@@ -65,11 +71,13 @@ export const EditTodoModal = ({
   const [isKeyboardCollapsed, setIsKeyboardCollapsed] =
     useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
+  const [permissionModal, setPermissionModal] = useState<
+    "notification" | "exactAlarm" | null
+  >(null);
   const hasChanged =
     newTodoName.trim() !== (todo?.task ?? "") ||
     newPriorityLevel !== (todo?.priority ?? "high") ||
-    selectedDate?.getTime() !== resolveDate(todo?.remindAt)?.getTime();
+    selectedDate?.getTime() !== todo?.remindAt?.getTime();
 
   const isSaveBtnDisabled = !newTodoName.trim() || !hasChanged || todo?.isDone;
   const todayDate = new Date();
@@ -124,10 +132,12 @@ export const EditTodoModal = ({
     setShowDatePicker(false);
 
     if (date) {
-      const newDate = resolveDate(selectedDate) ?? new Date();
+      const newDate = selectedDate ? new Date(selectedDate) : new Date();
+
       newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
 
       const now = new Date();
+
       if (newDate < now) {
         setSelectedDate(now);
       } else {
@@ -140,7 +150,7 @@ export const EditTodoModal = ({
     setShowTimePicker(false);
 
     if (date) {
-      const newDate = resolveDate(selectedDate) ?? new Date();
+      const newDate = selectedDate ?? new Date();
       newDate.setHours(date.getHours(), date.getMinutes(), 0, 0);
 
       const now = new Date();
@@ -170,12 +180,32 @@ export const EditTodoModal = ({
   }, []);
 
   const openReminderToolbar = async () => {
-    await checkNotificationAccess();
+    const notificationGranted = hasNotificationPermission();
+
+    if (!notificationGranted) {
+      const result = await askForNotificationPermission();
+
+      if (result !== "granted") {
+        setPermissionModal("notification");
+        return;
+      }
+    }
+
+    const exactGranted = canScheduleExactAlarms();
+
+    if (!exactGranted) {
+      setPermissionModal("exactAlarm");
+      return;
+    }
+
     if (selectedDate) {
       setIsDateSelection(true);
       return;
     }
-    setSelectedDate(new Date());
+
+    const now = new Date();
+
+    setSelectedDate(now);
     setIsDateSelection(true);
     setShowTimePicker(true);
   };
@@ -206,12 +236,24 @@ export const EditTodoModal = ({
   }, [hasChanged, forceCloseModal]);
 
   useEffect(() => {
-    if (isOpen && todo) {
-      setNewTodoName(todo.task ?? "");
-      setNewPriorityLevel(todo.priority ?? "high");
-      setSelectedDate(resolveDate(todo?.remindAt) ?? null);
+    if (!isOpen) {
+      return;
     }
-  }, [isOpen, todo]);
+
+    const currentTodo = useTodoStore
+      .getState()
+      .todos.find((item) => item.id === todoIdx);
+
+    if (!currentTodo) {
+      return;
+    }
+
+    setNewTodoName(currentTodo.task ?? "");
+    setNewPriorityLevel(currentTodo.priority ?? "high");
+    setSelectedDate(
+      currentTodo.remindAt ? new Date(currentTodo.remindAt) : null,
+    );
+  }, [isOpen, todoIdx]);
 
   useEffect(() => {
     const hideListener = Keyboard.addListener("keyboardDidHide", () => {
@@ -374,7 +416,7 @@ export const EditTodoModal = ({
               style={styles.reminderItem}
               onPress={() => setShowTimePicker(true)}
             >
-              <MaterialDesignIcons name="alarm" size={15} color={"#FFF"} />
+              <MaterialDesignIcons name="alarm" size={16} color={"#FFF"} />
               <Text style={styles.reminderItemText} allowFontScaling={false}>
                 {remindAtParseDate(selectedDate, hourFormat, false)}
               </Text>
@@ -431,7 +473,7 @@ export const EditTodoModal = ({
             >
               <MaterialDesignIcons
                 name="bullseye"
-                size={15}
+                size={16}
                 color={GetColorByLevel(newPriorityLevel)}
               />
               <Text style={styles.toolBarText} allowFontScaling={false}>
@@ -480,7 +522,7 @@ export const EditTodoModal = ({
             onPress={openReminderToolbar}
             disabled={isDateSelection}
           >
-            <MaterialDesignIcons name="alarm" size={15} color={"#FFF"} />
+            <MaterialDesignIcons name="alarm" size={16} color={"#FFF"} />
             <Text style={styles.toolBarText} allowFontScaling={false}>
               Reminder
             </Text>
@@ -535,6 +577,34 @@ export const EditTodoModal = ({
           onCancel={() => setIsSaveChangesModalShow(false)}
         />
       )}
+
+      <PermissionModal
+        isVisible={permissionModal !== null}
+        title={
+          permissionModal === "notification"
+            ? "Notifications Required"
+            : "Exact Alarm Required"
+        }
+        body={
+          permissionModal === "notification"
+            ? "XTodo needs notification access to send your task reminders."
+            : "XTodo needs exact alarm access to remind you at the exact time you choose."
+        }
+        actionText="Open Settings"
+        cancelText="Not Now"
+        onCancel={() => setPermissionModal(null)}
+        onAction={async () => {
+          const type = permissionModal;
+          setPermissionModal(null);
+
+          if (type === "notification") {
+            await openNotificationSettings();
+          }
+          if (type === "exactAlarm") {
+            await openExactAlarmSettings();
+          }
+        }}
+      />
     </BottomSheet>
   );
 };
@@ -575,6 +645,8 @@ const styles = StyleSheet.create({
   toolBarItem: {
     backgroundColor: "#1F2937",
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 8,
     borderRadius: 8,
     position: "relative",

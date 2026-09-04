@@ -3,7 +3,14 @@ import { useTodoStore } from "@/store/useTodoStore";
 import { parseDate } from "@/utils/dateParser";
 import MaterialDesignIcons from "@react-native-vector-icons/material-design-icons";
 import React, { useRef, useState } from "react";
-import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Keyboard,
+  Pressable,
+  StyleSheet,
+  Text,
+  Vibration,
+  View,
+} from "react-native";
 import Swipeable, {
   SwipeableMethods,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
@@ -26,7 +33,7 @@ const ICON_SIZE = 20;
 type Props = {
   id: string;
   task: string;
-  remindAt?: Date | string;
+  remindAt?: Date;
   priority: string;
   isDone: boolean;
   indexes?: number[];
@@ -191,6 +198,7 @@ function TodoItem({
             onSelect(id);
             onLongPress(id);
             swipeableRef.current!.close();
+            Vibration.vibrate(100);
           }}
         >
           {remindAt && (
@@ -202,7 +210,7 @@ function TodoItem({
               <MaterialDesignIcons
                 name={"alarm"}
                 size={13}
-                color={isDone ? "gray" : "#CCC"}
+                color={isDone ? "gray" : "#FFF"}
               />
               <Text
                 allowFontScaling={false}
@@ -391,7 +399,7 @@ const styles = StyleSheet.create({
     zIndex: 999,
   },
   reminderBoxText: {
-    color: "#CCC",
+    color: "#FFF",
     marginLeft: 5,
     fontFamily: "Inter-Regular",
     fontSize: 12,

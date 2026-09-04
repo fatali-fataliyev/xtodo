@@ -2,11 +2,7 @@ import { monthNames } from "../constants/monthNames";
 
 const separator = " • ";
 
-export function parseDate(
-  dateInput: string | Date | undefined | null,
-  hourFormat: number = 12,
-): string {
-  const date = resolveDate(dateInput);
+export function parseDate(date: Date,hourFormat: number = 12): string {
   if (!date) return "";
 
   let is12HourFormat: boolean = hourFormat === 12;
@@ -30,9 +26,7 @@ export function parseDate(
     date.getDate(),
   );
 
-  const diffInDays = Math.round(
-    (startOfTarget.getTime() - startOfToday.getTime()) / (1000 * 60 * 60 * 24),
-  );
+  const diffInDays = Math.round((startOfTarget.getTime() - startOfToday.getTime()) / (1000 * 60 * 60 * 24));
 
   if (diffInDays === 0) {
     return timeStr;
@@ -59,12 +53,4 @@ export function parseDate(
   }
 
   return `${timeStr}${separator}${monthIndex + 1}/${yearShort}`;
-}
-
-export function resolveDate(
-  date: string | Date | undefined | null,
-): Date | null {
-  if (!date) return null;
-  const d = new Date(date);
-  return isNaN(d.getTime()) ? null : d;
 }

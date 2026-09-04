@@ -23,7 +23,8 @@
       },
       "predictiveBackGestureEnabled": false,
       "permissions": [
-        "RECEIVE_BOOT_COMPLETED"
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.RECEIVE_BOOT_COMPLETED"
       ],
       "package": "com.github.fatalifataliyev.xtodo"
     },
@@ -33,13 +34,6 @@
     },
     "plugins": [
       "expo-router",
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/images/notification_icon.png",
-          "sounds": ["./assets/sounds/reminder.wav"]
-        }
-      ],
       [
         "expo-splash-screen",
         {
@@ -95,7 +89,8 @@
             "enableShrinkResourcesInReleaseBuilds": true
           }
         }
-      ]
+      ],
+      "./plugins/withXTodoAlarms"
     ],
     "experiments": {
       "typedRoutes": true,

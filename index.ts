@@ -1,5 +1,3 @@
-
-
 import "expo-router/entry";
 import {
   registerWidgetTaskHandler,
@@ -9,6 +7,5 @@ import {
 import { widgetTaskHandler } from "./widget/widget-task-handler";
 import { WidgetConfigurationScreen } from "./widget/WidgetConfigurationScreen";
 
-// Register the widget background tasks
 registerWidgetTaskHandler(widgetTaskHandler);
 registerWidgetConfigurationScreen(WidgetConfigurationScreen);

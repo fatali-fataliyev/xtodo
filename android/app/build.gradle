@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.github.fatalifataliyev.xtodo'
+    namespace 'com.github.fatalifataliyev.xtodo.dev'
     defaultConfig {
-        applicationId 'com.github.fatalifataliyev.xtodo'
+        applicationId 'com.github.fatalifataliyev.xtodo.dev'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

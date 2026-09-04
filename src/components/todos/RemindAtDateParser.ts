@@ -1,11 +1,8 @@
-import { resolveDate } from "@/utils/dateParser";
-
 export function remindAtParseDate(
-  dateInput: string | Date | undefined | null,
+  date: Date | null,
   hourFormat: number = 12,
   onlyDate: boolean,
 ): string {
-  const date = resolveDate(dateInput);
   if (!date) return "";
 
   const now = new Date();

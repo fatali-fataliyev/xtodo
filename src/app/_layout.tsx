@@ -1,4 +1,3 @@
-// app/_layout.tsx
 import { GlowProvider } from "@/components/todos/GlowContext";
 import { setupNotificationChannel } from "@/notifications/Notifications";
 import { useNoteStore } from "@/store/useNoteStore";
@@ -8,28 +7,19 @@ import {
   useFonts,
 } from "@expo-google-fonts/inter";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import * as Notifications from "expo-notifications";
 import { DarkTheme, Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useRef, useState } from "react";
 import { AppState, AppStateStatus } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import XTodoAlarms from "../../modules/xtodo-alarms/src";
 import { useTodoStore } from "../store/useTodoStore";
 import { initializeStorage } from "../utils/secureStorage";
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const appState = useRef(AppState.currentState);
+  const appState = useRef<AppStateStatus>(AppState.currentState);
   const [appIsReady, setAppIsReady] = useState(false);
 
   const [fontsLoaded, fontError] = useFonts({
@@ -38,55 +28,69 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    const subscription = AppState.addEventListener(
+    const appStateSubscription = AppState.addEventListener(
       "change",
-      (nextAppState: AppStateStatus) => {
+      async (nextAppState: AppStateStatus) => {
         if (
           appState.current.match(/inactive|background/) &&
           nextAppState === "active"
         ) {
-          useTodoStore.persist.rehydrate();
+          try {
+            await initializeStorage();
+
+            await useTodoStore.persist.rehydrate();
+
+            processPendingCompletions();
+          } catch (error) {
+            console.error(
+              "Failed to rehydrate Todo store after app became active:",
+              error,
+            );
+          }
         }
+
         appState.current = nextAppState;
       },
     );
-    const notificationSubscription =
-      Notifications.addNotificationResponseReceivedListener(
-        async (response) => {
-          const actionId = response.actionIdentifier;
-          const taskId = response.notification.request.content.data?.taskId;
-          const notificationId = response.notification.request.identifier;
 
-          if (!taskId) return;
+    const completionSubscription = XTodoAlarms.addListener(
+      "onTaskCompleted",
+      ({ taskId }: { taskId: string }) => {
+        try {
+          const store = useTodoStore.getState();
+          const todo = store.todos.find((item) => item.id === taskId);
 
-          if (actionId === "ACTION_COMPLETE") {
-            if (notificationId) {
-              await Notifications.dismissNotificationAsync(
-                notificationId,
-              ).catch(() => {});
-            }
-            if (typeof taskId === "string") {
-              setTimeout(() => {
-                useTodoStore.getState().markTodoDone(String(taskId));
-              }, 100);
-            }
+          if (todo?.isDone) {
+            XTodoAlarms.clearPendingCompletion(taskId);
+            return;
           }
-        },
-      );
+
+          if (todo) {
+            store.markTodoDone(taskId);
+          }
+
+          XTodoAlarms.clearPendingCompletion(taskId);
+        } catch (error) {
+          console.error("Failed to process task completion event:", error);
+        }
+      },
+    );
 
     async function prepareApp() {
       try {
         const isStorageReady = await initializeStorage();
+
         if (isStorageReady) {
           await Promise.all([
             useTodoStore.persist.rehydrate(),
             useNoteStore.persist.rehydrate(),
           ]);
-        }
 
-        await setupNotificationChannel();
+          setupNotificationChannel();
+          processPendingCompletions();
+        }
       } catch (error) {
-        alert(`Failed to initialization storage: ${error}`);
+        console.error("Failed to initialize storage:", error);
       } finally {
         setAppIsReady(true);
       }
@@ -95,14 +99,14 @@ export default function RootLayout() {
     prepareApp();
 
     return () => {
-      subscription.remove();
-      notificationSubscription.remove();
+      appStateSubscription.remove();
+      completionSubscription.remove();
     };
   }, []);
 
   useEffect(() => {
     if ((fontsLoaded || fontError) && appIsReady) {
-      SplashScreen.hide();
+      SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontsLoaded, fontError, appIsReady]);
 
@@ -127,13 +131,47 @@ export default function RootLayout() {
                 options={{ animation: "slide_from_right" }}
               />
 
-              {/* Routes for deep linking from Widget*/}
-              <Stack.Screen name="add" options={{ headerShown: false }} />
-              <Stack.Screen name="edit" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="add"
+                options={{
+                  headerShown: false,
+                }}
+              />
+
+              <Stack.Screen
+                name="edit"
+                options={{
+                  headerShown: false,
+                }}
+              />
             </Stack>
           </GlowProvider>
         </BottomSheetModalProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );
+}
+
+function processPendingCompletions() {
+  try {
+    const taskIds = XTodoAlarms.getPendingCompletions();
+
+    if (taskIds.length === 0) {
+      return;
+    }
+
+    const store = useTodoStore.getState();
+
+    for (const taskId of taskIds) {
+      const todo = store.todos.find((item) => item.id === taskId);
+
+      if (todo && !todo.isDone) {
+        store.markTodoDone(taskId);
+      }
+
+      XTodoAlarms.clearPendingCompletion(taskId);
+    }
+  } catch (error) {
+    console.error("Failed to process pending completions:", error);
+  }
 }

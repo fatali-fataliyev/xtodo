@@ -1,66 +1,218 @@
+import { PermissionsAndroid, Platform } from "react-native";
+import * as Application from "expo-application";
+import * as IntentLauncher from "expo-intent-launcher";
 import { Todo } from "@/store/useTodoStore";
-import * as Notifications from "expo-notifications";
-import { Platform } from "react-native";
+import XTodoAlarms from "../../modules/xtodo-alarms/src";
 
-const title: string = "Todo reminder";
+export const REMINDER_TITLE = "Todo reminder";
 
-export async function setupNotificationChannel() {
-  if (Platform.OS === "android") {
-    await Notifications.setNotificationChannelAsync("reminders", {
-      name: "Task Reminders",
-      importance: Notifications.AndroidImportance.MAX,
-      sound: "reminder.wav",
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: "#FF0000",
-      lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
-      audioAttributes: {
-        usage: Notifications.AndroidAudioUsage.ALARM,
-        contentType: Notifications.AndroidAudioContentType.SONIFICATION,
-      },
-    });
+export type NotificationPermissionResult = | "granted" | "denied";
+export type ExactAlarmPermissionResult = | "granted" | "required";
+
+export function setupNotificationChannel() {
+  if (Platform.OS !== "android") {
+    return;
   }
+
+  XTodoAlarms.createNotificationChannel();
 }
 
-export async function scheduleTaskReminder(
-  id: string,
-  body: string,
-  remindAt: Date,
-): Promise<string> {
-  if (remindAt.getTime() <= Date.now()) {
-    console.warn("Cannot schedule notification in the past.");
+// PERMISSION CHECKS
+export function hasNotificationPermission(): boolean {
+  if (Platform.OS !== "android") {
+    return true;
+  }
+
+  return XTodoAlarms.hasNotificationPermission();
+}
+
+export function canScheduleExactAlarms(): boolean {
+  if (Platform.OS !== "android") {
+    return true;
+  }
+
+  return XTodoAlarms.canScheduleExactAlarms();
+}
+
+export async function openNotificationSettings(): Promise<boolean> {
+  if (Platform.OS !== "android") {
+    return true;
+  }
+
+  try {
+    await IntentLauncher.startActivityAsync(
+      IntentLauncher.ActivityAction.APP_NOTIFICATION_SETTINGS,
+      {
+        extra: {
+          "android.provider.extra.APP_PACKAGE":
+            Application.applicationId,
+        },
+      },
+    );
+  } catch (error) {
+    console.error(
+      "[XTODO] Failed to open notification settings:",
+      error,
+    );
+
+    try {
+      await IntentLauncher.startActivityAsync(
+        IntentLauncher.ActivityAction.APPLICATION_DETAILS_SETTINGS,
+        {
+          data: `package:${Application.applicationId}`,
+        },
+      );
+    } catch (fallbackError) {
+      console.error(
+        "[XTODO] Failed to open application settings:",
+        fallbackError,
+      );
+    }
+  }
+
+  return XTodoAlarms.hasNotificationPermission();
+}
+
+export async function openExactAlarmSettings(): Promise<boolean> {
+  if (Platform.OS !== "android") {
+    return true;
+  }
+
+  try {
+    await IntentLauncher.startActivityAsync(
+      IntentLauncher.ActivityAction.REQUEST_SCHEDULE_EXACT_ALARM,
+      {
+        data: `package:${Application.applicationId}`,
+      },
+    );
+  } catch (error) {
+    console.error(
+      "[XTODO] Failed to open exact alarm settings:",
+      error,
+    );
+  }
+
+  return XTodoAlarms.canScheduleExactAlarms();
+}
+
+// NOTIFICATION PERMISSION
+export async function askForNotificationPermission(): Promise<NotificationPermissionResult> {
+  if (Platform.OS !== "android") {
+    return "granted";
+  }
+
+  // Android < 13 does not require POST_NOTIFICATIONS runtime permission.
+  if (Platform.Version < 33) {
+    return "granted";
+  }
+
+  if (XTodoAlarms.hasNotificationPermission()) {
+    return "granted";
+  }
+
+  XTodoAlarms.createNotificationChannel();
+
+  const result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+
+  if (result === PermissionsAndroid.RESULTS.GRANTED) {
+    return "granted";
+  }
+
+  return "denied";
+}
+
+// EXACT ALARM PERMISSION
+export async function askForExactAlarmPermission(): Promise<ExactAlarmPermissionResult> {
+  if (Platform.OS !== "android") {
+    return "granted";
+  }
+
+  // Android < 12 does not use exact-alarm special access.
+  if (Platform.Version < 31) {
+    return "granted";
+  }
+
+  if (XTodoAlarms.canScheduleExactAlarms()) {
+    return "granted";
+  }
+
+  return "required";
+}
+
+
+export async function ensureReminderPermissions(): Promise<boolean> {
+  if (Platform.OS !== "android") {
+    return true;
+  }
+
+  const notificationPermission =
+    await askForNotificationPermission();
+
+  if (notificationPermission !== "granted") {
+    return false;
+  }
+
+  const exactAlarmPermission =
+    await askForExactAlarmPermission();
+
+  if (exactAlarmPermission !== "granted") {
+    return false;
+  }
+
+  return true;
+}
+
+// SCHEDULE
+export function scheduleTaskReminder(taskId: string, body: string,remindAt: Date): string {
+  if (Platform.OS !== "android") {
     return "";
   }
 
-  await setupNotificationChannel();
+  const triggerAt = remindAt.getTime();
+  if (triggerAt <= Date.now()) {
+    return "-1"
+  }
 
-  const notificationId = await Notifications.scheduleNotificationAsync({
-    content: {
-      title,
-      body,
-      sound: "reminder.wav",
-      data: { taskId: id },
-      categoryIdentifier: "TASK_REMINDER",
-      priority: Notifications.AndroidNotificationPriority.MAX,
-    },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.DATE,
-      date: remindAt,
-      channelId: "reminders",
-    },
-  });
+  if (!XTodoAlarms.hasNotificationPermission()) {
+    return "-1";
+  }
 
-  return notificationId;
+  if (!XTodoAlarms.canScheduleExactAlarms()) {
+    return "-1";
+  }
+
+  XTodoAlarms.createNotificationChannel();
+
+  const alarmId = XTodoAlarms.scheduleReminder(
+    taskId,
+    REMINDER_TITLE,
+    body,
+    triggerAt,
+  );
+
+  return String(alarmId);
 }
 
-export async function cancelTaskReminder(notificationsID: string) {
-  if (!notificationsID) return;
-  await Notifications.cancelScheduledNotificationAsync(notificationsID);
+// CANCEL ONE
+export function cancelTaskReminder(taskId: string) {
+  if (Platform.OS !== "android") {
+    return;
+  }
+
+  if (taskId === "-1") {
+    return;
+  }
+
+  XTodoAlarms.cancelReminder(taskId);
 }
 
-export async function cancelAllReminders(todos: Todo[]) {
-  for (let todo of todos) {
-    if (todo.notificationID) {
-      await cancelTaskReminder(todo.notificationID);
-    }
+// CANCEL ALL
+export function cancelAllReminders(todos: Todo[]) {
+  if (Platform.OS !== "android") {
+    return;
+  }
+
+  for (const todo of todos) {
+    XTodoAlarms.cancelReminder(todo.id);
   }
 }

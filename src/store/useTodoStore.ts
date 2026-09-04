@@ -1,12 +1,12 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import { zustandStorageEngine } from "../utils/secureStorage";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { UpdateWidgetData } from "../../widget/storage";
 import {
   cancelAllReminders,
   cancelTaskReminder,
   scheduleTaskReminder,
 } from "@/notifications/Notifications";
+import { zustandStorageEngine } from "../utils/secureStorage";
 
 export interface Todo {
   id: string;
@@ -40,17 +40,22 @@ interface TodoState {
   isSearchMode: boolean;
   isFilterMode: boolean;
   searchTextLen: number;
+
   addTodo: (todo: Todo) => void;
-  markTodoDone: (idx: string) => void;
+  markTodoDone: (id: string) => void;
   updateSearchTextLen: (len: number) => void;
   updateTodo: (id: string, payload: EditPayload) => void;
+
   deleteByID: (id: string) => void;
   deleteFromSearchResults: (id: string) => void;
   deleteAll: () => void;
+
   setIsSearchMode: (value: boolean) => void;
   setIsFilterMode: (value: boolean) => void;
+
   executeSearch: (text: string) => void;
   applyFilters: (filters: string[]) => void;
+
   clearSearchResults: () => void;
   clearFilterResults: () => void;
   clearAllDoneTodos: () => void;
@@ -76,26 +81,21 @@ export const useTodoStore = create<TodoState>()(
       };
 
       return {
-        todos: [] as Todo[],
-        searchResults: [] as TodoSearchResult[],
-        filteredTodos: [] as Todo[],
+        todos: [],
+        searchResults: [],
+        filteredTodos: [],
         isSearchMode: false,
         isFilterMode: false,
         searchTextLen: 0,
 
-        addTodo: async (newTodo) => {
-          let notificationID: string | undefined;
+        addTodo: (newTodo) => {
           if (newTodo.remindAt) {
-            notificationID =
-              (await scheduleTaskReminder(
-                newTodo.id,
-                newTodo.task,
-                newTodo.remindAt,
-              )) ?? undefined;
-          }
-
-          if (notificationID) {
-            newTodo.notificationID = notificationID;
+            const alarmId = scheduleTaskReminder(
+              newTodo.id,
+              newTodo.task,
+              newTodo.remindAt,
+            );
+            newTodo.notificationID = alarmId;
           }
 
           set((state) => {
@@ -103,41 +103,57 @@ export const useTodoStore = create<TodoState>()(
             const sortedTodos = sortTodos(updatedTodos);
 
             UpdateWidgetData(sortedTodos);
-            return { todos: sortedTodos };
+
+            return {
+              todos: sortedTodos,
+            };
           });
         },
 
-        markTodoDone: async (id) =>
+        markTodoDone: (id) =>
           set((state) => {
-            const todo = state.todos.find((t) => t.id === id);
-            if (todo && todo.notificationID) {
-              cancelTaskReminder(todo.notificationID);
+            const todo = state.todos.find((item) => item.id === id);
+
+            if (todo?.remindAt) {
+              cancelTaskReminder(id);
             }
 
-            const updatedTodos = state.todos.map((todo) =>
-              todo.id === id ? { ...todo, isDone: !todo.isDone } : todo,
+            const updatedTodos = state.todos.map((item) =>
+              item.id === id
+                ? {
+                    ...item,
+                    isDone: !item.isDone,
+                    notificationID: undefined,
+                  }
+                : item,
             );
 
-            const updatedSearchResults = state.searchResults.map(
-              (searchItem) =>
-                searchItem.id === id
-                  ? { ...searchItem, isDone: !searchItem.isDone }
-                  : searchItem,
+            const updatedSearchResults = state.searchResults.map((item) =>
+              item.id === id
+                ? {
+                    ...item,
+                    isDone: !item.isDone,
+                    notificationID: undefined,
+                  }
+                : item,
             );
 
-            const updatedFilteredTodos = state.filteredTodos.map(
-              (filteredItem) =>
-                filteredItem.id === id
-                  ? { ...filteredItem, isDone: !filteredItem.isDone }
-                  : filteredItem,
+            const updatedFilteredTodos = state.filteredTodos.map((item) =>
+              item.id === id
+                ? {
+                    ...item,
+                    isDone: !item.isDone,
+                    notificationID: undefined,
+                  }
+                : item,
             );
 
             const sortedTodos = sortTodos(updatedTodos);
-            const sortedSearchResults = sortTodos(
-              updatedSearchResults as Todo[],
-            ) as TodoSearchResult[];
+            const sortedSearchResults = sortTodos(updatedSearchResults as Todo[]) as TodoSearchResult[];
             const sortedFilteredTodos = sortTodos(updatedFilteredTodos);
+
             UpdateWidgetData(sortedTodos);
+
             return {
               todos: sortedTodos,
               searchResults: sortedSearchResults,
@@ -145,76 +161,92 @@ export const useTodoStore = create<TodoState>()(
             };
           }),
 
-        updateTodo: async (id, payload) => {
-          const todo = useTodoStore.getState().todos.find((t) => t.id === id);
-          const hasFieldsChanged =
-            payload.newTask !== todo?.task ||
-            payload.newPriority !== todo?.priority;
-          const hasDateChanged = payload.newRemindAt !== todo?.remindAt;
+        updateTodo: (id, payload) => {
+          const todo = useTodoStore.getState().todos.find((item) => item.id === id);
 
-          if (todo) {
-            if (hasFieldsChanged || hasDateChanged) {
-              if (!todo?.remindAt && payload.newRemindAt) {
-                todo.remindAt = payload.newRemindAt;
-                todo.notificationID = await scheduleTaskReminder(
-                  id,
-                  payload.newTask,
-                  payload.newRemindAt,
-                );
-              } else {
-                if (todo && hasDateChanged && todo.notificationID) {
-                  await cancelTaskReminder(todo.notificationID);
-                  todo.notificationID = undefined;
+          if (!todo) {
+            return;
+          }
 
-                  if (payload.newRemindAt) {
-                    todo.notificationID =
-                      (await scheduleTaskReminder(
-                        id,
-                        payload.newTask,
-                        payload.newRemindAt,
-                      )) ?? undefined;
-                  }
-                }
-              }
+          const hasFieldsChanged = payload.newTask !== todo.task || payload.newPriority !== todo.priority;
+
+          const oldRemindAt = todo.remindAt;
+          const newRemindAt = payload.newRemindAt;
+
+          const hasDateChanged = oldRemindAt?.getTime() !== newRemindAt?.getTime();
+          if (!hasFieldsChanged && !hasDateChanged) {
+            return;
+          }
+
+          let notificationID = todo.notificationID;
+
+          if (hasDateChanged) {
+            let newNotificationID: string | undefined;
+            if (newRemindAt) {
+              newNotificationID = scheduleTaskReminder(
+                id,
+                payload.newTask,
+                newRemindAt,
+              );
             }
+
+            if (oldRemindAt) {
+              cancelTaskReminder(id);
+            }
+
+            notificationID = newNotificationID;
+          }
+
+          if (hasFieldsChanged && !hasDateChanged && oldRemindAt) {
+            const newNotificationID = scheduleTaskReminder(
+              id,
+              payload.newTask,
+              oldRemindAt,
+            );
+
+            notificationID = newNotificationID;
           }
 
           set((state) => {
-            const updatedTodos = state.todos.map((todo) =>
-              todo.id === id
+            const updatedTodos = state.todos.map((item) =>
+              item.id === id
                 ? {
-                    ...todo,
+                    ...item,
                     task: payload.newTask,
                     priority: payload.newPriority,
-                    remindAt: payload.newRemindAt,
+                    remindAt: newRemindAt,
+                    notificationID,
                   }
-                : todo,
+                : item,
             );
 
-            const updatedSearchResult = state.searchResults.map((todo) =>
-              todo.id === id
+            const updatedSearchResults = state.searchResults.map((item) =>
+              item.id === id
                 ? {
-                    ...todo,
+                    ...item,
                     task: payload.newTask,
                     priority: payload.newPriority,
-                    remindAt: payload.newRemindAt,
+                    remindAt: newRemindAt,
+                    notificationID,
                   }
-                : todo,
+                : item,
             );
-
-            const sortedSearchResults = sortTodos(
-              updatedSearchResult as Todo[],
-            ) as TodoSearchResult[];
 
             const sortedTodos = sortTodos(updatedTodos);
+            const sortedSearchResults = sortTodos(updatedSearchResults as Todo[]) as TodoSearchResult[];
+
             UpdateWidgetData(sortedTodos);
-            return { todos: sortedTodos, searchResults: sortedSearchResults };
+
+            return {
+              todos: sortedTodos,
+              searchResults: sortedSearchResults,
+            };
           });
         },
 
         applyFilters: (filters) =>
           set((state) => {
-            let newFilteredTodos;
+            let newFilteredTodos: Todo[];
 
             if (filters.includes("completed")) {
               newFilteredTodos = state.todos.filter(
@@ -227,52 +259,113 @@ export const useTodoStore = create<TodoState>()(
               );
             }
 
-            return { filteredTodos: newFilteredTodos };
+            return {
+              filteredTodos: newFilteredTodos,
+            };
           }),
 
         deleteByID: (id) =>
           set((state) => {
-            const todo = state.todos.find((t) => t.id === id);
-            if (todo && todo.notificationID) {
-              cancelTaskReminder(todo.notificationID);
+            const todo = state.todos.find((item) => item.id === id);
+
+            if (todo?.remindAt) {
+              cancelTaskReminder(id);
             }
 
-            const updatedTodos = state.todos.filter((todo) => todo.id !== id);
+            const updatedTodos = state.todos.filter((item) => item.id !== id);
             const sortedTodos = sortTodos(updatedTodos);
+
             UpdateWidgetData(sortedTodos);
-            return { todos: sortedTodos };
+
+            return {
+              todos: sortedTodos,
+            };
           }),
 
         deleteFromSearchResults: (id) =>
           set((state) => {
-            const todo = state.todos.find((t) => t.id === id);
-            if (todo && todo.notificationID) {
-              cancelTaskReminder(todo.notificationID);
+            const todo = state.todos.find((item) => item.id === id);
+
+            if (todo?.remindAt) {
+              cancelTaskReminder(id);
             }
 
             return {
               searchResults: state.searchResults.filter(
-                (todo) => todo.id !== id,
+                (item) => item.id !== id,
               ),
             };
           }),
 
         deleteAll: () =>
           set((state) => {
-            const todos = state.todos;
-            cancelAllReminders(todos);
+            cancelAllReminders(state.todos);
+
             UpdateWidgetData([]);
-            return { todos: [] };
+
+            return {
+              todos: [],
+            };
+          }),
+
+        executeSearch: (text) =>
+          set((state) => {
+            if (!text.trim()) {
+              return {
+                searchResults: [],
+              };
+            }
+
+            const newSearchResults: TodoSearchResult[] = [];
+
+            state.todos.forEach((todo) => {
+              let currentIdx = todo.task
+                .toLowerCase()
+                .indexOf(text.toLowerCase());
+
+              const foundIndexes: number[] = [];
+
+              while (currentIdx !== -1) {
+                foundIndexes.push(currentIdx);
+
+                currentIdx = todo.task.toLowerCase().indexOf(text.toLowerCase(), currentIdx + 1);
+              }
+
+              if (foundIndexes.length > 0) {
+                newSearchResults.push({
+                  id: todo.id,
+                  task: todo.task,
+                  priority: todo.priority,
+                  isDone: todo.isDone,
+                  notificationID: todo.notificationID,
+                  remindAt: todo.remindAt,
+                  indexes: foundIndexes,
+                });
+              }
+            });
+
+            return {
+              searchResults: newSearchResults,
+            };
           }),
 
         clearSearchResults: () => set({ searchResults: [] }),
         clearFilterResults: () => set({ filteredTodos: [] }),
+
         clearAllDoneTodos: () =>
           set((state) => {
+            const completedTodos = state.todos.filter(
+              (todo) => todo.isDone === true,
+            );
+
+            cancelAllReminders(completedTodos);
+
             const updatedTodos = state.todos.filter(
               (todo) => todo.isDone !== true,
             );
+
             const sortedTodos = sortTodos(updatedTodos);
+
             UpdateWidgetData(sortedTodos);
 
             return {
@@ -283,51 +376,36 @@ export const useTodoStore = create<TodoState>()(
         resetSearchTextLen: () => set({ searchTextLen: 0 }),
         setIsSearchMode: (value) => set({ isSearchMode: value }),
         setIsFilterMode: (value) => set({ isFilterMode: value }),
-        updateSearchTextLen: (len: number) => set({ searchTextLen: len }),
-
-        executeSearch: (text) =>
-          set((state) => {
-            if (!text.trim()) {
-              return { searchResults: [] };
-            }
-
-            const newSearchResults: TodoSearchResult[] = [];
-
-            state.todos.forEach((todo: Todo) => {
-              let currentIdx = todo.task
-                .toLowerCase()
-                .indexOf(text.toLowerCase());
-              const foundIndexes: number[] = [];
-
-              while (currentIdx !== -1) {
-                foundIndexes.push(currentIdx);
-                currentIdx = todo.task
-                  .toLowerCase()
-                  .indexOf(text.toLowerCase(), currentIdx + 1);
-              }
-
-              if (foundIndexes.length > 0) {
-                newSearchResults.push({
-                  id: todo.id,
-                  task: todo.task,
-                  priority: todo.priority,
-                  isDone: todo.isDone,
-                  indexes: foundIndexes,
-                });
-              }
-            });
-
-            return {
-              searchResults: newSearchResults,
-            };
-          }),
+        updateSearchTextLen: (len) => set({ searchTextLen: len }),
       };
     },
     {
       name: "todos",
+
       storage: createJSONStorage(() => zustandStorageEngine),
-      partialize: (state) => ({ todos: state.todos }),
+
+      partialize: (state) => ({
+        todos: state.todos,
+      }),
       skipHydration: true,
+      merge: (persistedState, currentState) => {
+        const persisted = persistedState as Partial<TodoState> | undefined;
+
+        const persistedTodos = persisted?.todos ?? [];
+
+        const restoredTodos: Todo[] = persistedTodos.map((todo) => ({
+          ...todo,
+          remindAt: todo.remindAt
+            ? new Date(todo.remindAt as unknown as string)
+            : undefined,
+        }));
+        return {
+          ...currentState,
+          ...persisted,
+
+          todos: restoredTodos,
+        };
+      },
     },
   ),
 );
