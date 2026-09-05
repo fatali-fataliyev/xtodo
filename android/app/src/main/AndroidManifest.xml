@@ -53,14 +53,14 @@
     <receiver android:name=".widget.TodoList" android:exported="false" android:label="XTodo Todo List">
       <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
-        <action android:name="com.github.fatalifataliyev.xtodo.dev.WIDGET_CLICK"/>
+        <action android:name="com.github.fatalifataliyev.xtodo.WIDGET_CLICK"/>
       </intent-filter>
       <meta-data android:name="android.appwidget.provider" android:resource="@xml/widgetprovider_todolist"/>
     </receiver>
     <receiver android:name=".widget.AddTodo" android:exported="false" android:label="XTodo Add todo">
       <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
-        <action android:name="com.github.fatalifataliyev.xtodo.dev.WIDGET_CLICK"/>
+        <action android:name="com.github.fatalifataliyev.xtodo.WIDGET_CLICK"/>
       </intent-filter>
       <meta-data android:name="android.appwidget.provider" android:resource="@xml/widgetprovider_addtodo"/>
     </receiver>

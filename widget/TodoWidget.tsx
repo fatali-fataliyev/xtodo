@@ -220,7 +220,12 @@ function makeStrikethrough(text: string): string {
     .join("");
 }
 
-export function TodoWidget({ Todos, ListBg, FontSize, HourFormat }: TodoWidgetProps) {
+export function TodoWidget({
+  Todos,
+  ListBg,
+  FontSize,
+  HourFormat,
+}: TodoWidgetProps) {
   if (!Todos || Todos === undefined) {
     Todos = [];
   }
@@ -260,7 +265,12 @@ export function TodoWidget({ Todos, ListBg, FontSize, HourFormat }: TodoWidgetPr
         />
       </FlexWidget>
 
-      <TodoList Todos={Todos} FontSize={FontSize} ListBg={ListBg} HourFormat={HourFormat} />
+      <TodoList
+        Todos={Todos}
+        FontSize={FontSize}
+        ListBg={ListBg}
+        HourFormat={HourFormat}
+      />
     </FlexWidget>
   );
 }

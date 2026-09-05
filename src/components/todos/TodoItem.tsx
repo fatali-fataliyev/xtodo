@@ -210,11 +210,13 @@ function TodoItem({
               <MaterialDesignIcons
                 name={"alarm"}
                 size={13}
-                color={isDone ? "gray" : "#FFF"}
+                color={isDone || remindAt < new Date() ? "gray" : "#FFF"}
               />
               <Text
-                
-                style={[styles.reminderBoxText, isDone && { color: "gray" }]}
+                style={[
+                  styles.reminderBoxText,
+                  isDone || remindAt < new Date() ? { color: "gray" } : null,
+                ]}
               >
                 {parseDate(remindAt, hourFormat)}
               </Text>

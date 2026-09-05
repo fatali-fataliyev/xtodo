@@ -1,6 +1,7 @@
 import { GlowProvider } from "@/components/todos/GlowContext";
 import { setupNotificationChannel } from "@/notifications/Notifications";
 import { useNoteStore } from "@/store/useNoteStore";
+import { useSettingsStore } from "@/store/useSettingsStore";
 import {
   Inter_400Regular,
   Inter_600SemiBold,
@@ -84,6 +85,7 @@ export default function RootLayout() {
           await Promise.all([
             useTodoStore.persist.rehydrate(),
             useNoteStore.persist.rehydrate(),
+            useSettingsStore.persist.rehydrate(),
           ]);
 
           setupNotificationChannel();

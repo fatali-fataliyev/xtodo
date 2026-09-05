@@ -11,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TextInput,
@@ -24,7 +25,7 @@ import {
 } from "react-native-enriched-html";
 import { textEditorStyles } from "./EditorElementsStyle";
 
-const TOOLBAR_ITEM_SIZE = 20;
+const TOOLBAR_ITEM_SIZE = 23;
 
 export default function NoteEditorScreen() {
   const router = useRouter();
@@ -41,34 +42,38 @@ export default function NoteEditorScreen() {
   const note: Note | undefined = found;
 
   const [title, setTitle] = useState(note ? note.title : "");
+  console.log("TITLE: ", title);
+  const [editorContent, setEditorContent] = useState("");
   const [createdDate] = useState(() => (note ? note.createdAt : new Date()));
 
   const editorRef = useRef<EnrichedTextInputInstance>(null);
-  const titleRef = useRef(title);
+  const initialTitle = useRef<string>("");
   const [stylesState, setStylesState] = useState<
     OnChangeStateEvent | any | null
   >(null);
+
+  const initialContent = useRef<string>("");
+  console.log("INITIAL title: ", initialTitle.current);
+  const [isInitialContentCaptured, setIsInitialContentCaptured] =
+    useState<boolean>(false);
+
+  const isSaveDisabled =
+    editorContent === initialContent.current && title === initialTitle.current;
+  const isShareButtonDisabled = editorContent.trim() === "";
 
   const isNewNote = id === "new";
 
   useEffect(() => {
     if (!isNewNote && note?.content) {
-      const timer = setTimeout(() => {
-        editorRef.current?.setValue(note.content);
-      }, 100);
-      return () => clearTimeout(timer);
+      editorRef.current?.setValue(note.content);
+      initialTitle.current = note.title;
     }
   }, [id]);
 
-  useEffect(() => {
-    titleRef.current = title;
-  }, [title]);
-
   const handleSave = useCallback(async () => {
-    let content: string = "";
     const htmlContent = await editorRef.current?.getHTML();
 
-    let trimmedTitle = titleRef.current.trim();
+    const trimmedTitle = title.trim();
     const emptyHtml = isHtmlEmpty(htmlContent);
 
     if (emptyHtml && !trimmedTitle) {
@@ -76,31 +81,31 @@ export default function NoteEditorScreen() {
       return;
     }
 
+    let content = "";
+
     if (htmlContent && !emptyHtml) {
       content = htmlContent.trim();
     }
 
-    if (!trimmedTitle) {
-      trimmedTitle = "Untitled";
-    }
+    const finalTitle = trimmedTitle || "Untitled";
 
     if (isNewNote) {
       addNote({
         id: crypto.randomUUID(),
-        title: trimmedTitle,
+        title: finalTitle,
         content,
         createdAt: createdDate,
         updatedAt: new Date(),
       });
     } else {
       updateNote(id, {
-        title: trimmedTitle,
+        title: finalTitle,
         content,
         updatedAt: new Date(),
       });
     }
     router.back();
-  }, [id, isNewNote, addNote, updateNote, router]);
+  }, [id, isNewNote, addNote, updateNote, router, createdDate, title]);
 
   const handleSaveRef = useRef(handleSave);
   useEffect(() => {
@@ -108,7 +113,7 @@ export default function NoteEditorScreen() {
   }, [handleSave]);
 
   const handleTitleInputPress = () => {
-    const titleText: string = titleRef.current.valueOf().trim().toLowerCase();
+    const titleText: string = initialTitle.current.trim().toLowerCase();
     if (titleText === "untitled") {
       setTitle("");
     }
@@ -128,6 +133,16 @@ export default function NoteEditorScreen() {
     return () => backHandler.remove();
   }, []);
 
+  const handleTextShare = async () => {
+    try {
+      await Share.share({
+        message: editorContent,
+      });
+    } catch (err) {
+      alert(`failed to share text: ${err}`);
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -139,9 +154,40 @@ export default function NoteEditorScreen() {
           <MaterialIcons name={"arrow-back-ios-new"} color={"#FFF"} size={22} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Done</Text>
-        </TouchableOpacity>
+        <View style={styles.headerActionMenuContainer}>
+          {/*SHARE*/}
+          <TouchableOpacity
+            style={[
+              styles.headerActionButton,
+              isShareButtonDisabled && { opacity: 0.4 },
+              { marginRight: 5 },
+            ]}
+            disabled={isShareButtonDisabled}
+            onPress={handleTextShare}
+          >
+            <MaterialIcons
+              name="share"
+              color={isShareButtonDisabled ? "#666" : "#FFF"}
+              size={21}
+            />
+          </TouchableOpacity>
+
+          {/*SAVE*/}
+          <TouchableOpacity
+            style={[
+              styles.headerActionButton,
+              isSaveDisabled && { opacity: 0.4 },
+            ]}
+            disabled={isSaveDisabled}
+            onPress={handleSave}
+          >
+            <MaterialIcons
+              name="check"
+              color={isSaveDisabled ? "#666" : "#FFF"}
+              size={25}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Title Section */}
@@ -157,7 +203,8 @@ export default function NoteEditorScreen() {
 
       <View style={styles.infoContainer}>
         <Text style={styles.infoText}>
-          {parseDate(createdDate, hourFormat)}
+          {parseDate(createdDate, hourFormat)} | {editorContent.trim().length}{" "}
+          characters
         </Text>
       </View>
 
@@ -166,11 +213,20 @@ export default function NoteEditorScreen() {
         <EnrichedTextInput
           placeholder="Start writing..."
           placeholderTextColor="#4a4a4a"
+          selectionColor="#eab308"
           ref={editorRef}
           onChangeState={(e) => setStylesState(e.nativeEvent)}
+          onChangeText={(e) => {
+            if (!isInitialContentCaptured && e.nativeEvent.value !== "") {
+              initialContent.current = e.nativeEvent.value;
+              setEditorContent(e.nativeEvent.value ?? "");
+              setIsInitialContentCaptured(true);
+            }
+            setEditorContent(e.nativeEvent.value ?? "");
+          }}
           style={styles.editorInput}
-          cursorColor={"#CCC"}
-          autoFocus={true}
+          cursorColor="#CCC"
+          autoFocus={isNewNote}
           htmlStyle={textEditorStyles}
         />
       </View>
@@ -405,31 +461,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 20,
-    height: 50,
-    marginTop: 10,
+    paddingHorizontal: 15,
+    marginTop: 20,
   },
   backButton: {
     justifyContent: "center",
     alignItems: "center",
   },
-  saveButton: {
-    backgroundColor: "#262626",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  saveButtonText: {
-    color: "#eab308",
-    fontWeight: "600",
-    fontSize: 14,
-  },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "700",
     color: "#ffffff",
     paddingHorizontal: 20,
-    marginTop: 20,
+    marginTop: 5,
     marginBottom: 5,
     fontFamily: "Inter-Regular",
   },
@@ -444,7 +488,16 @@ const styles = StyleSheet.create({
   },
   editorContainer: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
+  },
+  headerActionMenuContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  headerActionButton: {
+    paddingVertical: 5,
+    paddingHorizontal: 10,
   },
   editorInput: {
     width: "100%",

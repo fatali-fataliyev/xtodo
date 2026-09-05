@@ -1,4 +1,4 @@
-package com.github.fatalifataliyev.xtodo.dev.widget;
+package com.github.fatalifataliyev.xtodo.widget;
 
 import com.reactnativeandroidwidget.RNWidgetProvider;
 

@@ -3,7 +3,7 @@ import { useNoteStore } from "@/store/useNoteStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { parseDate } from "@/utils/dateParser";
 import React, { useRef } from "react";
-import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
+import { Keyboard, Pressable, StyleSheet, Text, Vibration, View } from "react-native";
 import { EnrichedText } from "react-native-enriched-html";
 import Swipeable, {
   SwipeableMethods,
@@ -18,7 +18,7 @@ import Animated, {
   SharedValue,
   useAnimatedStyle,
 } from "react-native-reanimated";
-import { textEditorStyles } from "./EditorElementsStyle";
+import { textEditorPreviewStyles } from "./EditorElementsStyle";
 
 import MaterialDesignIcons from "@react-native-vector-icons/material-design-icons";
 
@@ -144,6 +144,7 @@ function NoteItem({
             onLongPress(id);
             onSelect(id);
             swipeableRef.current!.close();
+            Vibration.vibrate(100);
           }}
         >
           <View style={styles.mainAreaContainer}>
@@ -181,7 +182,7 @@ function NoteItem({
 
               <EnrichedText
                 style={styles.contentText}
-                htmlStyle={textEditorStyles}
+                htmlStyle={textEditorPreviewStyles}
                 numberOfLines={1}
               >
                 {content}

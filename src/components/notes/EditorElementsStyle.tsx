@@ -39,3 +39,19 @@ export const textEditorStyles: customTextEditorStyle = {
     gapWidth: 12,
   },
 };
+
+export const textEditorPreviewStyles: customTextEditorStyle = {
+  h1: { fontSize: 16, bold: true },
+  h2: { fontSize: 16, bold: true },
+  h3: { fontSize: 16, bold: true },
+  code: { backgroundColor: "#000", color: "#33FF00" },
+  codeblock: { backgroundColor: "#000", borderRadius: 3, color: "#33FF00" },
+  ul: {
+    bulletColor: "#FFF",
+  },
+  ulCheckbox: {
+    boxColor: "#CCC",
+    boxSize: 18,
+    gapWidth: 12,
+  },
+};

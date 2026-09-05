@@ -37,23 +37,30 @@ function initSettingsMMKV() {
 
 export function getStoredTodos(): Todo[] {
   initMMKVStorage();
+
   if (!mmkvStorage) return [];
 
   const data = mmkvStorage.getString(TODO_LIST_KEY);
+
   if (!data) return [];
 
   try {
     const parsed = JSON.parse(data);
 
+    let todos: Todo[] = [];
+
     if (parsed && parsed.state && Array.isArray(parsed.state.todos)) {
-      return parsed.state.todos;
+      todos = parsed.state.todos;
+    } else if (Array.isArray(parsed)) {
+      todos = parsed;
+    } else {
+      return [];
     }
 
-    if (Array.isArray(parsed)) {
-      return parsed;
-    }
-
-    return [];
+    return todos.map((todo) => ({
+      ...todo,
+      remindAt: todo.remindAt ? new Date(todo.remindAt) : undefined,
+    }));
   } catch {
     return [];
   }
@@ -80,7 +87,7 @@ export function getStoredFontSize(): number {
 
 export function getStoredHourFormat(): number {
   initSettingsMMKV();
-  if (!settingsMMKV) 24;
+  if (!settingsMMKV) return 24;
   return Number(settingsMMKV?.getString(HOUR_FORMAT_KEY)) || 24;
 }
 

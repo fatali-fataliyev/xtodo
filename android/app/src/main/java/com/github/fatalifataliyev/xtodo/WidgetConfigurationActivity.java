@@ -1,4 +1,4 @@
-package com.github.fatalifataliyev.xtodo.dev;
+package com.github.fatalifataliyev.xtodo;
 
 import com.reactnativeandroidwidget.RNWidgetConfigurationActivity;
 
