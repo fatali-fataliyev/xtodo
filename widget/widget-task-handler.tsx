@@ -89,19 +89,16 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
       break;
 
     case "WIDGET_CLICK": {
-      console.log("WIDGET CLICKED: ", widgetInfo.widgetName);
       if (
         widgetInfo.widgetName === "TodoList" ||
         widgetInfo.widgetName === "AddTodo"
       ) {
         if (props.clickAction === "ADD_ROUTE") {
-          console.log("FAST ROUTING TO ADD...");
           Linking.openURL("xtodo://add");
           break;
         }
 
         if (props.clickAction === "MARK_TODO_DONE") {
-          console.log("MARKING Todo done: ", props.clickActionData?.todoId);
           const id = props.clickActionData?.todoId;
           if (!id) break;
 

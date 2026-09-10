@@ -90,12 +90,7 @@ export default function TodoFilterModal({
   };
 
   return (
-    <Modal
-      transparent
-      visible={showModal}
-      animationType="fade"
-      onLayout={() => console.log("modal mounted!")}
-    >
+    <Modal transparent visible={showModal} animationType="fade">
       <Animated.View style={[styles.backdrop, backdropStyle]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
       </Animated.View>

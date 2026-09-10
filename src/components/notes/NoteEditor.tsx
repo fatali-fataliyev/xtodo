@@ -42,7 +42,6 @@ export default function NoteEditorScreen() {
   const note: Note | undefined = found;
 
   const [title, setTitle] = useState(note ? note.title : "");
-  console.log("TITLE: ", title);
   const [editorContent, setEditorContent] = useState("");
   const [createdDate] = useState(() => (note ? note.createdAt : new Date()));
 
@@ -53,7 +52,6 @@ export default function NoteEditorScreen() {
   >(null);
 
   const initialContent = useRef<string>("");
-  console.log("INITIAL title: ", initialTitle.current);
   const [isInitialContentCaptured, setIsInitialContentCaptured] =
     useState<boolean>(false);
 
