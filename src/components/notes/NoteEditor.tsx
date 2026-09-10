@@ -54,12 +54,16 @@ export default function NoteEditorScreen() {
   const initialContent = useRef<string>("");
   const [isInitialContentCaptured, setIsInitialContentCaptured] =
     useState<boolean>(false);
-
-  const isSaveDisabled =
-    editorContent === initialContent.current && title === initialTitle.current;
-  const isShareButtonDisabled = editorContent.trim() === "";
+  const [isStyleChanged, setIsStyleChanged] = useState<boolean>(false);
 
   const isNewNote = id === "new";
+
+  const isSaveDisabled = isNewNote
+    ? editorContent.trim() === "" && title.trim() === ""
+    : editorContent === initialContent.current &&
+      title === initialTitle.current &&
+      !isStyleChanged;
+  const isShareButtonDisabled = editorContent.trim() === "";
 
   useEffect(() => {
     if (!isNewNote && note?.content) {
@@ -242,7 +246,10 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.h1?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => editorRef.current?.toggleH1()}
+            onPress={() => {
+              editorRef.current?.toggleH1();
+              setIsStyleChanged(true);
+            }}
           >
             <MaterialDesignIcons
               name="format-header-1"
@@ -257,7 +264,10 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.h2?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => editorRef.current?.toggleH2()}
+            onPress={() => {
+              editorRef.current?.toggleH2();
+              setIsStyleChanged(true);
+            }}
           >
             <MaterialDesignIcons
               name="format-header-2"
@@ -272,7 +282,10 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.h3?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => editorRef.current?.toggleH3()}
+            onPress={() => {
+              editorRef.current?.toggleH3();
+              setIsStyleChanged(true);
+            }}
           >
             <MaterialDesignIcons
               name="format-header-3"
@@ -287,7 +300,10 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.bold?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => editorRef.current?.toggleBold()}
+            onPress={() => {
+              editorRef.current?.toggleBold();
+              setIsStyleChanged(true);
+            }}
           >
             <MaterialDesignIcons
               name="format-bold"
@@ -302,7 +318,10 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.underline?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => editorRef.current?.toggleUnderline()}
+            onPress={() => {
+              editorRef.current?.toggleUnderline();
+              setIsStyleChanged(true);
+            }}
           >
             <MaterialDesignIcons
               name="format-underline"
@@ -317,7 +336,10 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.italic?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => editorRef.current?.toggleItalic()}
+            onPress={() => {
+              editorRef.current?.toggleItalic();
+              setIsStyleChanged(true);
+            }}
           >
             <MaterialDesignIcons
               name="format-italic"
@@ -333,7 +355,10 @@ export default function NoteEditorScreen() {
               stylesState?.strikeThrough?.isActive &&
                 styles.toolbarButtonActive,
             ]}
-            onPress={() => editorRef.current?.toggleStrikeThrough()}
+            onPress={() => {
+              editorRef.current?.toggleStrikeThrough();
+              setIsStyleChanged(true);
+            }}
           >
             <MaterialDesignIcons
               name="format-strikethrough"
@@ -350,7 +375,10 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.orderedList?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => editorRef.current?.toggleOrderedList()}
+            onPress={() => {
+              editorRef.current?.toggleOrderedList();
+              setIsStyleChanged(true);
+            }}
           >
             <MaterialDesignIcons
               name="format-list-numbered"
@@ -366,7 +394,10 @@ export default function NoteEditorScreen() {
               stylesState?.unorderedList?.isActive &&
                 styles.toolbarButtonActive,
             ]}
-            onPress={() => editorRef.current?.toggleUnorderedList()}
+            onPress={() => {
+              editorRef.current?.toggleUnorderedList();
+              setIsStyleChanged(true);
+            }}
           >
             <MaterialDesignIcons
               name="format-list-bulleted"
@@ -383,7 +414,10 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.checkboxList?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => editorRef.current?.toggleCheckboxList(false)}
+            onPress={() => {
+              editorRef.current?.toggleCheckboxList(false);
+              setIsStyleChanged(true);
+            }}
           >
             <MaterialDesignIcons
               name="checkbox-multiple-marked-outline"
@@ -400,7 +434,10 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.inlineCode?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => editorRef.current?.toggleInlineCode()}
+            onPress={() => {
+              editorRef.current?.toggleInlineCode();
+              setIsStyleChanged(true);
+            }}
           >
             <MaterialDesignIcons
               name="code-tags"
@@ -415,7 +452,10 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.codeBlock?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => editorRef.current?.toggleCodeBlock()}
+            onPress={() => {
+              editorRef.current?.toggleCodeBlock();
+              setIsStyleChanged(true);
+            }}
           >
             <MaterialDesignIcons
               name="code-json"
@@ -427,7 +467,10 @@ export default function NoteEditorScreen() {
           {/* CLEAR TEXT INPUT */}
           <TouchableOpacity
             style={[styles.toolbarButton]}
-            onPress={() => editorRef.current?.setValue("")}
+            onPress={() => {
+              editorRef.current?.setValue("");
+              setIsStyleChanged(true);
+            }}
           >
             <MaterialDesignIcons
               name="broom"
@@ -469,7 +512,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: "700",
-    color: "#ffffff",
+    color: "#FFF",
     paddingHorizontal: 20,
     marginTop: 5,
     marginBottom: 5,
@@ -502,7 +545,7 @@ const styles = StyleSheet.create({
     height: "100%",
     fontSize: 16,
     lineHeight: 24,
-    color: "#e5e7eb",
+    color: "#FFF",
     fontFamily: "Inter-Regular",
     paddingHorizontal: 8,
   },
