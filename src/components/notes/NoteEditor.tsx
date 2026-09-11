@@ -41,29 +41,20 @@ export default function NoteEditorScreen() {
   const found = notes.find((noteItem) => noteItem.id === id);
   const note: Note | undefined = found;
 
-  const [title, setTitle] = useState(note ? note.title : "");
-  const [editorContent, setEditorContent] = useState("");
-  const [createdDate] = useState(() => (note ? note.createdAt : new Date()));
+  const [title, setTitle] = useState<string>(note ? note.title : "");
+  const editorContentRawText = useRef<string>("");
+  const [createdDate] = useState<Date>(() => note ? note.createdAt : new Date());
+  const [charCount, setCharCount] = useState<number>(0);
 
+  // REFS
   const editorRef = useRef<EnrichedTextInputInstance>(null);
   const initialTitle = useRef<string>("");
-  const [stylesState, setStylesState] = useState<
-    OnChangeStateEvent | any | null
-  >(null);
 
-  const initialContent = useRef<string>("");
-  const [isInitialContentCaptured, setIsInitialContentCaptured] =
-    useState<boolean>(false);
-  const [isStyleChanged, setIsStyleChanged] = useState<boolean>(false);
+  const [stylesState, setStylesState] = useState<OnChangeStateEvent | any | null>(null);
 
   const isNewNote = id === "new";
 
-  const isSaveDisabled = isNewNote
-    ? editorContent.trim() === "" && title.trim() === ""
-    : editorContent === initialContent.current &&
-      title === initialTitle.current &&
-      !isStyleChanged;
-  const isShareButtonDisabled = editorContent.trim() === "";
+  const isShareButtonDisabled = editorContentRawText.current.trim() === "";
 
   useEffect(() => {
     if (!isNewNote && note?.content) {
@@ -138,7 +129,7 @@ export default function NoteEditorScreen() {
   const handleTextShare = async () => {
     try {
       await Share.share({
-        message: editorContent,
+        message: editorContentRawText.current,
       });
     } catch (err) {
       alert(`failed to share text: ${err}`);
@@ -176,18 +167,10 @@ export default function NoteEditorScreen() {
 
           {/*SAVE*/}
           <TouchableOpacity
-            style={[
-              styles.headerActionButton,
-              isSaveDisabled && { opacity: 0.4 },
-            ]}
-            disabled={isSaveDisabled}
+            style={[styles.headerActionButton]}
             onPress={handleSave}
           >
-            <MaterialIcons
-              name="check"
-              color={isSaveDisabled ? "#666" : "#FFF"}
-              size={25}
-            />
+            <MaterialIcons name="check" color={"#FFF"} size={25} />
           </TouchableOpacity>
         </View>
       </View>
@@ -205,8 +188,8 @@ export default function NoteEditorScreen() {
 
       <View style={styles.infoContainer}>
         <Text style={styles.infoText}>
-          {parseDate(createdDate, hourFormat)} | {editorContent.trim().length}{" "}
-          characters
+          {parseDate(createdDate, hourFormat)} |{" "}
+          {charCount} characters
         </Text>
       </View>
 
@@ -219,12 +202,8 @@ export default function NoteEditorScreen() {
           ref={editorRef}
           onChangeState={(e) => setStylesState(e.nativeEvent)}
           onChangeText={(e) => {
-            if (!isInitialContentCaptured && e.nativeEvent.value !== "") {
-              initialContent.current = e.nativeEvent.value;
-              setEditorContent(e.nativeEvent.value ?? "");
-              setIsInitialContentCaptured(true);
-            }
-            setEditorContent(e.nativeEvent.value ?? "");
+            (editorContentRawText.current = e.nativeEvent.value ?? "")
+            setCharCount(editorContentRawText.current.trim().length)
           }}
           style={styles.editorInput}
           cursorColor="#CCC"
@@ -246,10 +225,7 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.h1?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => {
-              editorRef.current?.toggleH1();
-              setIsStyleChanged(true);
-            }}
+            onPress={() => editorRef.current?.toggleH1()}
           >
             <MaterialDesignIcons
               name="format-header-1"
@@ -264,10 +240,7 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.h2?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => {
-              editorRef.current?.toggleH2();
-              setIsStyleChanged(true);
-            }}
+            onPress={() => editorRef.current?.toggleH2()}
           >
             <MaterialDesignIcons
               name="format-header-2"
@@ -282,10 +255,7 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.h3?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => {
-              editorRef.current?.toggleH3();
-              setIsStyleChanged(true);
-            }}
+            onPress={() => editorRef.current?.toggleH3()}
           >
             <MaterialDesignIcons
               name="format-header-3"
@@ -300,10 +270,7 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.bold?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => {
-              editorRef.current?.toggleBold();
-              setIsStyleChanged(true);
-            }}
+            onPress={() => editorRef.current?.toggleBold()}
           >
             <MaterialDesignIcons
               name="format-bold"
@@ -318,10 +285,7 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.underline?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => {
-              editorRef.current?.toggleUnderline();
-              setIsStyleChanged(true);
-            }}
+            onPress={() => editorRef.current?.toggleUnderline()}
           >
             <MaterialDesignIcons
               name="format-underline"
@@ -336,10 +300,7 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.italic?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => {
-              editorRef.current?.toggleItalic();
-              setIsStyleChanged(true);
-            }}
+            onPress={() => editorRef.current?.toggleItalic()}
           >
             <MaterialDesignIcons
               name="format-italic"
@@ -355,10 +316,7 @@ export default function NoteEditorScreen() {
               stylesState?.strikeThrough?.isActive &&
                 styles.toolbarButtonActive,
             ]}
-            onPress={() => {
-              editorRef.current?.toggleStrikeThrough();
-              setIsStyleChanged(true);
-            }}
+            onPress={() => editorRef.current?.toggleStrikeThrough()}
           >
             <MaterialDesignIcons
               name="format-strikethrough"
@@ -375,10 +333,7 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.orderedList?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => {
-              editorRef.current?.toggleOrderedList();
-              setIsStyleChanged(true);
-            }}
+            onPress={() => editorRef.current?.toggleOrderedList()}
           >
             <MaterialDesignIcons
               name="format-list-numbered"
@@ -394,10 +349,7 @@ export default function NoteEditorScreen() {
               stylesState?.unorderedList?.isActive &&
                 styles.toolbarButtonActive,
             ]}
-            onPress={() => {
-              editorRef.current?.toggleUnorderedList();
-              setIsStyleChanged(true);
-            }}
+            onPress={() => editorRef.current?.toggleUnorderedList()}
           >
             <MaterialDesignIcons
               name="format-list-bulleted"
@@ -414,10 +366,7 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.checkboxList?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => {
-              editorRef.current?.toggleCheckboxList(false);
-              setIsStyleChanged(true);
-            }}
+            onPress={() => editorRef.current?.toggleCheckboxList(false)}
           >
             <MaterialDesignIcons
               name="checkbox-multiple-marked-outline"
@@ -434,10 +383,7 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.inlineCode?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => {
-              editorRef.current?.toggleInlineCode();
-              setIsStyleChanged(true);
-            }}
+            onPress={() => editorRef.current?.toggleInlineCode()}
           >
             <MaterialDesignIcons
               name="code-tags"
@@ -452,10 +398,7 @@ export default function NoteEditorScreen() {
               styles.toolbarButton,
               stylesState?.codeBlock?.isActive && styles.toolbarButtonActive,
             ]}
-            onPress={() => {
-              editorRef.current?.toggleCodeBlock();
-              setIsStyleChanged(true);
-            }}
+            onPress={() => editorRef.current?.toggleCodeBlock()}
           >
             <MaterialDesignIcons
               name="code-json"
@@ -467,10 +410,7 @@ export default function NoteEditorScreen() {
           {/* CLEAR TEXT INPUT */}
           <TouchableOpacity
             style={[styles.toolbarButton]}
-            onPress={() => {
-              editorRef.current?.setValue("");
-              setIsStyleChanged(true);
-            }}
+            onPress={() => editorRef.current?.setValue("")}
           >
             <MaterialDesignIcons
               name="broom"
@@ -486,10 +426,7 @@ export default function NoteEditorScreen() {
 
 const isHtmlEmpty = (html: string | undefined | null): boolean => {
   if (!html) return true;
-  const cleanText = html
-    .replace(/<[^>]*>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .trim();
+  const cleanText = html.replace(/<[^>]*>/g, "").trim();
   return cleanText.length === 0;
 };
 
