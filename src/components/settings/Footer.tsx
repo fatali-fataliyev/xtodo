@@ -57,7 +57,7 @@ export default function Footer() {
       await Share.share({
         message:
           "Get XTodo, stay organized and productive. Download here: https://xtodo.app",
-        url: "https://xtodo.app",
+        url: "https://fatali-fataliyev.github.io/xtodo.github.io",
         title: "Share XTodo",
       });
     } catch (error) {
