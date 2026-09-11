@@ -41,27 +41,20 @@ export default function NoteEditorScreen() {
   const found = notes.find((noteItem) => noteItem.id === id);
   const note: Note | undefined = found;
 
-  const [title, setTitle] = useState(note ? note.title : "");
-  console.log("TITLE: ", title);
-  const [editorContent, setEditorContent] = useState("");
-  const [createdDate] = useState(() => (note ? note.createdAt : new Date()));
+  const [title, setTitle] = useState<string>(note ? note.title : "");
+  const editorContentRawText = useRef<string>("");
+  const [createdDate] = useState<Date>(() => note ? note.createdAt : new Date());
+  const [charCount, setCharCount] = useState<number>(0);
 
+  // REFS
   const editorRef = useRef<EnrichedTextInputInstance>(null);
   const initialTitle = useRef<string>("");
-  const [stylesState, setStylesState] = useState<
-    OnChangeStateEvent | any | null
-  >(null);
 
-  const initialContent = useRef<string>("");
-  console.log("INITIAL title: ", initialTitle.current);
-  const [isInitialContentCaptured, setIsInitialContentCaptured] =
-    useState<boolean>(false);
-
-  const isSaveDisabled =
-    editorContent === initialContent.current && title === initialTitle.current;
-  const isShareButtonDisabled = editorContent.trim() === "";
+  const [stylesState, setStylesState] = useState<OnChangeStateEvent | any | null>(null);
 
   const isNewNote = id === "new";
+
+  const isShareButtonDisabled = editorContentRawText.current.trim() === "";
 
   useEffect(() => {
     if (!isNewNote && note?.content) {
@@ -136,7 +129,7 @@ export default function NoteEditorScreen() {
   const handleTextShare = async () => {
     try {
       await Share.share({
-        message: editorContent,
+        message: editorContentRawText.current,
       });
     } catch (err) {
       alert(`failed to share text: ${err}`);
@@ -174,18 +167,10 @@ export default function NoteEditorScreen() {
 
           {/*SAVE*/}
           <TouchableOpacity
-            style={[
-              styles.headerActionButton,
-              isSaveDisabled && { opacity: 0.4 },
-            ]}
-            disabled={isSaveDisabled}
+            style={[styles.headerActionButton]}
             onPress={handleSave}
           >
-            <MaterialIcons
-              name="check"
-              color={isSaveDisabled ? "#666" : "#FFF"}
-              size={25}
-            />
+            <MaterialIcons name="check" color={"#FFF"} size={25} />
           </TouchableOpacity>
         </View>
       </View>
@@ -203,8 +188,8 @@ export default function NoteEditorScreen() {
 
       <View style={styles.infoContainer}>
         <Text style={styles.infoText}>
-          {parseDate(createdDate, hourFormat)} | {editorContent.trim().length}{" "}
-          characters
+          {parseDate(createdDate, hourFormat)} |{" "}
+          {charCount} characters
         </Text>
       </View>
 
@@ -217,12 +202,8 @@ export default function NoteEditorScreen() {
           ref={editorRef}
           onChangeState={(e) => setStylesState(e.nativeEvent)}
           onChangeText={(e) => {
-            if (!isInitialContentCaptured && e.nativeEvent.value !== "") {
-              initialContent.current = e.nativeEvent.value;
-              setEditorContent(e.nativeEvent.value ?? "");
-              setIsInitialContentCaptured(true);
-            }
-            setEditorContent(e.nativeEvent.value ?? "");
+            (editorContentRawText.current = e.nativeEvent.value ?? "")
+            setCharCount(editorContentRawText.current.trim().length)
           }}
           style={styles.editorInput}
           cursorColor="#CCC"
@@ -445,10 +426,7 @@ export default function NoteEditorScreen() {
 
 const isHtmlEmpty = (html: string | undefined | null): boolean => {
   if (!html) return true;
-  const cleanText = html
-    .replace(/<[^>]*>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .trim();
+  const cleanText = html.replace(/<[^>]*>/g, "").trim();
   return cleanText.length === 0;
 };
 
@@ -471,7 +449,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: "700",
-    color: "#ffffff",
+    color: "#FFF",
     paddingHorizontal: 20,
     marginTop: 5,
     marginBottom: 5,
@@ -504,7 +482,7 @@ const styles = StyleSheet.create({
     height: "100%",
     fontSize: 16,
     lineHeight: 24,
-    color: "#e5e7eb",
+    color: "#FFF",
     fontFamily: "Inter-Regular",
     paddingHorizontal: 8,
   },

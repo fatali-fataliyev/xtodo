@@ -13,14 +13,20 @@ export interface customTextEditorStyle {
     borderRadius: number;
     backgroundColor?: ColorValue;
   };
+  ol?: {
+     marginLeft?: number;
+  }
+  
   ul: {
     bulletColor: ColorValue;
+     marginLeft?: number;
   };
 
   ulCheckbox?: {
     boxColor?: ColorValue;
     boxSize?: number;
     gapWidth?: number;
+    marginLeft?: number;
   };
 }
 
@@ -46,12 +52,17 @@ export const textEditorPreviewStyles: customTextEditorStyle = {
   h3: { fontSize: 16, bold: true },
   code: { backgroundColor: "#000", color: "#33FF00" },
   codeblock: { backgroundColor: "#000", borderRadius: 3, color: "#33FF00" },
+  ol: {
+    marginLeft: 0
+  },
   ul: {
     bulletColor: "#FFF",
+    marginLeft: 0
   },
   ulCheckbox: {
     boxColor: "#CCC",
     boxSize: 18,
     gapWidth: 12,
+    marginLeft: 0,
   },
 };

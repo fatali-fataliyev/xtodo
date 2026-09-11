@@ -2,7 +2,7 @@
   "expo": {
     "name": "XTodo",
     "slug": "XTodo",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "xtodo",
@@ -55,10 +55,10 @@
             {
               "name": "TodoList",
               "label": "XTodo Todo List",
-              "minWidth": "320dp",
-              "minHeight": "120dp",
-              "targetCellWidth": 4,
-              "targetCellHeight": 4,
+              "minWidth": "280dp",
+              "minHeight": "60dp",
+              "targetCellWidth": 3,
+              "targetCellHeight": 3,
               "description": "List of todos and more",
               "previewImage": "./assets/images/widget/preview.jpg",
               "widgetFeatures": "reconfigurable",
