@@ -55,8 +55,11 @@ export default function Footer() {
   const onShare = async () => {
     try {
       await Share.share({
-        message:
-          "Get XTodo, stay organized and productive. Download here: https://fatali-fataliyev.github.io/xtodo.github.io",
+        message: `
+          Get XTodo, stay organized and productive.
+
+          https://fatali-fataliyev.github.io/xtodo.github.io
+          `,
         url: "https://fatali-fataliyev.github.io/xtodo.github.io",
         title: "Share XTodo",
       });

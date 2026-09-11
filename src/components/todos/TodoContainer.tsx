@@ -116,9 +116,7 @@ export default function TodoContainer() {
     doneTodos,
   ]);
 
-  const isSelectAll =
-    allVisibleTodos.length > 0 &&
-    bulkDeleteTodoIDs.size === allVisibleTodos.length;
+  const isSelectAll = allVisibleTodos.length > 0 && bulkDeleteTodoIDs.size === allVisibleTodos.length;
 
   useEffect(() => {
     const backAction = () => {
@@ -175,10 +173,8 @@ export default function TodoContainer() {
   };
 
   const handleClearAllDoneTodos = () => {
-    listExpansion.value = withTiming(0, { duration: 200 });
-    arrowRotation.value = withTiming(0, { duration: 200 });
-
-    clearAllDoneTodos();
+    toggleDoneTodos();
+    setTimeout(() => clearAllDoneTodos(), 310);
   };
 
   const deleteSelectedTodos = () => {
