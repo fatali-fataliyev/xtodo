@@ -32,6 +32,8 @@ import {
   View,
 } from "react-native";
 import Animated, {
+  FadeIn,
+  FadeOut,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -40,6 +42,7 @@ import { Colors } from "../../../widget/TodoWidget";
 import PermissionModal from "../ui/PermissionModal";
 import SaveChangesModal from "../ui/SaveChangesModal";
 import { remindAtParseDate } from "./RemindAtDateParser";
+import { parseDate } from "@/utils/dateParser";
 
 type Props = {
   isOpen: boolean;
@@ -66,9 +69,7 @@ export const AddTodoModal = ({ isOpen, setIsOpen, isWidgetMode }: Props) => {
   const [isKeyboardCollapsed, setIsKeyboardCollapsed] =
     useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [permissionModal, setPermissionModal] = useState<
-    "notification" | "exactAlarm" | null
-  >(null);
+  const [permissionModal, setPermissionModal] = useState<"notification" | "exactAlarm" | null>(null);
   const isSaveBtnDisabled = todoName.trim() === "";
   const hasUnsavedChanges = todoName.trim() !== "" || selectedDate !== null;
   const todayDate = new Date();
@@ -494,7 +495,8 @@ export const AddTodoModal = ({ isOpen, setIsOpen, isWidgetMode }: Props) => {
             )}
           </View>
 
-          {/* REMINDER BUTTON */}
+          {/* REMINDER BUTTON AND PREVIEW TEXT */}
+          <View style={styles.reminderButtonAndPreview}>
           <TouchableOpacity
             style={styles.toolBarItem}
             onPress={openReminderToolbar}
@@ -527,7 +529,17 @@ export const AddTodoModal = ({ isOpen, setIsOpen, isWidgetMode }: Props) => {
                 onDismiss={handleDismiss}
               />
             )}
-          </TouchableOpacity>
+            </TouchableOpacity>
+
+            {
+              selectedDate &&
+                (<Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(200)}>
+                <Text style={styles.remindAtPreviewText}>{parseDate(selectedDate, hourFormat)}</Text>
+                </Animated.View>)
+            }
+            
+          </View>
+          
 
           {/* SAVE BUTTON */}
           <TouchableOpacity
@@ -711,4 +723,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "red",
   },
+  reminderButtonAndPreview: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    position:"relative"
+  },
+  remindAtPreviewText: {
+    color: "#6EC175",
+    fontFamily: "Inter-SemiBold",
+    position: "absolute",
+    alignSelf: "center",
+    textAlign: "center",
+    top: 5,
+    fontSize: 13
+  }
 });
