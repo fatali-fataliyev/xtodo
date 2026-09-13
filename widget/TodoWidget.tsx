@@ -148,7 +148,8 @@ function TodoList({ Todos, ListBg, FontSize, HourFormat }: TodoWidgetProps) {
                     <TextWidget
                       text={parseDate(todo.remindAt, HourFormat)}
                       style={{
-                        color: "#FFF",
+                        color:
+                          todo.remindAt <= new Date() ? "#808080" : "#ffffff",
                         fontWeight: "bold",
                         fontSize: 9,
                       }}

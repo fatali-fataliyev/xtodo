@@ -15,13 +15,10 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(
         context: Context,
         intent: Intent
-    ) {
-        Log.e("XTODO_ALARM", "[+]: ReminderAlarmReceiver.onReceive() CALLED")
-
+    ) { 
         val pendingResult = goAsync()
         try {
             val taskId = intent.getStringExtra(XTodoAlarmsModule.EXTRA_TASK_ID) ?: run {
-                Log.e("XTODO_ALARM", "❌ taskId missing")
                 pendingResult.finish()
                 return
             }
@@ -30,8 +27,6 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
             val body = intent.getStringExtra(XTodoAlarmsModule.EXTRA_BODY) ?: ""
             val notificationId =
                 intent.getIntExtra(XTodoAlarmsModule.EXTRA_NOTIFICATION_ID, stableNotificationId(taskId))
-
-            Log.e("XTODO_ALARM", "taskId=$taskId notificationId=$notificationId")
 
             val completeIntent = Intent(context, NotificationActionReceiver::class.java).apply {
                 action = XTodoAlarmsModule.ACTION_COMPLETE
@@ -48,8 +43,6 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
                     completeIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
-
-            Log.e("XTODO_ACTION", "PendingIntent CREATED requestCode=${notificationId + 1_000_000} taskId=$taskId")
 
             val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
 
@@ -101,7 +94,7 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
 
             val manager = context.getSystemService(NotificationManager::class.java)
 
-            Log.e("XTODO_NOTIFY", "BEFORE notify id=$notificationId channel=${XTodoAlarmsModule.CHANNEL_ID}")
+            
 
             try {
                 manager.notify(notificationId, notification)
@@ -113,7 +106,6 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
                 pendingResult.finish()
             }
         } catch (e: Throwable) {
-            Log.e("XTODO_ALARM", "❌ RECEIVER FAILED: ${e.message}", e)
             pendingResult.finish()
         }
     }

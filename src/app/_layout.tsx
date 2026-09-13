@@ -8,6 +8,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/inter";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import * as QuickActions from "expo-quick-actions";
 import { DarkTheme, Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useRef, useState } from "react";
@@ -90,6 +91,21 @@ export default function RootLayout() {
 
           setupNotificationChannel();
           processPendingCompletions();
+
+          QuickActions.setItems([
+            {
+              id: "add_note",
+              title: "Add Note",
+              icon: "shortcut_add_note",
+              params: { href: "/note/new" },
+            },
+            {
+              id: "add_task",
+              title: "Add Task",
+              icon: "shortcut_add_todo",
+              params: { href: "/add" },
+            },
+          ]);
         }
       } catch (error) {
         console.error("Failed to initialize storage:", error);

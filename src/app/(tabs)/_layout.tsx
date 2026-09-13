@@ -1,16 +1,19 @@
 // app/(tabs)/_layout.tsx
 import { MaterialIcons } from "@react-native-vector-icons/material-icons";
+import { useQuickActionRouting } from "expo-quick-actions/router";
 import { Tabs } from "expo-router";
 import { BottomTabBarButtonProps } from "expo-router/build/react-navigation/bottom-tabs";
 import { Pressable } from "react-native";
 import { Colors } from "../../../widget/TodoWidget";
 
 export default function TabsLayout() {
+  useQuickActionRouting();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        lazy: false,
+        lazy: true,
         sceneStyle: { backgroundColor: "#000000" },
 
         tabBarStyle: {
